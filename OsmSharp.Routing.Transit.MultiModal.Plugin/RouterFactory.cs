@@ -40,8 +40,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Plugin
 
                 // read from the OSM-stream.
                 var interpreter = new OsmRoutingInterpreter();
-                var data = new MultiModalGraphRouterDataSource(tagsIndex);
-                var targetData = new LiveGraphOsmStreamTarget(data, interpreter, tagsIndex);
+                var data = new MultiModalGraphRouterDataSource(new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex));
+                var targetData = new LiveGraphOsmStreamTarget(data.Graph, interpreter, tagsIndex);
                 targetData.RegisterSource(reader);
                 targetData.Pull();
 

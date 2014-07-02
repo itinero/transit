@@ -20,7 +20,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <summary>
         /// Holds the graph.
         /// </summary>
-        private MultiModalGraphRouterDataSource _graph;
+        private MultiModalGraphRouterDataSource _source;
 
         /// <summary>
         /// Holds the stops.
@@ -40,13 +40,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <summary>
         /// Creates a new type router using edges of type MultiModalEdge.
         /// </summary>
-        /// <param name="graph"></param>
+        /// <param name="_source"></param>
         /// <param name="interpreter"></param>
         /// <param name="router"></param>
-        public TypedRouterMultiModal(MultiModalGraphRouterDataSource graph, IRoutingInterpreter interpreter, ReferenceCalculator router)
-            :base(graph, interpreter, router)
+        public TypedRouterMultiModal(MultiModalGraphRouterDataSource source, IRoutingInterpreter interpreter, ReferenceCalculator router)
+            : base(source.Graph, interpreter, router)
         {
-            _graph = graph;
+            _source = source;
             _basicRouter = router;
             _stops = new Dictionary<string, uint>();
             _tripIds = new Dictionary<string, uint>();
@@ -58,7 +58,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <param name="feed"></param>
         public void AddGTFSFeed(GTFSFeed feed)
         {
-            GTFSGraphReader.AddToGraph(_graph, feed, _stops, _tripIds, _graph.Schedules);
+            GTFSGraphReader.AddToGraph(_source.Graph, feed, _stops, _tripIds, _source.Schedules);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             var routingParameters = this.BuildRoutingParameters(parameters, departureTime);
 
             // calculate path.
-            var path = _basicRouter.Calculate(_graph, this.Interpreter, interModal,
+            var path = _basicRouter.Calculate(_source.Graph, this.Interpreter, interModal,
                 source, target, double.MaxValue, routingParameters);
 
             return this.ConstructRoute(departureTime, new List<Vehicle>(new Vehicle[] { toFirstStop, interModal, fromLastStop }), path, from, to);
@@ -120,14 +120,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             var routingParameters = this.BuildRoutingParameters(parameters, departureTime);
 
             // calculate path.
-            var path = _basicRouter.Calculate(_graph, this.Interpreter, null,
+            var path = _basicRouter.Calculate(_source.Graph, this.Interpreter, null,
                 sourceVisitList, targetVisitList, double.MaxValue, routingParameters);
 
             // construct router points.
             float latitude, longitude;
-            _graph.GetVertex(_stops[from], out latitude, out longitude);
+            _source.Graph.GetVertex(_stops[from], out latitude, out longitude);
             var source = new RouterPoint(_stops[from], new GeoCoordinate(latitude, longitude));
-            _graph.GetVertex(_stops[to], out latitude, out longitude);
+            _source.Graph.GetVertex(_stops[to], out latitude, out longitude);
             var target = new RouterPoint(_stops[to], new GeoCoordinate(latitude, longitude));
 
             return this.ConstructRoute(departureTime, new List<Vehicle>(new Vehicle[] { Vehicle.Pedestrian }), path, source, target);
@@ -146,7 +146,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             var routingParameters = new Dictionary<string, object>(parameters);
 
             routingParameters[ReferenceCalculator.START_TIME_KEY] = departureTime;
-            routingParameters[ReferenceCalculator.SCHEDULES_KEY] = _graph.Schedules;
+            routingParameters[ReferenceCalculator.SCHEDULES_KEY] = _source.Schedules;
             if (!routingParameters.ContainsKey(ReferenceCalculator.IS_TRIP_POSSIBLE_KEY))
             {
                 Func<uint, DateTime, bool> isTripPossible = (x, y) => { return true; }; // TODO: make this actually check schedules!

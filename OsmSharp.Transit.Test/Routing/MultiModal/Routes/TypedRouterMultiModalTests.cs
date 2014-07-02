@@ -37,8 +37,8 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("OsmSharp.Transit.Test.test_network.osm"));
             var interpreter = new OsmRoutingInterpreter();
             var tagsIndex = new TagsTableCollectionIndex(); // creates a tagged index.
-            var memoryData = new MultiModalGraphRouterDataSource(tagsIndex);
-            var targetData = new LiveGraphOsmStreamTarget(memoryData, interpreter, tagsIndex);
+            var memoryData = new MultiModalGraphRouterDataSource(new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex));
+            var targetData = new LiveGraphOsmStreamTarget(memoryData.Graph, interpreter, tagsIndex);
             targetData.RegisterSource(reader);
             targetData.Pull();
             var multiModalEdgeRouter = new TypedRouterMultiModal(
@@ -75,12 +75,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("OsmSharp.Transit.Test.test_network.osm"));
             var interpreter = new OsmRoutingInterpreter();
             var tagsIndex = new TagsTableCollectionIndex(); // creates a tagged index.
-            var memoryData = new MultiModalGraphRouterDataSource(tagsIndex);
-            var targetData = new LiveGraphOsmStreamTarget(memoryData, interpreter, tagsIndex);
+            var source = new MultiModalGraphRouterDataSource(new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex));
+            var targetData = new LiveGraphOsmStreamTarget(source.Graph, interpreter, tagsIndex);
             targetData.RegisterSource(reader);
             targetData.Pull();
             var multiModalEdgeRouter = new TypedRouterMultiModal(
-                memoryData, interpreter, new ReferenceCalculator());
+                source, interpreter, new ReferenceCalculator());
 
             // read GTFS feed.
             var gtfsReader = new GTFSReader<GTFSFeed>(false);
@@ -115,12 +115,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("OsmSharp.Transit.Test.test_network.osm"));
             var interpreter = new OsmRoutingInterpreter();
             var tagsIndex = new TagsTableCollectionIndex(); // creates a tagged index.
-            var memoryData = new MultiModalGraphRouterDataSource(tagsIndex);
-            var targetData = new LiveGraphOsmStreamTarget(memoryData, interpreter, tagsIndex);
+            var source = new MultiModalGraphRouterDataSource(new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex));
+            var targetData = new LiveGraphOsmStreamTarget(source.Graph, interpreter, tagsIndex);
             targetData.RegisterSource(reader);
             targetData.Pull();
             var multiModalEdgeRouter = new TypedRouterMultiModal(
-                memoryData, interpreter, new ReferenceCalculator());
+                source, interpreter, new ReferenceCalculator());
 
             // read GTFS feed.
             var gtfsReader = new GTFSReader<GTFSFeed>(false);

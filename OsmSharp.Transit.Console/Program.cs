@@ -1,21 +1,12 @@
 ﻿using GTFS;
 using OsmSharp.Collections.Tags;
-using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing;
-using OsmSharp.Routing.Graph;
-using OsmSharp.Routing.Transit.MultiModal;
-using OsmSharp.Routing.Osm.Interpreter;
-using OsmSharp.Routing.Transit;
-using OsmSharp.Routing.Transit.Graphs.Serialization;
-using OsmSharp.Routing.Transit.GTFS;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using OsmSharp.Routing.Osm.Graphs.Serialization;
+using OsmSharp.Routing.Osm.Interpreter;
+using OsmSharp.Routing.Transit.MultiModal;
+using System;
+using System.IO;
 
 namespace OsmSharp.Transit.Console
 {
@@ -37,12 +28,14 @@ namespace OsmSharp.Transit.Console
                 var day = int.Parse(dateString.Substring(6, 2));
                 return new System.DateTime(year, month, day);
             };
-            var feed = reader.Read(new GTFS.IO.GTFSDirectorySource(@"d:\work\osmsharp_data\nmbs\"));
+            var feed = reader.Read(new GTFS.IO.GTFSDirectorySource(@"c:\work\osmsharp_data\nmbs\"));
 
             // create router.
-            var progress = new OsmSharp.Osm.Streams.Filters.OsmStreamFilterProgress();
-            progress.RegisterSource(new OsmSharp.Osm.PBF.Streams.PBFOsmStreamSource(new FileInfo(@"d:\OSM\bin\belgium-latest.osm.pbf").OpenRead()));
-            var router = MultiModalRouter.CreateFrom(progress,
+            //var progress = new OsmSharp.Osm.Streams.Filters.OsmStreamFilterProgress();
+            //progress.RegisterSource(new OsmSharp.Osm.PBF.Streams.PBFOsmStreamSource(new FileInfo(@"d:\OSM\bin\belgium-latest.osm.pbf").OpenRead()));
+            //var router = MultiModalRouter.CreateFrom(progress,
+            //    new OsmRoutingInterpreter());
+            var router = MultiModalRouter.CreateFrom(new FileInfo(@"c:\temp\belgium-latest.simple.flat.routing").OpenRead(),
                 new OsmRoutingInterpreter());
 
             router.AddGTFSFeed(feed);

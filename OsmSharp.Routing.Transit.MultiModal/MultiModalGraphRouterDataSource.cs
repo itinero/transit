@@ -1,5 +1,6 @@
 ﻿using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Routing.Graph;
+using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Osm.Graphs;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
     /// <summary>
     /// Represents a multimodal graph router data source.
     /// </summary>
-    public class MultiModalGraphRouterDataSource : DynamicGraphRouterDataSource<LiveEdge>
+    public class MultiModalGraphRouterDataSource
     {
         /// <summary>
         /// Holds the schedules.
@@ -20,24 +21,18 @@ namespace OsmSharp.Routing.Transit.MultiModal
         private List<TransitEdgeSchedulePair> _schedules;
 
         /// <summary>
-        /// Creates a new multi modal graph router.
+        /// Holds the graph datasource.
         /// </summary>
-        /// <param name="index"></param>
-        public MultiModalGraphRouterDataSource(ITagsCollectionIndexReadonly index)
-            : base(index)
-        {
-            _schedules = new List<TransitEdgeSchedulePair>();
-        }
+        private DynamicGraphRouterDataSource<LiveEdge> _graph;
 
         /// <summary>
         /// Creates a new multi modal graph router.
         /// </summary>
         /// <param name="graph"></param>
-        /// <param name="index"></param>
-        public MultiModalGraphRouterDataSource(IDynamicGraph<LiveEdge> graph, ITagsCollectionIndexReadonly index)
-            : base(graph, index)
+        public MultiModalGraphRouterDataSource(DynamicGraphRouterDataSource<LiveEdge> graph)
         {
             _schedules = new List<TransitEdgeSchedulePair>();
+            _graph = graph;
         }
 
         /// <summary>
@@ -48,6 +43,17 @@ namespace OsmSharp.Routing.Transit.MultiModal
             get
             {
                 return _schedules;
+            }
+        }
+
+        /// <summary>
+        /// Returns the graph.
+        /// </summary>
+        public DynamicGraphRouterDataSource<LiveEdge> Graph
+        {
+            get
+            {
+                return _graph;
             }
         }
     }

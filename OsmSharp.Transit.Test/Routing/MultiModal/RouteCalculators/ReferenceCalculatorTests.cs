@@ -84,8 +84,8 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var tagsIndex = new TagsTableCollectionIndex();
 
             // do the data processing.
-            var memoryData = new MultiModalGraphRouterDataSource(tagsIndex);
-            var targetData = new LiveGraphOsmStreamTarget(memoryData, interpreter, tagsIndex);
+            var source = new MultiModalGraphRouterDataSource(new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex));
+            var targetData = new LiveGraphOsmStreamTarget(source.Graph, interpreter, tagsIndex);
             var dataProcessorSource = new XmlOsmStreamSource(
                 Assembly.GetExecutingAssembly().GetManifestResourceStream(embeddedString));
             var sorter = new OsmStreamFilterSort();
@@ -93,7 +93,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             targetData.RegisterSource(sorter);
             targetData.Pull();
 
-            return memoryData;
+            return source;
         }
 
         /// <summary>
@@ -383,7 +383,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var vehicle = new Snail();
             var interpreter = new OsmRoutingInterpreter();
-            var graph = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm") as DynamicGraphRouterDataSource<LiveEdge>;
+            var sourceGraph = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
 
             // read the sample feed.
             var reader = new GTFSReader<GTFSFeed>(false);
@@ -400,7 +400,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var stopVertices = new Dictionary<string, uint>();
             var tripIds = new Dictionary<string, uint>();
             var schedules = new List<TransitEdgeSchedulePair>();
-            GTFSGraphReader.AddToGraph(graph, feed, stopVertices, tripIds, schedules);
+            GTFSGraphReader.AddToGraph(sourceGraph.Graph, feed, stopVertices, tripIds, schedules);
 
             // create the router.
             var router = new ReferenceCalculator();
@@ -420,7 +420,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             source.UpdateVertex(new PathSegment<long>(stopVertices["STOP1"]));
             var target = new PathSegmentVisitList();
             target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
-            var path = router.Calculate(graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+            var path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
             Assert.AreEqual(5, path.Length());
             Assert.AreEqual(11, path.From.From.From.From.VertexId);
             Assert.AreEqual(12, path.From.From.From.VertexId);
@@ -430,10 +430,10 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             // (51.0582205, 3.7189946)-STOP5 @ 05:30
             source = new PathSegmentVisitList();
-            source.UpdateVertex(new PathSegment<long>(graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
+            source.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
             target = new PathSegmentVisitList();
             target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
-            path = router.Calculate(graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+            path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
             Assert.AreEqual(6, path.Length());
             Assert.AreEqual(7, path.From.From.From.From.From.VertexId);
             Assert.AreEqual(11, path.From.From.From.From.VertexId);
@@ -444,10 +444,10 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             // (51.0582205, 3.7189946)-(51.0581291, 3.7205005) @ 05:30
             source = new PathSegmentVisitList();
-            source.UpdateVertex(new PathSegment<long>(graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
+            source.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
             target = new PathSegmentVisitList();
-            target.UpdateVertex(new PathSegment<long>(graph.GetVertexAt(new GeoCoordinate(51.0581291, 3.7205005))));
-            path = router.Calculate(graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+            target.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0581291, 3.7205005))));
+            path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
             Assert.AreEqual(8, path.Length());
             Assert.AreEqual(7, path.From.From.From.From.From.From.From.VertexId);
             Assert.AreEqual(11, path.From.From.From.From.From.From.VertexId);
@@ -498,7 +498,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578532, 3.7192229));
@@ -542,7 +542,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578532, 3.7192229));
@@ -579,7 +579,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578532, 3.7192229));
@@ -608,7 +608,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578532, 3.7192229));
@@ -626,7 +626,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0579235, 3.7199811));
@@ -644,7 +644,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0576193, 3.7191801));
@@ -662,7 +662,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0579235, 3.7199811));
@@ -680,7 +680,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basic_router = this.BuildBasicRouter(data);
+            var basic_router = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basic_router);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0576193, 3.7191801));
@@ -698,7 +698,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578153, 3.7193937));
@@ -716,7 +716,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             RouterPoint source = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0581843, 3.7201209)); // between 2 - 3
@@ -734,7 +734,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(
                 data, interpreter, basicRouter);
 
@@ -764,7 +764,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
             var resolvedPoints = new RouterPoint[3];
@@ -792,13 +792,13 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             Router router = this.BuildRouter(
                 data, interpreter, basicRouter);
-            for (int idx = 1; idx < data.VertexCount; idx++)
+            for (int idx = 1; idx < data.Graph.VertexCount; idx++)
             {
                 float latitude, longitude;
-                if (data.GetVertex((uint)idx, out latitude, out longitude))
+                if (data.Graph.GetVertex((uint)idx, out latitude, out longitude))
                 {
                     RouterPoint point = router.Resolve(Vehicle.Car, new GeoCoordinate(latitude, longitude));
                     Assert.AreEqual(idx, (point as RouterPoint).Id);
@@ -815,7 +815,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         {
             var interpreter = new OsmRoutingInterpreter();
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(data, interpreter, basicRouter);
 
             // first test a non-between node.
@@ -868,7 +868,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                     var vertex2116 = new GeoCoordinate(point[1], point[0]);
 
                     // calculate route.
-                    var basicRouter = this.BuildBasicRouter(data);
+                    var basicRouter = this.BuildBasicRouter(data.Graph);
                     var router = this.BuildRouter(data, interpreter, basicRouter);
 
                     var route = router.Calculate(Vehicle.Car,
@@ -909,7 +909,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                 var vertex2120 = new GeoCoordinate(point[1], point[0]);
 
                 // calculate route.
-                var basicRouter = this.BuildBasicRouter(data);
+                var basicRouter = this.BuildBasicRouter(data.Graph);
                 Router router = this.BuildRouter(data, interpreter, basicRouter);
 
                 Route route = router.Calculate(Vehicle.Car,
@@ -951,7 +951,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var vertex2116 = new GeoCoordinate(point[1], point[0]);
 
             // calculate route.
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(data, interpreter, basicRouter);
 
             var route = router.Calculate(Vehicle.Car,
@@ -991,7 +991,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var vertex20212 = new GeoCoordinate(point[1], point[0]);
 
             // calculate route.
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(data, interpreter, basicRouter);
 
             var route = router.Calculate(Vehicle.Car,
@@ -1018,7 +1018,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var data = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network.osm");
 
             // create router.
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(data, interpreter, basicRouter);
 
             // define test tags.
@@ -1055,14 +1055,14 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             var data = this.BuildData(interpreter, string.Format("OsmSharp.Test.Unittests.{0}", filename));
 
             // create router.
-            var basicRouter = this.BuildBasicRouter(data);
+            var basicRouter = this.BuildBasicRouter(data.Graph);
             var router = this.BuildRouter(data, interpreter, basicRouter);
 
-            var resolved = new RouterPoint[data.VertexCount - 1];
-            for (uint idx = 1; idx < data.VertexCount; idx++)
+            var resolved = new RouterPoint[data.Graph.VertexCount - 1];
+            for (uint idx = 1; idx < data.Graph.VertexCount; idx++)
             { // resolve each vertex.
                 float latitude, longitude;
-                if (data.GetVertex(idx, out latitude, out longitude))
+                if (data.Graph.GetVertex(idx, out latitude, out longitude))
                 {
                     resolved[idx - 1] = router.Resolve(Vehicle.Car, new GeoCoordinate(latitude, longitude).OffsetRandom(20), true);
                 }

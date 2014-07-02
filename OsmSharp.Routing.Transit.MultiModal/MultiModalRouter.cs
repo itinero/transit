@@ -28,6 +28,8 @@ using OsmSharp.Routing.Routers;
 using System;
 using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Osm.Streams.Graphs;
+using System.IO;
+using OsmSharp.Routing.Osm.Graphs.Serialization;
 
 namespace OsmSharp.Routing.Transit.MultiModal
 {
@@ -102,14 +104,32 @@ namespace OsmSharp.Routing.Transit.MultiModal
             var tagsIndex = new TagsTableCollectionIndex(); // creates a tagged index.
 
             // read from the OSM-stream.
-            var memoryData = new MultiModalGraphRouterDataSource(tagsIndex);
+            var memoryData = new DynamicGraphRouterDataSource<LiveEdge>(tagsIndex);
             var targetData = new LiveGraphOsmStreamTarget(memoryData, interpreter, tagsIndex);
             targetData.RegisterSource(reader);
             targetData.Pull();
 
             // creates the live edge router.
             var multiModalEdgeRouter = new TypedRouterMultiModal(
-                memoryData, interpreter, new ReferenceCalculator());
+                new MultiModalGraphRouterDataSource(memoryData), interpreter, new ReferenceCalculator());
+
+            return new MultiModalRouter(multiModalEdgeRouter); // create the actual router.
+        }
+
+        /// <summary>
+        /// Creates a new router.
+        /// </summary>
+        /// <param name="flatFile">The flatfile containing the graph.</param>
+        /// <param name="interpreter">The routing interpreter.</param>
+        /// <returns></returns>
+        public static MultiModalRouter CreateFrom(Stream flatFile, IOsmRoutingInterpreter interpreter)
+        {
+            var serializer = new LiveEdgeFlatfileSerializer();
+            var source = serializer.Deserialize(flatFile, false) as DynamicGraphRouterDataSource<LiveEdge>;
+
+            // creates the live edge router.
+            var multiModalEdgeRouter = new TypedRouterMultiModal(
+                new MultiModalGraphRouterDataSource(source), interpreter, new ReferenceCalculator());
 
             return new MultiModalRouter(multiModalEdgeRouter); // create the actual router.
         }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>OsmSharp.Transit</id>
+        <version>$version$</version>
+        <title>OsmSharp.Transit - Public transit routing module for OsmSharp.</title>
+        <authors>Ben Abelshausen</authors>
+        <owners>Ben Abelshausen</owners>
+        <licenseUrl>http://raw.github.com/xivk/OsmSharp.Transit/master/license.txt</licenseUrl>
+        <projectUrl>http://www.osmsharp.com/</projectUrl>
+        <iconUrl>http://raw.github.com/xivk/OsmSharp.Transit/master/packages_nuspec/logo.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>OsmSharp is an open-source mapping project, this module adds public transit routing capabilities.</description>
+        <summary>OsmSharp is an open-source mapping project, this module adds public transit routing capabilities. Can use a GTFS feed and OpenStreetMap to implement fully multimodal routing.</summary>
+        <copyright>Ben Abelshausen</copyright>
+        <tags>osm, openstreetmap, routing, GFTS, transit</tags>
+    </metadata>
+    <files>
+        <file src="Output\OsmSharp.Routing.Transit.dll" target="lib\net45\OsmSharp.Routing.Transit.dll" />
+        <file src="Output\OsmSharp.Routing.Transit.MultiModal.dll" target="lib\net45\OsmSharp.Routing.Transit.MultiModal.dll" />
+    </files>
+</package>

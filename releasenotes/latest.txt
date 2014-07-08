@@ -1,0 +1,9 @@
+Initial alpha release version:
+
+- Basic transit routing.
+- Basic multimodal routing.
+
+Know issues:
+
+- Too slow.
+- No alternative routes.

@@ -40,8 +40,19 @@ namespace OsmSharp.Transit.Console
 
             router.AddGTFSFeed(feed);
 
-            var route = router.CalculateTransit(DateTime.Now, "32414", "32598");
-            route.SaveAsGpx(new FileInfo(@"c:\temp\transit-turnhout-libramont.gpx").OpenWrite());
+            var date = new DateTime(2014, 7, 2, 10, 0 ,0);
+
+            var gent = new GeoCoordinate(51.05642, 3.72132);
+            var antwerpen = new GeoCoordinate(51.20627, 4.39369);
+            var sintNiklaas = new GeoCoordinate(51.16995, 4.14554);
+            var beverenWaas = new GeoCoordinate(51.2090, 4.2593);
+            var lokeren = new GeoCoordinate(51.1043, 3.9940);
+
+            var antwerpenZuidStation = "32390";
+            var gentDampoortStation = "32772";
+
+            var route = router.CalculateTransit(date, antwerpenZuidStation, gentDampoortStation);
+            route.SaveAsGpx(new FileInfo(@"c:\temp\transit-antwerpenZuidStation-gentDampoortStation.gpx").OpenWrite());
 
             var from = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.05642, 3.72132)); // gent
             var to = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.26797, 4.80191)); // wechel
@@ -57,7 +68,12 @@ namespace OsmSharp.Transit.Console
             route = router.CalculateTransit(DateTime.Now, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, from, to);
             route.SaveAsGpx(new FileInfo(@"c:\temp\lokeren-wechel.gpx").OpenWrite());
 
-            System.Console.ReadLine();
+            from = router.Resolve(Vehicle.Pedestrian, antwerpen); // antwerpen (jo)
+            to = router.Resolve(Vehicle.Pedestrian, gent); // gent
+            route = router.CalculateTransit(date, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, from, to);
+            route.SaveAsGpx(new FileInfo(@"c:\temp\antwerpen-gent.gpx").OpenWrite());
+
+            // System.Console.ReadLine();
 
             //var dynamicGraph = new DynamicGraphRouterDataSource<TransitEdge>(router.Graph, new TagsTableCollectionIndex());
             //var serializer = new TransitEdgeFlatfileSerializer();

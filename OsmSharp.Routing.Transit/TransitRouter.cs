@@ -268,5 +268,79 @@ namespace OsmSharp.Routing.Transit
         }
 
         #endregion
+
+        #region Queries
+
+        /// <summary>
+        /// Returns the agency with the given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Agency GetAgency(string id)
+        {
+            return _feed.GetAgency(id);
+        }
+
+        /// <summary>
+        /// Returns all agencies.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Agency> GetAgencies()
+        {
+            return _feed.Agencies;
+        }
+
+        /// <summary>
+        /// Returns the agencies that contain the words in the given query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Agency> GetAgencies(string query)
+        {
+            return _feed.Agencies.Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+        }
+
+        /// <summary>
+        /// Returns all the stops.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStops()
+        {
+            return _feed.Stops;
+        }
+
+        /// <summary>
+        /// Returns all the stops that contain the words in the given query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStops(string query)
+        {
+            return _feed.Stops.Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+        }
+
+        /// <summary>
+        /// Returns all stops for the given agency.
+        /// </summary>
+        /// <param name="agencyId"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStopsForAgency(string agencyId)
+        {
+            return new List<Stop>();
+        }
+
+        /// <summary>
+        /// Returns all stops for the given agency that contain the words in the given query.
+        /// </summary>
+        /// <param name="agencyId"></param>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStopsForAgency(string agencyId, string query)
+        {
+            return new List<Stop>();
+        }
+
+
+        #endregion
     }
 }

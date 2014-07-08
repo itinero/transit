@@ -20,16 +20,14 @@ using GTFS;
 using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Osm.Streams;
 using OsmSharp.Routing.Graph;
-using OsmSharp.Routing.Interpreter;
+using OsmSharp.Routing.Osm.Graphs;
+using OsmSharp.Routing.Osm.Graphs.Serialization;
+using OsmSharp.Routing.Osm.Interpreter;
+using OsmSharp.Routing.Osm.Streams.Graphs;
 using OsmSharp.Routing.Transit.MultiModal.RouteCalculators;
 using OsmSharp.Routing.Transit.MultiModal.Routers;
-using OsmSharp.Routing.Osm.Interpreter;
-using OsmSharp.Routing.Routers;
 using System;
-using OsmSharp.Routing.Osm.Graphs;
-using OsmSharp.Routing.Osm.Streams.Graphs;
 using System.IO;
-using OsmSharp.Routing.Osm.Graphs.Serialization;
 
 namespace OsmSharp.Routing.Transit.MultiModal
 {

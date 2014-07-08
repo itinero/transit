@@ -2,7 +2,9 @@
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
+using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Osm.Graphs;
+using OsmSharp.Routing.Osm.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +25,32 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
         /// <param name="stopVertices">The vertex for each stop.</param>
         /// <param name="tripIds">The trip ids per trip.</param>
         /// <param name="schedules">The schedules.</param>
-        /// <returns></returns>
         public static void AddToGraph(DynamicGraphRouterDataSource<LiveEdge> graph, GTFSFeed feed, Dictionary<string, uint> stopVertices,
             Dictionary<string, uint> tripIds, List<TransitEdgeSchedulePair> schedules)
+        {
+            var vehicles = new List<Vehicle>();
+            vehicles.Add(Vehicle.Pedestrian);
+            vehicles.Add(Vehicle.Bicycle);
+            vehicles.Add(Vehicle.Car);
+
+            var interpreter = new OsmRoutingInterpreter();
+
+            GTFSGraphReader.AddToGraph(graph, feed, stopVertices, tripIds, schedules, interpreter, vehicles);
+        }
+
+        /// <summary>
+        /// Reads and converts a GTFS feed into a routable graph.
+        /// </summary>
+        /// <param name="graph">The graph to add the info to.</param>
+        /// <param name="feed">The feed to convert.</param>
+        /// <param name="stopVertices">The vertex for each stop.</param>
+        /// <param name="tripIds">The trip ids per trip.</param>
+        /// <param name="schedules">The schedules.</param>
+        /// <param name="interpreter">The routing interperter.</param>
+        /// <param name="vehicles">The list of vehicles to tie stations to the road network.</param>
+        /// <returns></returns>
+        public static void AddToGraph(DynamicGraphRouterDataSource<LiveEdge> graph, GTFSFeed feed, Dictionary<string, uint> stopVertices,
+            Dictionary<string, uint> tripIds, List<TransitEdgeSchedulePair> schedules, IRoutingInterpreter interpreter, List<Vehicle> vehicles)
         {
             if (feed == null) { throw new ArgumentNullException("feed"); }
             if (feed.Stops == null || feed.Stops.Count == 0) { throw new ArgumentException("No stops in the given feed."); }
@@ -128,56 +153,71 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
             }
 
             // link stops to network.
-            float latitude, longitude;
-            foreach(var stop in stopVertices.Values)
+            foreach (var vehicle in vehicles)
             {
-                // get stop location.
-                if(graph.GetVertex(stop, out latitude, out longitude))
-                { // found the vertex! duh!
-                    // keep stop location
-                    var stopLocation = new GeoCoordinate(latitude, longitude);
+                float latitude, longitude;
+                int max = 3;
+                foreach (var stop in stopVertices.Values)
+                {
+                    // get stop location.
+                    if (graph.GetVertex(stop, out latitude, out longitude))
+                    { // found the vertex! duh!
+                        // keep stop location
+                        var stopLocation = new GeoCoordinate(latitude, longitude);
 
-                    // neighbouring vertices.
-                    var arcs = graph.GetArcs(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.01, longitude - 0.01),
-                        new Math.Geo.GeoCoordinate(latitude + 0.01, longitude + 0.01)));
+                        // neighbouring vertices.
+                        var arcs = graph.GetArcs(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.01, longitude - 0.01),
+                            new Math.Geo.GeoCoordinate(latitude + 0.01, longitude + 0.01)));
 
-                    // find the closest vertex with at least one neighbour having a link to road network.
-                    uint closest = 0;
-                    double distance = double.MaxValue;
-                    foreach(var arc in arcs)
-                    {
-                        if(arc.Value.Value.IsRoad())
-                        { // this arc is a road to keep it.
-                            if(arc.Key != stop && 
-                                graph.GetVertex(arc.Key, out latitude, out longitude))
-                            { // check distance.
-                                double keyDistance = stopLocation.DistanceReal(
-                                    new GeoCoordinate(latitude, longitude)).Value;
-                                if(keyDistance < distance)
-                                { // found a better vertex, yay!
-                                    closest = arc.Key;
-                                    distance = keyDistance;
+                        // keep a sorted list.
+                        var closestVertices = new Dictionary<uint, double>();
+
+                        // link this station to the road network for the current vehicle.
+                        foreach (var arc in arcs)
+                        {
+                            bool isRoutable = arc.Value.Value.IsRoad();
+                            if(isRoutable)
+                            { // the arc is already a road.
+                                if(graph.TagsIndex.Contains(arc.Value.Value.Tags))
+                                { // there is a tags collection.
+                                    var tags = graph.TagsIndex.Get(arc.Value.Value.Tags);
+                                    isRoutable = interpreter.EdgeInterpreter.CanBeTraversedBy(tags, vehicle);
                                 }
                             }
-                            if (arc.Value.Key != stop &&
-                                graph.GetVertex(arc.Value.Key, out latitude, out longitude))
-                            { // check distance.
-                                double keyDistance = stopLocation.DistanceReal(
-                                    new GeoCoordinate(latitude, longitude)).Value;
-                                if (keyDistance < distance)
-                                { // found a better vertex, yay!
-                                    closest = arc.Value.Key;
-                                    distance = keyDistance;
+                            if (isRoutable)                                
+                            { // this arc is a road to keep it.
+                                if (arc.Key != stop &&
+                                    graph.GetVertex(arc.Key, out latitude, out longitude))
+                                { // check distance.
+                                    var keyDistance = stopLocation.DistanceReal(
+                                        new GeoCoordinate(latitude, longitude)).Value;
+                                    closestVertices[arc.Key] = keyDistance;
+                                }
+                                if (arc.Value.Key != stop &&
+                                    graph.GetVertex(arc.Value.Key, out latitude, out longitude))
+                                { // check distance.
+                                    double keyDistance = stopLocation.DistanceReal(
+                                        new GeoCoordinate(latitude, longitude)).Value;
+                                    closestVertices[arc.Value.Key] = keyDistance;
                                 }
                             }
                         }
-                    }
 
-                    if (closest != 0 &&
-                        distance != double.MaxValue)
-                    { // a closest vertext was found.
-                        graph.AddArc(stop, closest, new LiveEdge(), null);
-                        graph.AddArc(closest, stop, new LiveEdge(), null);
+                        // sort vertices.
+                        var sorted = closestVertices.OrderBy(x => x.Value).GetEnumerator();
+                        for (int idx = 0; idx < max; idx++)
+                        {
+                            if (sorted.MoveNext())
+                            {
+                                var closest = sorted.Current.Key;
+                                graph.AddArc(stop, closest, new LiveEdge(), null);
+                                graph.AddArc(closest, stop, new LiveEdge(), null);
+                            }
+                            else
+                            { // no more sorted vertices.
+                                break;
+                            }
+                        }
                     }
                 }
             }

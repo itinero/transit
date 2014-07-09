@@ -376,6 +376,55 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         }
 
         /// <summary>
+        /// Tests routes along the SLOW1 vs QUICK1 sample route.
+        /// </summary>
+        [Test]
+        public void TestSLOW1vsQUICK1()
+        {
+            // read the sample feed.
+            var reader = new GTFSReader<GTFSFeed>(false);
+            reader.DateTimeReader = (dateString) =>
+            {
+                var year = int.Parse(dateString.Substring(0, 4));
+                var month = int.Parse(dateString.Substring(4, 2));
+                var day = int.Parse(dateString.Substring(6, 2));
+                return new System.DateTime(year, month, day);
+            };
+            var feed = reader.Read(SampleFeed.BuildSource());
+
+            // read the graph.
+            var stopVertices = new Dictionary<string, uint>();
+            var tripIds = new Dictionary<string, uint>();
+            var graph = new DynamicGraphRouterDataSource<LiveEdge>(new TagsTableCollectionIndex());
+            var schedules = new List<TransitEdgeSchedulePair>();
+            GTFSGraphReader.AddToGraph(graph, feed, stopVertices, tripIds, schedules);
+
+            // create the router.
+            var router = new ReferenceCalculator();
+            var interpreter = new OsmRoutingInterpreter();
+
+            // create parameters.
+            var parameters = new Dictionary<string, object>();
+            parameters[ReferenceCalculator.START_TIME_KEY] = new System.DateTime(2014, 01, 01, 15, 45, 0);
+            Func<uint, DateTime, bool> isTripPossible = (x, y) => { return true; };
+            parameters[ReferenceCalculator.IS_TRIP_POSSIBLE_KEY] = isTripPossible;
+            parameters[ReferenceCalculator.SCHEDULES_KEY] = schedules;
+
+            // calculate some routes.
+
+            // 4->6 @ 05:30
+            var source = new PathSegmentVisitList();
+            source.UpdateVertex(new PathSegment<long>(4));
+            var target = new PathSegmentVisitList();
+            target.UpdateVertex(new PathSegment<long>(8));
+            var path = router.Calculate(graph, interpreter, Vehicle.Car, source, target, double.MaxValue, parameters);
+            //var path = router.Calculate(graph, 4, 6, new System.DateTime(2014, 01, 01, 05, 30, 0), (x, y) => { return true; });
+            Assert.IsNotNull(path);
+            Assert.AreEqual(4, path.Length()); // must take the short path 3 times waiting in 4 and then to 9.
+        }
+
+
+        /// <summary>
         /// Tests that a router actually finds the shortest route but fully multimodal this time!
         /// </summary>
         [Test]

@@ -10,3 +10,5 @@ AAMV,WE,AAMV1,to Amargosa Valley,0,,shape_8
 AAMV,WE,AAMV2,to Airport,1,,shape_9
 AAMV,WE,AAMV3,to Amargosa Valley,0,,shape_10
 AAMV,WE,AAMV4,to Airport,1,,shape_11
+CITY,FULLW,SLOW1,,0,,shape_4
+CITY,FULLW,QUICK1,,1,,shape_5

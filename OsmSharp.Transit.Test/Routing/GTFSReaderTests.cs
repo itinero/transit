@@ -112,21 +112,21 @@ namespace OsmSharp.Transit.Test.Routing
 
             // check 4<->6
             transideEdge = graph.GetArc(4, 6);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
+            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
             Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
             Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
             Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
             transideEdge = graph.GetArc(6, 4);
             Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
             Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
+            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
             Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
 
             // check 5<->6
             transideEdge = graph.GetArc(5, 6);
             Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
             Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
+            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
             Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
             transideEdge = graph.GetArc(6, 5);
             Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);

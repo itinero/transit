@@ -124,7 +124,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             transideEdge = graph.GetArc(4, 6);
             forwardSchedule = transideEdge.GetForwardSchedule(schedules);
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
-            Assert.AreEqual(1, forwardSchedule.Count);
+            Assert.AreEqual(2, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
             Assert.AreEqual(1, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
@@ -133,7 +133,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
             Assert.AreEqual(1, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
-            Assert.AreEqual(1, backwardSchedule.Count);
+            Assert.AreEqual(2, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
 
             // check 5<->6
@@ -142,7 +142,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
             Assert.AreEqual(1, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
-            Assert.AreEqual(1, backwardSchedule.Count);
+            Assert.AreEqual(2, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
             transideEdge = graph.GetArc(6, 5);
             forwardSchedule = transideEdge.GetForwardSchedule(schedules);

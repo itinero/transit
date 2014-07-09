@@ -112,5 +112,35 @@ namespace OsmSharp.Transit.Test.Routing.RouteCalculators
             Assert.AreEqual(9, path.VertexId.Vertex);
             Assert.AreEqual(12600, path.VertexId.Seconds); // 30 mins wait + 20 mins trip + 1h40mins waiting for transfer + 1h trip
         }
+
+        /// <summary>
+        /// Tests routes along the SLOW1 vs QUICK1 sample route.
+        /// </summary>
+        [Test]
+        public void TestSLOW1vsQUICK1()
+        {
+            // read the sample feed.
+            var reader = new GTFSReader<GTFSFeed>(false);
+            reader.DateTimeReader = (dateString) =>
+            {
+                var year = int.Parse(dateString.Substring(0, 4));
+                var month = int.Parse(dateString.Substring(4, 2));
+                var day = int.Parse(dateString.Substring(6, 2));
+                return new System.DateTime(year, month, day);
+            };
+            var feed = reader.Read(SampleFeed.BuildSource());
+
+            // read the graph.
+            var graph = GTFSGraphReader.CreateGraph(feed);
+
+            // create the router.
+            var router = new ReferenceCalculator();
+
+            // calculate some routes.
+
+            // 4->6 @ 05:30
+            var path = router.Calculate(graph, 4, 8, new System.DateTime(2014, 01, 01, 15, 45, 0), (x, y) => { return true; });
+            Assert.AreEqual(2, path.Length()); // this one must take the short path!
+        }
     }
 }

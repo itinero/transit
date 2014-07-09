@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using GTFS;
+using GTFS.Entities;
 using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Osm.Streams;
 using OsmSharp.Routing.Graph;
@@ -27,7 +28,9 @@ using OsmSharp.Routing.Osm.Streams.Graphs;
 using OsmSharp.Routing.Transit.MultiModal.RouteCalculators;
 using OsmSharp.Routing.Transit.MultiModal.Routers;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OsmSharp.Routing.Transit.MultiModal
 {
@@ -79,13 +82,120 @@ namespace OsmSharp.Routing.Transit.MultiModal
         #region GFTS
 
         /// <summary>
+        /// Holds all GTFS feeds.
+        /// </summary>
+        private List<GTFSFeed> _feeds = new List<GTFSFeed>();
+
+        /// <summary>
         /// Adds a new GTFS feed to this router.
         /// </summary>
         /// <param name="feed"></param>
         public void AddGTFSFeed(GTFSFeed feed)
         {
+            _feeds.Add(feed);
+
             this._multiModalRouter.AddGTFSFeed(feed);
         }
+
+        #endregion
+
+        #region Queries
+
+        /// <summary>
+        /// Returns the agency with the given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Agency GetAgency(string id)
+        {
+            foreach(var feed  in _feeds)
+            {
+                var agency = feed.GetAgency(id);
+                if(agency != null)
+                {
+                    return agency;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns all agencies.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Agency> GetAgencies()
+        {
+            if(_feeds.Count > 0)
+            {
+                IEnumerable<Agency> agencies = _feeds[0].Agencies;
+                for (int idx = 1; idx < _feeds.Count; idx++)
+                {
+                    agencies = agencies.Concat(_feeds[1].Agencies);
+                }
+                return agencies;
+            }
+            return new List<Agency>();
+        }
+
+        /// <summary>
+        /// Returns the agencies that contain the words in the given query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Agency> GetAgencies(string query)
+        {
+            return this.GetAgencies().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+        }
+
+        /// <summary>
+        /// Returns all the stops.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStops()
+        {
+            if (_feeds.Count > 0)
+            {
+                IEnumerable<Stop> stops = _feeds[0].Stops;
+                for (int idx = 1; idx < _feeds.Count; idx++)
+                {
+                    stops = stops.Concat(_feeds[1].Stops);
+                }
+                return stops;
+            }
+            return new List<Stop>();
+        }
+
+        /// <summary>
+        /// Returns all the stops that contain the words in the given query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStops(string query)
+        {
+            return this.GetStops().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+        }
+
+        /// <summary>
+        /// Returns all stops for the given agency.
+        /// </summary>
+        /// <param name="agencyId"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStopsForAgency(string agencyId)
+        {
+            return new List<Stop>();
+        }
+
+        /// <summary>
+        /// Returns all stops for the given agency that contain the words in the given query.
+        /// </summary>
+        /// <param name="agencyId"></param>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<Stop> GetStopsForAgency(string agencyId, string query)
+        {
+            return new List<Stop>();
+        }
+
 
         #endregion
 

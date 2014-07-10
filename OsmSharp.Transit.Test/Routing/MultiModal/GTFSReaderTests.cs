@@ -147,7 +147,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             transideEdge = graph.GetArc(6, 5);
             forwardSchedule = transideEdge.GetForwardSchedule(schedules);
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
-            Assert.AreEqual(1, forwardSchedule.Count);
+            Assert.AreEqual(2, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
             Assert.AreEqual(1, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
@@ -156,7 +156,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             transideEdge = graph.GetArc(5, 7);
             forwardSchedule = transideEdge.GetForwardSchedule(schedules);
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
-            Assert.AreEqual(1, forwardSchedule.Count);
+            Assert.AreEqual(2, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
             Assert.AreEqual(1, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
@@ -165,7 +165,7 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
             Assert.AreEqual(1, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
-            Assert.AreEqual(1, backwardSchedule.Count);
+            Assert.AreEqual(2, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
 
             // check 8<->7
@@ -174,12 +174,12 @@ namespace OsmSharp.Transit.Test.MultiModal.RouteCalculators
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
             Assert.AreEqual(1, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));
-            Assert.AreEqual(1, backwardSchedule.Count);
+            Assert.AreEqual(2, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
             transideEdge = graph.GetArc(7, 8);
             forwardSchedule = transideEdge.GetForwardSchedule(schedules);
             backwardSchedule = transideEdge.GetBackwardSchedule(schedules);
-            Assert.AreEqual(1, forwardSchedule.Count);
+            Assert.AreEqual(2, forwardSchedule.Count);
             Assert.IsTrue(forwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
             Assert.AreEqual(1, backwardSchedule.Count);
             Assert.IsTrue(backwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));

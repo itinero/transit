@@ -5,6 +5,7 @@ using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Osm.Interpreter;
+using OsmSharp.Units.Distance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
     /// </summary>
     public class GTFSGraphReader
     {
+        /// <summary>
+        /// Holds the maximum distance a station access point can be from the actual station node.
+        /// </summary>
+        private static Meter MAX_ACCESS_POINT_DISTANCE = 1000;
+
         /// <summary>
         /// Reads and converts a GTFS feed into a routable graph.
         /// </summary>
@@ -209,9 +215,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                         {
                             if (sorted.MoveNext())
                             {
-                                var closest = sorted.Current.Key;
-                                graph.AddArc(stop, closest, new LiveEdge(), null);
-                                graph.AddArc(closest, stop, new LiveEdge(), null);
+                                if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE.Value)
+                                { // only attach stations that are relatively close.
+                                    var closest = sorted.Current.Key;
+                                    graph.AddArc(stop, closest, new LiveEdge(), null);
+                                    graph.AddArc(closest, stop, new LiveEdge(), null);
+                                }
                             }
                             else
                             { // no more sorted vertices.

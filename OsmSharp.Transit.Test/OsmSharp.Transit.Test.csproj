@@ -32,6 +32,10 @@
     <DocumentationFile>..\Output\OsmSharp.Transit.Test.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GeoAPI, Version=1.7.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GeoAPI.1.7.2\lib\net403-client\GeoAPI.dll</HintPath>
+    </Reference>
     <Reference Include="GTFS, Version=0.0.3.36, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\GTFS.0.0.3.36\lib\GTFS.dll</HintPath>
@@ -39,6 +43,16 @@
     <Reference Include="GTFS.IO, Version=0.0.3.36, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\GTFS.0.0.3.36\lib\GTFS.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.13.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NetTopologySuite.1.13.2\lib\net403-client\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.GeoJSON">
+      <HintPath>..\packages\NetTopologySuite.IO.GeoJSON.1.13.2\lib\net403-client\NetTopologySuite.IO.GeoJSON.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.4.5.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
@@ -83,6 +97,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\OsmSharp.4.2.0.758\lib\net45\OsmSharp.WinForms.UI.dll</HintPath>
     </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NetTopologySuite.1.13.2\lib\net403-client\PowerCollections.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -102,15 +120,18 @@
     <Compile Include="Routing\MultiModal\RouteCalculators\Snail.cs" />
     <Compile Include="Routing\MultiModal\Routes\TypedRouterMultiModalTests.cs" />
     <Compile Include="Routing\RouteCalculators\ReferenceCalculatorTests.cs" />
+    <Compile Include="RealisticFeed.cs" />
     <Compile Include="TestNetworkFeed.cs" />
     <Compile Include="SampleFeed.cs" />
     <Compile Include="TransitEdgeTests.cs" />
     <Compile Include="TransitRouterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="test_network.osm" />
     <None Include="test_network_rail.osm" />
+    <EmbeddedResource Include="test_network_realistic.osm" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="sample-feed\agency.txt" />
@@ -135,7 +156,19 @@
       <Name>OsmSharp.Routing.Transit</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="realistic_feed\agency.txt" />
+    <EmbeddedResource Include="realistic_feed\calendar.txt" />
+    <EmbeddedResource Include="realistic_feed\calendar_dates.txt" />
+    <EmbeddedResource Include="realistic_feed\fare_attributes.txt" />
+    <EmbeddedResource Include="realistic_feed\fare_rules.txt" />
+    <EmbeddedResource Include="realistic_feed\frequencies.txt" />
+    <EmbeddedResource Include="realistic_feed\routes.txt" />
+    <EmbeddedResource Include="realistic_feed\shapes.txt" />
+    <EmbeddedResource Include="realistic_feed\stops.txt" />
+    <EmbeddedResource Include="realistic_feed\stop_times.txt" />
+    <EmbeddedResource Include="realistic_feed\trips.txt" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="test_network_feed\trips.txt" />
   </ItemGroup>

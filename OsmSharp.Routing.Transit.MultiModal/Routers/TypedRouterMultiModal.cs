@@ -1,4 +1,7 @@
-﻿using GTFS;
+﻿using GeoAPI.Geometries;
+using GTFS;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
@@ -9,6 +12,7 @@ using OsmSharp.Routing.Transit.MultiModal.GTFS;
 using OsmSharp.Routing.Transit.MultiModal.RouteCalculators;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OsmSharp.Routing.Transit.MultiModal.Routers
 {
@@ -169,7 +173,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             // TODO: ask interpreter.
             return true;
         }
-
+        
         #region Route Construction
 
         /// <summary>
@@ -425,5 +429,104 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
 
         #endregion
+
+        public FeatureCollection GetNetworkFeatures()
+        {
+            return this.GetNetworkFeatures(new GeoCoordinateBox(new GeoCoordinate(-1000, -1000), new GeoCoordinate(1000, 1000)));
+        }
+
+        public FeatureCollection GetNetworkFeatures(GeoCoordinateBox box)
+        {
+            var features = new FeatureCollection();
+
+            // add all stops.
+            var handledVertices = new HashSet<uint>();
+            float latitude, longitude;
+            foreach(var stop in _stops)
+            {
+                var attributes = new AttributesTable();
+                attributes.AddAttribute("stop_id", stop.Key);
+                attributes.AddAttribute("vertex_id", stop.Value);
+                _source.Graph.GetVertex(stop.Value, out latitude, out longitude);
+
+                var point = new Point(new Coordinate(longitude, latitude));
+                features.Add(new Feature(point, attributes));
+
+                handledVertices.Add(stop.Value);
+            }
+
+            // add the rest of the vertices and associated arcs.
+            for(uint vertex = 1; vertex <= _source.Graph.VertexCount; vertex++)
+            {
+                if(!handledVertices.Contains(vertex))
+                {
+                    var attributes = new AttributesTable();
+                    attributes.AddAttribute("vertex_id", vertex);
+                    _source.Graph.GetVertex(vertex, out latitude, out longitude);
+
+                    var point = new Point(new Coordinate(longitude, latitude));
+                    features.Add(new Feature(point, attributes));
+                }
+
+                var arcs = _source.Graph.GetArcs(vertex);
+                foreach(var arc in arcs)
+                {
+                    if (arc.Value.Forward)
+                    {
+                        var coordinates = new List<Coordinate>();
+                        _source.Graph.GetVertex(vertex, out latitude, out longitude);
+                        coordinates.Add(new Coordinate(longitude, latitude));
+
+                        if (arc.Value.Coordinates != null)
+                        {
+                            for (int idx = 0; idx < arc.Value.Coordinates.Length; idx++)
+                            {
+                                coordinates.Add(new Coordinate(arc.Value.Coordinates[idx].Longitude, arc.Value.Coordinates[idx].Latitude));
+                            }
+                        }
+                        _source.Graph.GetVertex(arc.Key, out latitude, out longitude);
+                        coordinates.Add(new Coordinate(longitude, latitude));
+
+                        var attributes = new AttributesTable();
+                        if (_source.Graph.TagsIndex.Contains(arc.Value.Tags))
+                        {
+                            var tags = _source.Graph.TagsIndex.Get(arc.Value.Tags);
+                            if (tags != null)
+                            {
+                                foreach (var tag in tags)
+                                {
+                                    attributes.AddAttribute(tag.Key, tag.Value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            attributes.AddAttribute("tag_id", arc.Value.Tags);
+                        }
+                        var lineString = new LineString(coordinates.ToArray());
+                        features.Add(new Feature(lineString, attributes));
+                    }
+                }
+            }
+            return features;
+        }
+        
+
+        /// <summary>
+        /// Converts the given route to a line string.
+        /// </summary>
+        /// <param name="route"></param>
+        /// <returns></returns>
+        public FeatureCollection GetFeatures(Route route)
+        {
+            var coordinates = route.GetPoints();
+            var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
+            var geometryFactory = new GeometryFactory();
+            var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
+            var featureCollection = new FeatureCollection();
+            var feature = new Feature(lineString, new AttributesTable());
+            featureCollection.Add(feature);
+            return featureCollection;
+        }
     }
 }

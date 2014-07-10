@@ -16,9 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using GeoAPI.Geometries;
 using GTFS;
 using GTFS.Entities;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 using OsmSharp.Collections.Tags.Index;
+using OsmSharp.Math.Geo;
 using OsmSharp.Osm.Streams;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Osm.Graphs;
@@ -196,6 +200,45 @@ namespace OsmSharp.Routing.Transit.MultiModal
             return new List<Stop>();
         }
 
+        #endregion
+
+        #region Network & Route Geography
+
+        /// <summary>
+        /// Returns all network features that exist.
+        /// </summary>
+        /// <returns></returns>
+        public FeatureCollection GetNeworkFeatures()
+        {
+            return _multiModalRouter.GetNetworkFeatures();
+        }
+
+        /// <summary>
+        /// Returns all network features that exist (or overlap the edge) inside the given box.
+        /// </summary>
+        /// <param name="box"></param>
+        /// <returns></returns>
+        public FeatureCollection GetNeworkFeatures(GeoCoordinateBox box)
+        {
+            return _multiModalRouter.GetNetworkFeatures(box);
+        }
+
+        /// <summary>
+        /// Converts the given route to a line string.
+        /// </summary>
+        /// <param name="route"></param>
+        /// <returns></returns>
+        public FeatureCollection GetFeatures(Route route)
+        {
+            var coordinates = route.GetPoints();
+            var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
+            var geometryFactory = new GeometryFactory();
+            var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
+            var featureCollection = new FeatureCollection();
+            var feature = new Feature(lineString, new AttributesTable());
+            featureCollection.Add(feature);
+            return featureCollection;
+        }
 
         #endregion
 

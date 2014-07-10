@@ -423,7 +423,6 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             Assert.AreEqual(4, path.Length()); // must take the short path 3 times waiting in 4 and then to 9.
         }
 
-
         /// <summary>
         /// Tests that a router actually finds the shortest route but fully multimodal this time!
         /// </summary>
@@ -506,6 +505,89 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             Assert.AreEqual(15, path.From.VertexId);
             Assert.AreEqual(1, path.VertexId);
         }
+
+        ///// <summary>
+        ///// Tests that a router actually finds the shortest route but fully multimodal this time!
+        ///// </summary>
+        //[Test]
+        //public void TestMultiModalRealistic()
+        //{
+        //    var vehicle = new Snail();
+        //    var interpreter = new OsmRoutingInterpreter();
+        //    var sourceGraph = this.BuildData(interpreter, "OsmSharp.Transit.Test.test_network_realistic.osm");
+
+        //    // read the sample feed.
+        //    var reader = new GTFSReader<GTFSFeed>(false);
+        //    reader.DateTimeReader = (dateString) =>
+        //    {
+        //        var year = int.Parse(dateString.Substring(0, 4));
+        //        var month = int.Parse(dateString.Substring(4, 2));
+        //        var day = int.Parse(dateString.Substring(6, 2));
+        //        return new System.DateTime(year, month, day);
+        //    };
+        //    var feed = reader.Read(RealisticFeed.BuildSource());
+
+        //    // read the graph.
+        //    var stopVertices = new Dictionary<string, uint>();
+        //    var tripIds = new Dictionary<string, uint>();
+        //    var schedules = new List<TransitEdgeSchedulePair>();
+        //    GTFSGraphReader.AddToGraph(sourceGraph.Graph, feed, stopVertices, tripIds, schedules);
+
+        //    // create the router.
+        //    var router = new ReferenceCalculator();
+
+        //    // create parameters.
+        //    var parameters = new Dictionary<string, object>();
+        //    parameters[ReferenceCalculator.START_TIME_KEY] = new System.DateTime(2014, 01, 01, 05, 30, 0);
+        //    Func<uint, DateTime, bool> isTripPossible = (x, y) => { return true; };
+        //    parameters[ReferenceCalculator.IS_TRIP_POSSIBLE_KEY] = isTripPossible;
+        //    parameters[ReferenceCalculator.MODAL_TRANSFER_TIME_KEY] = (float)(60 * 60); // make transfer time very high!
+        //    parameters[ReferenceCalculator.SCHEDULES_KEY] = schedules;
+
+        //    // calculate some routes.
+
+        //    // STOP1-STOP5 @ 05:30
+        //    var source = new PathSegmentVisitList();
+        //    source.UpdateVertex(new PathSegment<long>(stopVertices["STOP1"]));
+        //    var target = new PathSegmentVisitList();
+        //    target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
+        //    var path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+        //    Assert.AreEqual(5, path.Length());
+        //    Assert.AreEqual(11, path.From.From.From.From.VertexId);
+        //    Assert.AreEqual(12, path.From.From.From.VertexId);
+        //    Assert.AreEqual(13, path.From.From.VertexId);
+        //    Assert.AreEqual(14, path.From.VertexId);
+        //    Assert.AreEqual(15, path.VertexId);
+
+        //    // (51.0582205, 3.7189946)-STOP5 @ 05:30
+        //    source = new PathSegmentVisitList();
+        //    source.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
+        //    target = new PathSegmentVisitList();
+        //    target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
+        //    path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+        //    Assert.AreEqual(6, path.Length());
+        //    Assert.AreEqual(7, path.From.From.From.From.From.VertexId);
+        //    Assert.AreEqual(11, path.From.From.From.From.VertexId);
+        //    Assert.AreEqual(12, path.From.From.From.VertexId);
+        //    Assert.AreEqual(13, path.From.From.VertexId);
+        //    Assert.AreEqual(14, path.From.VertexId);
+        //    Assert.AreEqual(15, path.VertexId);
+
+        //    // (51.0582205, 3.7189946)-(51.0581291, 3.7205005) @ 05:30
+        //    source = new PathSegmentVisitList();
+        //    source.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0582205, 3.7189946))));
+        //    target = new PathSegmentVisitList();
+        //    target.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0581291, 3.7205005))));
+        //    path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
+        //    Assert.AreEqual(7, path.Length());
+        //    Assert.AreEqual(7, path.From.From.From.From.From.From.VertexId);
+        //    Assert.AreEqual(11, path.From.From.From.From.From.VertexId);
+        //    Assert.AreEqual(12, path.From.From.From.From.VertexId);
+        //    Assert.AreEqual(13, path.From.From.From.VertexId);
+        //    Assert.AreEqual(14, path.From.From.VertexId);
+        //    Assert.AreEqual(15, path.From.VertexId);
+        //    Assert.AreEqual(1, path.VertexId);
+        //}
     }
 
     /// <summary>

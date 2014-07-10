@@ -1,0 +1,11 @@
+route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id
+ANT-BRU,W,ANT-BRU1,Brussel,0,1,
+BRU-MECH,W,BRU-MECH1,Mechelen,0,1,
+MECH-ANT,W,MECH-ANT1,Antwerpen,0,1,
+GEN-BRU,W,GEN-BRU1,Brussel,0,1,
+BRU-GEN,W,BRU-GEN1,Gent,0,1,
+GEN-A-BRU,W,GEN-A-BRU1,Brussel,0,1,
+BRU-A-GEN,W,BRU-A-GEN1,Gent,0,1,
+GEN-SIN,W,GEN-SIN1,Sint-Niklaas,0,1,
+GEN-ANT,W,GEN-ANT1,Antwerpen,0,1,
+ANT-GEN,W,ANT-GEN1,Gent,0,1,

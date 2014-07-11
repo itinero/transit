@@ -19,6 +19,7 @@
 using OsmSharp.Collections.PriorityQueues;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
+using OsmSharp.Routing.Transit.Graphs;
 using System;
 using System.Collections.Generic;
 

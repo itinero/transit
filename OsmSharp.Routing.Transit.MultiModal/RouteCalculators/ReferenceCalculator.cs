@@ -22,6 +22,7 @@ using OsmSharp.Routing.Constraints;
 using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Osm.Graphs;
+using OsmSharp.Routing.Transit.Graphs;
 using OsmSharp.Routing.Transit.MultiModal.PriorityQueues;
 using OsmSharp.Routing.Transit.RouteCalculators;
 using System;
@@ -84,11 +85,30 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="graph"></param>
         /// <param name="interpreter"></param>
         /// <param name="max"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public PathSegment<long> Calculate(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters)
         {
             return this.CalculateToClosest(graph, interpreter, vehicle, from,
+                new PathSegmentVisitList[] { to }, max, parameters);
+        }
+
+        /// <summary>
+        /// Calculates the shortest path from the given vertex to the given vertex given the weights in the graph.
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="graph"></param>
+        /// <param name="interpreter"></param>
+        /// <param name="max"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public PathSegment<VertexTimeAndTrip> CalculateAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
+            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters)
+        {
+            return this.CalculateToClosestAndTime(graph, interpreter, vehicle, from,
                 new PathSegmentVisitList[] { to }, max, parameters);
         }
 
@@ -101,6 +121,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="sources"></param>
         /// <param name="targets"></param>
         /// <param name="maxSearch"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public PathSegment<long>[][] CalculateManyToMany(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList[] sources, PathSegmentVisitList[] targets, double maxSearch, Dictionary<string, object> parameters)
@@ -123,6 +144,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="graph"></param>
         /// <param name="interpreter"></param>
         /// <param name="max"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public double CalculateWeight(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters)
@@ -145,12 +167,36 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="from"></param>
         /// <param name="targets"></param>
         /// <param name="max"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public PathSegment<long> CalculateToClosest(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters)
         {
             var result = this.DoCalculation(graph, interpreter, vehicle,
                 from, targets, max, false, false, parameters).ConvertTo();
+            if (result != null && result.Length == 1)
+            {
+                return result[0];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Calculates a shortest path between the source vertex and any of the targets and returns the shortest.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="interpreter"></param>
+        /// <param name="vehicle"></param>
+        /// <param name="from"></param>
+        /// <param name="targets"></param>
+        /// <param name="max"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public PathSegment<VertexTimeAndTrip> CalculateToClosestAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
+            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters)
+        {
+            var result = this.DoCalculation(graph, interpreter, vehicle,
+                from, targets, max, false, false, parameters);
             if (result != null && result.Length == 1)
             {
                 return result[0];
@@ -167,6 +213,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="source"></param>
         /// <param name="targets"></param>
         /// <param name="max"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public double[] CalculateOneToManyWeight(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList source, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters)
@@ -198,6 +245,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="sources"></param>
         /// <param name="targets"></param>
         /// <param name="max"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public double[][] CalculateManyToManyWeight(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList[] sources, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters)
@@ -233,6 +281,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="vehicle"></param>
         /// <param name="source"></param>
         /// <param name="weight"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public HashSet<long> CalculateRange(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList source, double weight, Dictionary<string, object> parameters)
@@ -303,6 +352,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="weight"></param>
         /// <param name="stopAtFirst"></param>
         /// <param name="returnAtWeight"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         private PathSegment<VertexTimeAndTrip>[] DoCalculation(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList source, PathSegmentVisitList[] targets, double weight,

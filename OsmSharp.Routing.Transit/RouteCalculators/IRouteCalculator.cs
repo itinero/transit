@@ -18,12 +18,8 @@
 
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
-using OsmSharp.Routing.Transit.RouteCalculators;
+using OsmSharp.Routing.Transit.Graphs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OsmSharp.Routing.Transit.RouteCalculators
 {

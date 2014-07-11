@@ -19,6 +19,7 @@
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Osm.Graphs;
+using OsmSharp.Routing.Transit.Graphs;
 using OsmSharp.Routing.Transit.MultiModal;
 using System;
 

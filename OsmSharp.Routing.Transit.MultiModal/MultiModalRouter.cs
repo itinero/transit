@@ -86,18 +86,11 @@ namespace OsmSharp.Routing.Transit.MultiModal
         #region GFTS
 
         /// <summary>
-        /// Holds all GTFS feeds.
-        /// </summary>
-        private List<GTFSFeed> _feeds = new List<GTFSFeed>();
-
-        /// <summary>
         /// Adds a new GTFS feed to this router.
         /// </summary>
         /// <param name="feed"></param>
         public void AddGTFSFeed(GTFSFeed feed)
         {
-            _feeds.Add(feed);
-
             this._multiModalRouter.AddGTFSFeed(feed);
         }
 
@@ -112,15 +105,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public Agency GetAgency(string id)
         {
-            foreach(var feed  in _feeds)
-            {
-                var agency = feed.GetAgency(id);
-                if(agency != null)
-                {
-                    return agency;
-                }
-            }
-            return null;
+            return this._multiModalRouter.GetAgency(id);
         }
 
         /// <summary>
@@ -129,16 +114,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Agency> GetAgencies()
         {
-            if(_feeds.Count > 0)
-            {
-                IEnumerable<Agency> agencies = _feeds[0].Agencies;
-                for (int idx = 1; idx < _feeds.Count; idx++)
-                {
-                    agencies = agencies.Concat(_feeds[1].Agencies);
-                }
-                return agencies;
-            }
-            return new List<Agency>();
+            return this._multiModalRouter.GetAgencies();
         }
 
         /// <summary>
@@ -148,7 +124,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Agency> GetAgencies(string query)
         {
-            return this.GetAgencies().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+            return this._multiModalRouter.GetAgencies(query);
         }
 
         /// <summary>
@@ -157,16 +133,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Stop> GetStops()
         {
-            if (_feeds.Count > 0)
-            {
-                IEnumerable<Stop> stops = _feeds[0].Stops;
-                for (int idx = 1; idx < _feeds.Count; idx++)
-                {
-                    stops = stops.Concat(_feeds[1].Stops);
-                }
-                return stops;
-            }
-            return new List<Stop>();
+            return this._multiModalRouter.GetStops();
         }
 
         /// <summary>
@@ -176,7 +143,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Stop> GetStops(string query)
         {
-            return this.GetStops().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+            return this._multiModalRouter.GetStops(query);
         }
 
         /// <summary>
@@ -186,7 +153,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Stop> GetStopsForAgency(string agencyId)
         {
-            return new List<Stop>();
+            return this._multiModalRouter.GetStopsForAgency(agencyId);
         }
 
         /// <summary>
@@ -197,7 +164,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <returns></returns>
         public IEnumerable<Stop> GetStopsForAgency(string agencyId, string query)
         {
-            return new List<Stop>();
+            return this._multiModalRouter.GetStopsForAgency(agencyId, query);
         }
 
         #endregion

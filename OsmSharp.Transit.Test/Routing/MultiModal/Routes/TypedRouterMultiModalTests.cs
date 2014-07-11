@@ -194,7 +194,8 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             var to = new GeoCoordinate(51.21505355834961, 4.414461612701416);
             var route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 45, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            var routeFeatures = multiModalEdgeRouter.GetFeatures(route);
+            route.Vehicle = Vehicle.Pedestrian;
+            var routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             var routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
         }

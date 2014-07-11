@@ -226,18 +226,12 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <summary>
         /// Converts the given route to a line string.
         /// </summary>
-        /// <param name="route"></param>
+        /// <param name="route">The route to convert.</param>
+        /// <param name="aggregated">Aggregate similar edge together.</param>
         /// <returns></returns>
-        public FeatureCollection GetFeatures(Route route)
+        public FeatureCollection GetFeatures(Route route, bool aggregated)
         {
-            var coordinates = route.GetPoints();
-            var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
-            var geometryFactory = new GeometryFactory();
-            var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
-            var featureCollection = new FeatureCollection();
-            var feature = new Feature(lineString, new AttributesTable());
-            featureCollection.Add(feature);
-            return featureCollection;
+            return _multiModalRouter.GetFeatures(route, aggregated);
         }
 
         #endregion

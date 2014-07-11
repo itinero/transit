@@ -3,6 +3,7 @@ using GTFS;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using OsmSharp.Math.Geo;
+using OsmSharp.Routing.ArcAggregation;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Interpreter;
@@ -42,9 +43,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         private ReferenceCalculator _basicRouter;
 
         /// <summary>
+        /// Holds the interpreter.
+        /// </summary>
+        private IRoutingInterpreter _interpreter;
+
+        /// <summary>
         /// Creates a new type router using edges of type MultiModalEdge.
         /// </summary>
-        /// <param name="_source"></param>
+        /// <param name="source"></param>
         /// <param name="interpreter"></param>
         /// <param name="router"></param>
         public TypedRouterMultiModal(MultiModalGraphRouterDataSource source, IRoutingInterpreter interpreter, ReferenceCalculator router)
@@ -52,6 +58,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         {
             _source = source;
             _basicRouter = router;
+            _interpreter = interpreter;
             _stops = new Dictionary<string, uint>();
             _tripIds = new Dictionary<string, uint>();
         }
@@ -199,7 +206,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <summary>
         /// Generates an osm sharp route from a graph route.
         /// </summary>
-        /// <param name="vehicle"></param>
+        /// <param name="departureTime"></param>
+        /// <param name="vehicles"></param>
         /// <param name="fromResolved"></param>
         /// <param name="toResolved"></param>
         /// <param name="vertices"></param>
@@ -218,7 +226,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 route = new Route();
 
                 // set the vehicle.
-                route.Vehicle = null;
+                route.Vehicle = vehicles[0];
 
                 RoutePointEntry[] entries;
                 if (vertices.Length > 0)
@@ -271,7 +279,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <summary>
         /// Generates a list of entries.
         /// </summary>
-        /// <param name="vehicle"></param>
+        /// <param name="departureTime"></param>
+        /// <param name="vehicles"></param>
         /// <param name="vertices"></param>
         /// <returns></returns>
         protected virtual RoutePointEntry[] GenerateEntries(DateTime departureTime,
@@ -304,79 +313,158 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 {
                     var edge = this.GetEdgeData(vehicles[0], nodePrevious, nodeCurrent);
 
-                    //// FIRST CALCULATE ALL THE ENTRY METRICS!
+                    if(edge is LiveEdge)
+                    { // regular road.
+                        var liveEdge = (LiveEdge)edge;
+                        if(liveEdge.IsRoad())
+                        { // edge is a road.
+                            var currentTags = _source.Graph.TagsIndex.Get(edge.Tags);
+                            var name = _interpreter.EdgeInterpreter.GetName(currentTags);
+                            var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
 
-                    //// STEP1: Get the names.
-                    //var currentTags = _dataGraph.TagsIndex.Get(edge.Tags);
-                    //var name = _interpreter.EdgeInterpreter.GetName(currentTags);
-                    //var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
+                            // add intermediate entries.
+                            if (edge.Coordinates != null)
+                            { // loop over coordinates.
+                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                {
+                                    var entry = new RoutePointEntry();
+                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
+                                    entry.Type = RoutePointEntryType.Along;
+                                    entry.Tags = currentTags.ConvertFrom();
+                                    entry.WayFromName = name;
+                                    entry.WayFromNames = names.ConvertFrom();
 
-                    // add intermediate entries.
-                    if (edge.Coordinates != null)
-                    { // loop over coordinates.
-                        for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
-                        {
-                            var entry = new RoutePointEntry();
-                            entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
-                            entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
-                            entry.Type = RoutePointEntryType.Along;
-                            //entry.Tags = currentTags.ConvertFrom();
-                            //entry.WayFromName = name;
-                            //entry.WayFromNames = names.ConvertFrom();
+                                    entries.Add(entry);
+                                }
 
-                            entries.Add(entry);
+                                // Get the side streets
+                                var sideStreets = new List<RoutePointEntrySideStreet>();
+                                var neighbours = this.GetNeighboursUndirectedWithEdges(vehicles[0], nodeCurrent, nodePrevious, nodeNext);
+                                var consideredNeighbours = new HashSet<GeoCoordinate>();
+                                if (neighbours.Count > 0)
+                                { // construct neighbours list.
+                                    foreach (var neighbour in neighbours)
+                                    {
+                                        if (((LiveEdge)neighbour.Value).IsRoad())
+                                        { // neighour edge is a road.
+                                            var neighbourKeyCoordinate = this.GetCoordinate(vehicles[0], neighbour.Key);
+                                            if (neighbour.Value.Coordinates != null &&
+                                                neighbour.Value.Coordinates.Length > 0)
+                                            { // get the first of the coordinates array.
+                                                neighbourKeyCoordinate = new GeoCoordinate(
+                                                    neighbour.Value.Coordinates[0].Latitude,
+                                                    neighbour.Value.Coordinates[0].Longitude);
+                                            }
+                                            if (!consideredNeighbours.Contains(neighbourKeyCoordinate))
+                                            { // neighbour has not been considered yet.
+                                                consideredNeighbours.Add(neighbourKeyCoordinate);
+
+                                                var neighbourCoordinate = this.GetCoordinate(vehicles[0], neighbour.Key);
+                                                var tags = _source.Graph.TagsIndex.Get(neighbour.Value.Tags);
+
+                                                // build the side street info.
+                                                var sideStreet = new RoutePointEntrySideStreet();
+                                                sideStreet.Latitude = (float)neighbourCoordinate.Latitude;
+                                                sideStreet.Longitude = (float)neighbourCoordinate.Longitude;
+                                                sideStreet.Tags = tags.ConvertFrom();
+                                                sideStreet.WayName = _interpreter.EdgeInterpreter.GetName(tags);
+                                                sideStreet.WayNames = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
+
+                                                sideStreets.Add(sideStreet);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // create the route entry.
+                                var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent);
+
+                                var routeEntry = new RoutePointEntry();
+                                routeEntry.Latitude = (float)nextCoordinate.Latitude;
+                                routeEntry.Longitude = (float)nextCoordinate.Longitude;
+                                routeEntry.SideStreets = sideStreets.ToArray();
+                                routeEntry.Tags = currentTags.ConvertFrom();
+                                routeEntry.Type = RoutePointEntryType.Along;
+                                routeEntry.WayFromName = name;
+                                routeEntry.WayFromNames = names.ConvertFrom();
+                                entries.Add(routeEntry);
+                            }
+                        }
+                        else if(liveEdge.IsTransit())
+                        { // edge is a transit edge.
+                            // add intermediate entries.
+                            if (edge.Coordinates != null)
+                            { // loop over coordinates.
+                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                {
+                                    var entry = new RoutePointEntry();
+                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
+                                    entry.Type = RoutePointEntryType.Along;
+                                    entry.Tags = new RouteTags[1];
+                                    entry.Tags[0] = new RouteTags();
+                                    entry.Tags[0].Key = "type";
+                                    entry.Tags[0].Value = "transit";
+
+                                    entries.Add(entry);
+                                }
+                            }
+
+                            // create the route entry.
+                            var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent);
+
+                            var routeEntry = new RoutePointEntry();
+                            routeEntry.Latitude = (float)nextCoordinate.Latitude;
+                            routeEntry.Longitude = (float)nextCoordinate.Longitude;
+                            routeEntry.SideStreets = new RoutePointEntrySideStreet[0];
+                            routeEntry.Tags = new RouteTags[1];
+                            routeEntry.Tags[0] = new RouteTags();
+                            routeEntry.Tags[0].Key = "type";
+                            routeEntry.Tags[0].Value = "transit";
+                            routeEntry.Type = RoutePointEntryType.Along;
+                            routeEntry.WayFromName = string.Empty;
+                            routeEntry.WayFromNames = new RouteTags[0];
+                            entries.Add(routeEntry);
+                        }
+                        else
+                        { // edge is something else.
+                            // add intermediate entries.
+                            if (edge.Coordinates != null)
+                            { // loop over coordinates.
+                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                {
+                                    var entry = new RoutePointEntry();
+                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
+                                    entry.Type = RoutePointEntryType.Along;
+                                    entry.Tags = new RouteTags[1];
+                                    entry.Tags[0] = new RouteTags();
+                                    entry.Tags[0].Key = "type";
+                                    entry.Tags[0].Value = "intermodal";
+
+                                    entries.Add(entry);
+                                }
+                            }
+
+                            // create the route entry.
+                            var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent);
+
+                            var routeEntry = new RoutePointEntry();
+                            routeEntry.Latitude = (float)nextCoordinate.Latitude;
+                            routeEntry.Longitude = (float)nextCoordinate.Longitude;
+                            routeEntry.SideStreets = new RoutePointEntrySideStreet[0];
+                            routeEntry.Tags = new RouteTags[1];
+                            routeEntry.Tags[0] = new RouteTags();
+                            routeEntry.Tags[0].Key = "type";
+                            routeEntry.Tags[0].Value = "intermodal";
+                            routeEntry.Type = RoutePointEntryType.Along;
+                            routeEntry.WayFromName = string.Empty;
+                            routeEntry.WayFromNames = new RouteTags[0];
+                            entries.Add(routeEntry);
                         }
                     }
-
-                    //// STEP2: Get the side streets
-                    //var sideStreets = new List<RoutePointEntrySideStreet>();
-                    //var neighbours = this.GetNeighboursUndirectedWithEdges(vehicle, nodeCurrent, nodePrevious, nodeNext);
-                    //var consideredNeighbours = new HashSet<GeoCoordinate>();
-                    //if (neighbours.Count > 0)
-                    //{ // construct neighbours list.
-                    //    foreach (var neighbour in neighbours)
-                    //    {
-                    //        var neighbourKeyCoordinate = this.GetCoordinate(vehicle, neighbour.Key);
-                    //        if (neighbour.Value.Coordinates != null &&
-                    //            neighbour.Value.Coordinates.Length > 0)
-                    //        { // get the first of the coordinates array.
-                    //            neighbourKeyCoordinate = new GeoCoordinate(
-                    //                neighbour.Value.Coordinates[0].Latitude,
-                    //                neighbour.Value.Coordinates[0].Longitude);
-                    //        }
-                    //        if (!consideredNeighbours.Contains(neighbourKeyCoordinate))
-                    //        { // neighbour has not been considered yet.
-                    //            consideredNeighbours.Add(neighbourKeyCoordinate);
-
-                    //            var neighbourCoordinate = this.GetCoordinate(vehicle, neighbour.Key);
-                    //            var tags = _dataGraph.TagsIndex.Get(neighbour.Value.Tags);
-
-                    //            // build the side street info.
-                    //            var sideStreet = new RoutePointEntrySideStreet();
-                    //            sideStreet.Latitude = (float)neighbourCoordinate.Latitude;
-                    //            sideStreet.Longitude = (float)neighbourCoordinate.Longitude;
-                    //            sideStreet.Tags = tags.ConvertFrom();
-                    //            sideStreet.WayName = _interpreter.EdgeInterpreter.GetName(tags);
-                    //            sideStreet.WayNames = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
-
-                    //            sideStreets.Add(sideStreet);
-                    //        }
-                    //    }
-                    //}
                 }
-
-                // create the route entry.
-                var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent);
-
-                var routeEntry = new RoutePointEntry();
-                routeEntry.Latitude = (float)nextCoordinate.Latitude;
-                routeEntry.Longitude = (float)nextCoordinate.Longitude;
-                //routeEntry.SideStreets = sideStreets.ToArray();
-                //routeEntry.Tags = currentTags.ConvertFrom();
-                routeEntry.Type = RoutePointEntryType.Along;
-                //routeEntry.WayFromName = name;
-                //routeEntry.WayFromNames = names.ConvertFrom();
-                entries.Add(routeEntry);
 
                 // set the previous node.
                 nodePrevious = nodeCurrent;
@@ -510,22 +598,73 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             }
             return features;
         }
-        
 
         /// <summary>
         /// Converts the given route to a line string.
         /// </summary>
-        /// <param name="route"></param>
+        /// <param name="route">The route to convert.</param>
+        /// <param name="aggregated">Aggregate similar edge together.</param>
         /// <returns></returns>
-        public FeatureCollection GetFeatures(Route route)
+        public FeatureCollection GetFeatures(Route route, bool aggregated)
         {
-            var coordinates = route.GetPoints();
-            var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
-            var geometryFactory = new GeometryFactory();
-            var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
+            if (route == null) { throw new ArgumentNullException("route"); }
             var featureCollection = new FeatureCollection();
-            var feature = new Feature(lineString, new AttributesTable());
-            featureCollection.Add(feature);
+            if (!aggregated)
+            { // do not aggregate, just add geometry.
+                var coordinates = route.GetPoints();
+                var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
+                var geometryFactory = new GeometryFactory();
+                var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
+                var feature = new Feature(lineString, new AttributesTable());
+                featureCollection.Add(feature);
+            }
+            else
+            { // aggregate similar edges.
+                if (route.Vehicle == null) { throw new InvalidOperationException("Route does not have a vehicle."); }
+
+                var aggregator = new MultiModalArcAggregator(_interpreter);
+                var aggregatedRoute = aggregator.Aggregate(route);
+
+                var current = aggregatedRoute;
+                while (current != null)
+                {
+                    var currentArc = current.Next;
+                    if (currentArc != null)
+                    { // there is an arc.
+                        var next = currentArc.Next;
+                        if(next != null)
+                        { // there is a next point, now there can be a segment extracted from the route.
+                            // build geometry.
+                            var coordinates = new List<Coordinate>();
+                            for (int idx = current.EntryIdx; idx < next.EntryIdx + 1; idx++)
+                            {
+                                coordinates.Add(new Coordinate(route.Entries[idx].Longitude, route.Entries[idx].Latitude));
+                            }
+
+                            // build attributes.
+                            var currentArcTags = currentArc.Tags;
+                            var attributesTable = new AttributesTable();
+                            if (currentArcTags != null)
+                            { // there are tags.
+                                foreach (var tag in currentArcTags)
+                                {
+                                    attributesTable.AddAttribute(tag.Key, tag.Value);
+                                }
+                            }
+
+                            // build feature.
+                            var lineString = new LineString(coordinates.ToArray());
+                            featureCollection.Add(new Feature(lineString, attributesTable));
+                        }
+                        // get the next point.
+                        current = currentArc.Next;
+                    }
+                    else
+                    { // there is no next anymore.
+                        current = null;
+                    }
+                }
+            }
             return featureCollection;
         }
     }

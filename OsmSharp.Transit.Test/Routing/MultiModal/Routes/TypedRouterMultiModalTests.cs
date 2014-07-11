@@ -5,18 +5,14 @@ using OsmSharp.Math.Geo;
 using OsmSharp.Osm.Xml.Streams;
 using OsmSharp.Routing;
 using OsmSharp.Routing.Graph;
+using OsmSharp.Routing.Osm.Graphs;
+using OsmSharp.Routing.Osm.Interpreter;
+using OsmSharp.Routing.Osm.Streams.Graphs;
 using OsmSharp.Routing.Transit.MultiModal;
 using OsmSharp.Routing.Transit.MultiModal.RouteCalculators;
 using OsmSharp.Routing.Transit.MultiModal.Routers;
-using OsmSharp.Routing.Osm.Interpreter;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using OsmSharp.Routing.Osm.Graphs;
-using OsmSharp.Routing.Osm.Streams.Graphs;
 
 namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
 {
@@ -188,15 +184,84 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             var vehicle = Vehicle.Pedestrian;
             var parameters = new Dictionary<string, object>();
 
+            // define some fixed starting points.
+            var gent = new GeoCoordinate(51.05780792236328, 3.7134780883789062);
+            var antwerpen = new GeoCoordinate(51.21505355834961, 4.414461612701416);
+            var brussel = new GeoCoordinate(50.84557342529297, 4.3511738777160645);
+            var aalst = new GeoCoordinate(50.93781280517578, 4.051488399505615);
+            var lokeren = new GeoCoordinate(51.0854377746582, 4.043256759643555);
+            var sintNiklaas = new GeoCoordinate(51.13800811767578, 4.1959381103515625);
+            var mechelen = new GeoCoordinate(51.02499008178711, 4.4458112716674805);
+
             // test some routes
-            // GEN-ANT @ 01-01-2014 10:00
-            var from = new GeoCoordinate(51.05780792236328, 3.7134780883789062);
-            var to = new GeoCoordinate(51.21505355834961, 4.414461612701416);
+            // GEN-ANT @ 01-01-2014 09:45
+            var from = gent;
+            var to = antwerpen;
             var route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 45, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
             route.Vehicle = Vehicle.Pedestrian;
             var routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             var routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // GEN-ANT @ 01-01-2014 06:00
+            from = gent;
+            to = antwerpen;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // GEN-BRU @ 01-01-2014 06:00
+            from = gent;
+            to = brussel;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // BRU-GEN @ 01-01-2014 06:00
+            from = brussel;
+            to = gent;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // BRU-ANT @ 01-01-2014 06:00
+            from = brussel;
+            to = antwerpen;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // ANT-BRU @ 01-01-2014 06:00
+            from = antwerpen;
+            to = brussel;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
+            Assert.IsNotNull(route);
+
+            // ANT-AAL @ 01-01-2014 06:00
+            from = antwerpen;
+            to = aalst;
+            route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 00, 0), vehicle, vehicle, vehicle,
+                multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
+            route.Vehicle = Vehicle.Pedestrian;
+            routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
+            routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
         }
     }

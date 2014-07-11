@@ -576,7 +576,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                         coordinates.Add(new Coordinate(longitude, latitude));
 
                         var attributes = new AttributesTable();
-                        if (_source.Graph.TagsIndex.Contains(arc.Value.Tags))
+                        if (arc.Value.IsRoad())
                         {
                             var tags = _source.Graph.TagsIndex.Get(arc.Value.Tags);
                             if (tags != null)
@@ -587,10 +587,30 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 }
                             }
                         }
+                        else if(arc.Value.IsTransit())
+                        {
+                            uint? scheduleId = arc.Value.GetScheduleId();
+                            attributes.AddAttribute("type", "transit");
+                            attributes.AddAttribute("schedule_id", scheduleId.ToInvariantString());
+                            var forwardSchedule = arc.Value.GetForwardSchedule(_source.Schedules);
+                            for(int idx = 0; idx < forwardSchedule.Entries.Count; idx++)
+                            {
+                                var entry = forwardSchedule.Entries[idx];
+                                attributes.AddAttribute("forward_schedule_" + idx.ToInvariantString(), entry.ToInvariantString());
+                            }
+                            var backwardSchedule = arc.Value.GetBackwardSchedule(_source.Schedules);
+                            for (int idx = 0; idx < backwardSchedule.Entries.Count; idx++)
+                            {
+                                var entry = backwardSchedule.Entries[idx];
+                                attributes.AddAttribute("backward_schedule_" + idx.ToInvariantString(), entry.ToInvariantString());
+                            }
+                        }
                         else
                         {
-                            attributes.AddAttribute("tag_id", arc.Value.Tags);
+                            attributes.AddAttribute("type", "intermodal");
                         }
+                        attributes.AddAttribute("from_vertex", vertex);
+                        attributes.AddAttribute("to_vertex", arc.Key);
                         var lineString = new LineString(coordinates.ToArray());
                         features.Add(new Feature(lineString, attributes));
                     }

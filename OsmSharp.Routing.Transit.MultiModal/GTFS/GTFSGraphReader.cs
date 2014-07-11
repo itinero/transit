@@ -218,8 +218,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                                 if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE.Value)
                                 { // only attach stations that are relatively close.
                                     var closest = sorted.Current.Key;
-                                    graph.AddArc(stop, closest, new LiveEdge(), null);
-                                    graph.AddArc(closest, stop, new LiveEdge(), null);
+                                    if (!graph.HasArc(stop, closest))
+                                    {
+                                        graph.AddArc(stop, closest, new LiveEdge(), null);
+                                    }
+                                    if (!graph.HasArc(closest, stop))
+                                    {
+                                        graph.AddArc(closest, stop, new LiveEdge(), null);
+                                    }
                                 }
                             }
                             else

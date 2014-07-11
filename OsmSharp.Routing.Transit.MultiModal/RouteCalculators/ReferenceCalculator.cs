@@ -323,6 +323,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="stopAtFirst"></param>
         /// <param name="returnAtWeight"></param>
         /// <param name="forward"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         private PathSegment<VertexTimeAndTrip>[] DoCalculation(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList sourceList, PathSegmentVisitList[] targetList, double weight,
@@ -605,59 +606,86 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     else if (neighbour.Value.IsTransit())
                     { // transit edge.
                         // calculate ticks.
-                        var currentTicks = startTime.AddSeconds(current.Item.VertexId.Seconds).Ticks;
-
+                        var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
                         var ticksDate = new DateTime(currentTicks);
-
-                        // find the next entry along the same trip.
                         var forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
-                        var entry = forwardSchedule.GetForTrip(current.Item.VertexId.Trip, ticksDate);
-                        if (entry.HasValue)
-                        { // there is a next entry along the same trip.
-                            var seconds = entry.Value.DepartsIn(ticksDate);
-                            uint secondsNeighbour = (uint)(seconds + current.Item.VertexId.Seconds + entry.Value.Duration);
-                            if (secondsNeighbour < MAX_SEARCH_TIME)
-                            { // still not over the search threshold.
-                                var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
+
+                        if (current.Item.VertexId.Seconds == 0 &&
+                            current.Item.VertexId.Trip == 0)
+                        { // current vertex is a station (because it has a transit edge) but it does not have a trip.
+                            // add all points at this station at a time later than the current timestamp.
+                            var entriesAfter = forwardSchedule.GetAfter(ticksDate);
+                            // ALL TRANSFERS
+                            foreach(var entry in entriesAfter)
+                            {
+                                var seconds = entry.DepartsIn(ticksDate);
+                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
+                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                { // still not over the search threshold.
+                                    Dictionary<uint, bool> tripsForDate;
+                                    if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
+                                    {
+                                        tripsForDate = new Dictionary<uint, bool>();
+                                        possibleTrips.Add(ticksDate.Date, tripsForDate);
+                                    }
+                                    bool isTripPossibleResult;
+                                    if (!tripsForDate.TryGetValue(entry.Trip, out isTripPossibleResult))
+                                    {
+                                        isTripPossibleResult = isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(secondsNeighbour));
+                                        tripsForDate.Add(entry.Trip, isTripPossibleResult);
+                                    }
+                                    if (isTripPossibleResult)
+                                    { // ok trip is possible.
+                                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Trip), secondsNeighbour, current.Item);
+                                        heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, current.Weight.Transfers + 1));
+                                    }
+                                }
                             }
                         }
-
-                        // find the first entry to transfer to in the same station.
-                        var minTransferTime = MIN_TRANSFER_TIME;
-                        var transfers = current.Weight.Transfers;
-                        if (current.Item.From == null || current.Item.VertexId.Trip != current.Item.From.VertexId.Trip)
-                        { // the current vertex has no previous or previous vertex is already a transfer.
-                            minTransferTime = 0; // allow a transfer time of zero.
-                        }
                         else
-                        { // yes there is a transfer.
-                            transfers = transfers + 1;
-                        }
-                        forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
-                        entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
-                        if (entry.HasValue)
-                        { // there is a next entry in the same station.
-                            var seconds = entry.Value.DepartsIn(ticksDate);
-                            uint secondsNeighbour = (uint)(seconds + current.Item.VertexId.Seconds);
-                            if (secondsNeighbour < MAX_SEARCH_TIME)
-                            { // still not over the search threshold.
-                                Dictionary<uint, bool> tripsForDate;
-                                if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
-                                {
-                                    tripsForDate = new Dictionary<uint, bool>();
-                                    possibleTrips.Add(ticksDate.Date, tripsForDate);
+                        { // current vertex is a station (because it has a transit edge) and it has a current trip.
+                            
+                            // NO TRANSFER: find the next entry along the same trip.
+                            var entry = forwardSchedule.GetForTrip(current.Item.VertexId.Trip, ticksDate);
+                            if (entry.HasValue)
+                            { // there is a next entry along the same trip.
+                                var seconds = entry.Value.DepartsIn(ticksDate);
+                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
+                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                { // still not over the search threshold.
+                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
+                                    heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
                                 }
-                                bool isTripPossibleResult;
-                                if (!tripsForDate.TryGetValue(entry.Value.Trip, out isTripPossibleResult))
-                                {
-                                    isTripPossibleResult = isTripPossible.Invoke(entry.Value.Trip, startTime.AddSeconds(secondsNeighbour));
-                                    tripsForDate.Add(entry.Value.Trip, isTripPossibleResult);
-                                }
-                                if (isTripPossibleResult)
-                                { // ok trip is possible.
-                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                    heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, transfers));
+                            }
+
+                            // TRANSFER: find the first entry to transfer to in the same station.
+                            var minTransferTime = MIN_TRANSFER_TIME;
+                            var transfers = current.Weight.Transfers + 1;
+                            forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
+                            entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
+                            if (entry.HasValue)
+                            { // there is a next entry in the same station.
+                                var seconds = entry.Value.DepartsIn(ticksDate);
+                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
+                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                { // still not over the search threshold.
+                                    Dictionary<uint, bool> tripsForDate;
+                                    if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
+                                    {
+                                        tripsForDate = new Dictionary<uint, bool>();
+                                        possibleTrips.Add(ticksDate.Date, tripsForDate);
+                                    }
+                                    bool isTripPossibleResult;
+                                    if (!tripsForDate.TryGetValue(entry.Value.Trip, out isTripPossibleResult))
+                                    {
+                                        isTripPossibleResult = isTripPossible.Invoke(entry.Value.Trip, startTime.AddSeconds(secondsNeighbour));
+                                        tripsForDate.Add(entry.Value.Trip, isTripPossibleResult);
+                                    }
+                                    if (isTripPossibleResult)
+                                    { // ok trip is possible.
+                                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
+                                        heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, transfers));
+                                    }
                                 }
                             }
                         }

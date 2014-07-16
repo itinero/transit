@@ -74,16 +74,6 @@ namespace OsmSharp.Routing.Transit.GTFS
                 }
             }
 
-            // sort stop-times.
-            feed.StopTimes.Sort((x, y) =>
-            {
-                if (x.TripId.Equals(y.TripId))
-                { // trip id's equal compare stop sequence.
-                    return x.StopSequence.CompareTo(y.StopSequence);
-                }
-                return x.TripId.CompareTo(y.TripId);
-            });
-
             // loop over all stoptimes.
             var previousStopTime = feed.StopTimes[0];
             for (int stopTimeIdx = 1; stopTimeIdx < feed.StopTimes.Count; stopTimeIdx++)

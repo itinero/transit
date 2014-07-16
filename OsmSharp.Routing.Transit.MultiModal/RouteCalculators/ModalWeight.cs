@@ -50,16 +50,15 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public int CompareTo(object obj)
         {
             var other = (obj as ModalWeight);
-            if(other != null)
+            if (this.Time < other.Time)
             {
-                var time = this.Time.CompareTo(other.Time);
-                if(time == 0)
-                {
-                    return this.Transfers.CompareTo(other.Transfers);
-                }
-                return time;
+                return -1;
             }
-            throw new ArgumentOutOfRangeException("ModalWeight cannot be compared to object of other type.");
+            else if (this.Time > other.Time)
+            {
+                return 1;
+            }
+            return this.Transfers.CompareTo(other.Transfers);
         }
     }
 }

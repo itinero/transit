@@ -32,13 +32,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GTFS, Version=0.0.3.36, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=0.0.3.48, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.36\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.48\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.3.36, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=0.0.3.48, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.36\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.48\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp, Version=4.2.0.761, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

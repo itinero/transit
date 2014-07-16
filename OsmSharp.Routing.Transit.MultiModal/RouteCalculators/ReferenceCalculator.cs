@@ -39,12 +39,17 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the maximum search time being 24h here.
         /// </summary>
-        private const uint MAX_SEARCH_TIME = 24 * 60 * 60;
+        private const uint MAX_SEARCH_TIME = 25 * 60 * 60;
 
         /// <summary>
         /// Holds the minimum transfer time being 10 mins here.
         /// </summary>
         private const uint MIN_TRANSFER_TIME = 10 * 60;
+
+        /// <summary>
+        /// Holds the maximum transfer count.
+        /// </summary>
+        private const uint MAX_TRANSFER_COUNT = 10;
 
         /// <summary>
         /// Holds the transfer time penalty being 1 min here.
@@ -400,6 +405,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             { // there is a schedule parameter.
                 schedules = (List<TransitEdgeSchedulePair>)parameters[SCHEDULES_KEY];
             }
+            var maxTransferCount = MAX_TRANSFER_COUNT;
+            //if (parameters != null && parameters.ContainsKey(START_TIME_KEY))
+            //{ // there is a start time parameter set.
+            //    maxTransferCount = (DateTime)parameters[START_TIME_KEY];
+            //}
 
             var onlyTransit = false;
             if(vehicle == null)
@@ -427,6 +437,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             //  initialize the result data structures.
             var segmentsAtWeight = new List<PathSegment<VertexTimeAndTrip>>();
             var segmentsToTarget = new PathSegment<VertexTimeAndTrip>[targets.Length]; // the resulting target segments.
+
+            // initialize pt-specific data structures.
+            var chosenStations = new HashSet<long>(); // keep a list of statops that have been visited up until now, visited meaning foot on the ground.
 
             // intialize dykstra data structures.
             var heap = new ComparableBinairyHeap<PathSegment<VertexTimeAndTrip>, ModalWeight>(100);
@@ -591,15 +604,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     labels.Remove(current.Item.VertexId);
                 }
 
-                //float latitude, longitude;
-                //graph.GetVertex(Convert.ToUInt32(current.VertexId), out latitude, out longitude);
-                //var currentCoordinates = new GeoCoordinate(latitude, longitude);
-
                 // update the visited nodes.
                 foreach (var neighbour in arcs)
                 {
                     var neighbourKey = new VertexTimeAndTrip(neighbour.Key);
-
+                    if (chosenVertices.Contains(neighbourKey))
+                    { // this neighbour has already been visited.
+                        continue;
+                    }
                     if (neighbour.Value.IsRoad() && !onlyTransit)
                     { // a 'road' edge.
                         // check the tags against the interpreter.
@@ -644,10 +656,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 { // all constraints are validated or there are none.
                                     // calculate neighbors weight.
                                     double totalWeight = current.Item.Weight + vehicle.Weight(tags, neighbour.Value.Distance);
-                                    //double totalWeight = current.Weight + neighbour.Value.Distance;
 
-                                    // update the visit list;
-                                    var neighbourRoute = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key), totalWeight, current.Item);
+                                    // update the visit list.
+                                    var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
                                     heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
                                 }
                             }
@@ -663,10 +674,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                         if (current.Item.VertexId.Seconds == 0 &&
                             current.Item.VertexId.Trip == 0)
                         { // current vertex is a station (because it has a transit edge) but it does not have a trip.
+                            if(current.Weight.Transfers >= maxTransferCount)
+                            { // reached maxim tranfers, do no transfer anymore please!
+                                continue;
+                            }
+
+                            if(chosenStations.Contains(current.Item.VertexId.Vertex))
+                            { // this station was already chosen.
+                                continue;
+                            }
+                            chosenStations.Add(current.Item.VertexId.Vertex);
+
                             // add all points at this station at a time later than the current timestamp.
                             var entriesAfter = forwardSchedule.GetAfter(ticksDate);
                             // ALL TRANSFERS
-                            foreach(var entry in entriesAfter)
+                            foreach (var entry in entriesAfter)
                             {
                                 var seconds = entry.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
@@ -694,7 +716,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                         }
                         else
                         { // current vertex is a station (because it has a transit edge) and it has a current trip.
-                            
+                            // MOVE TO NEXT STATION.
                             // NO TRANSFER: find the next entry along the same trip.
                             var entry = forwardSchedule.GetForTrip(current.Item.VertexId.Trip, ticksDate);
                             if (entry.HasValue)
@@ -708,7 +730,22 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 }
                             }
 
+                            // STAY IN THE SAME STATION.
                             // TRANSFER: find the first entry to transfer to in the same station.
+                            if (current.Weight.Transfers >= maxTransferCount)
+                            { // reached maxim tranfers, do no transfer anymore please!
+                                continue;
+                            }
+                            if(current.Item.From != null && 
+                                current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
+                            { // the previous station was a different station, this means leaving the current trip.
+                                if(!chosenStations.Contains(current.Item.VertexId.Vertex))
+                                { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
+                                    // a 'foot-on-the-ground' can only be created once at every station.
+                                    continue;
+                                }
+                                chosenStations.Add(current.Item.VertexId.Vertex); // 'foot-on-the-ground' in this station already.
+                            }
                             var minTransferTime = MIN_TRANSFER_TIME;
                             var transfers = current.Weight.Transfers + 1;
                             forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
@@ -742,7 +779,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     }
                     else if (!neighbour.Value.IsTransit() && !neighbour.Value.IsRoad())
                     { // no transit no road, just a connection between modes.
-                        var neighbourRoute = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key), current.Weight.Time + modalTransferTime, current.Item);
+                        var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, current.Weight.Time + modalTransferTime, current.Item);
                         heap.Push(neighbourRoute, new ModalWeight((float)current.Weight.Time + modalTransferTime, current.Weight.Transfers));
                     }
                 }

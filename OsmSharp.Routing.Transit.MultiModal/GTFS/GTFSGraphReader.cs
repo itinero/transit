@@ -73,9 +73,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
             // build trip ids.
             for (int tripIdx = 0; tripIdx < feed.Trips.Count; tripIdx++)
             {
-                if (!tripIds.ContainsKey(feed.Trips[tripIdx].Id))
+                string tripId = feed.Trips[tripIdx].Id;
+                if (!tripIds.ContainsKey(tripId))
                 {
-                    tripIds[feed.Trips[tripIdx].Id] = (uint)tripIdx;
+                    tripIds[tripId] = (uint)tripIdx;
                 }
             }
 
@@ -159,22 +160,22 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
             }
 
             // link stops to network.
-            foreach (var vehicle in vehicles)
+            float latitude, longitude;
+            int max = 2;
+            foreach (var stop in stopVertices.Values)
             {
-                float latitude, longitude;
-                int max = 3;
-                foreach (var stop in stopVertices.Values)
-                {
-                    // get stop location.
-                    if (graph.GetVertex(stop, out latitude, out longitude))
-                    { // found the vertex! duh!
-                        // keep stop location
-                        var stopLocation = new GeoCoordinate(latitude, longitude);
+                // get stop location.
+                if (graph.GetVertex(stop, out latitude, out longitude))
+                { // found the vertex! duh!
+                    // keep stop location
+                    var stopLocation = new GeoCoordinate(latitude, longitude);
 
-                        // neighbouring vertices.
-                        var arcs = graph.GetArcs(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.01, longitude - 0.01),
-                            new Math.Geo.GeoCoordinate(latitude + 0.01, longitude + 0.01)));
+                    // neighbouring vertices.
+                    var arcs = graph.GetArcs(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.005, longitude - 0.0025),
+                        new Math.Geo.GeoCoordinate(latitude + 0.005, longitude + 0.0025)));
 
+                    foreach (var vehicle in vehicles)
+                    {
                         // keep a sorted list.
                         var closestVertices = new Dictionary<uint, double>();
 
@@ -182,27 +183,27 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                         foreach (var arc in arcs)
                         {
                             bool isRoutable = arc.Value.Value.IsRoad();
-                            if(isRoutable)
+                            if (isRoutable)
                             { // the arc is already a road.
-                                if(graph.TagsIndex.Contains(arc.Value.Value.Tags))
+                                if (graph.TagsIndex.Contains(arc.Value.Value.Tags))
                                 { // there is a tags collection.
                                     var tags = graph.TagsIndex.Get(arc.Value.Value.Tags);
                                     isRoutable = interpreter.EdgeInterpreter.CanBeTraversedBy(tags, vehicle);
                                 }
                             }
-                            if (isRoutable)                                
+                            if (isRoutable)
                             { // this arc is a road to keep it.
                                 if (arc.Key != stop &&
                                     graph.GetVertex(arc.Key, out latitude, out longitude))
                                 { // check distance.
-                                    var keyDistance = stopLocation.DistanceReal(
+                                    var keyDistance = stopLocation.DistanceEstimate(
                                         new GeoCoordinate(latitude, longitude)).Value;
                                     closestVertices[arc.Key] = keyDistance;
                                 }
                                 if (arc.Value.Key != stop &&
                                     graph.GetVertex(arc.Value.Key, out latitude, out longitude))
                                 { // check distance.
-                                    double keyDistance = stopLocation.DistanceReal(
+                                    double keyDistance = stopLocation.DistanceEstimate(
                                         new GeoCoordinate(latitude, longitude)).Value;
                                     closestVertices[arc.Value.Key] = keyDistance;
                                 }

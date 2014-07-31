@@ -35,6 +35,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         private Dictionary<string, uint> _stops;
 
         /// <summary>
+        /// Holds the stop per vertex.
+        /// </summary>
+        private Dictionary<uint, string> _reverseStops;
+
+        /// <summary>
         /// Holds the trips.
         /// </summary>
         private Dictionary<string, uint> _tripIds;
@@ -62,6 +67,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             _basicRouter = router;
             _interpreter = interpreter;
             _stops = new Dictionary<string, uint>();
+            _reverseStops = new Dictionary<uint, string>();
             _tripIds = new Dictionary<string, uint>();
         }
 
@@ -81,6 +87,20 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             _feeds.Add(feed);
 
             GTFSGraphReader.AddToGraph(_source.Graph, feed, _stops, _tripIds, _source.Schedules);
+
+            this.BuildReverseStops();
+        }
+
+        /// <summary>
+        /// Builds the reverse stop index.
+        /// </summary>
+        private void BuildReverseStops()
+        {
+            _reverseStops.Clear();
+            foreach(var stop in _stops)
+            {
+                _reverseStops[stop.Value] = stop.Key;
+            }
         }
 
         #endregion
@@ -149,6 +169,47 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 return stops;
             }
             return new List<Stop>();
+        }
+
+        /// <summary>
+        /// Returns the stops.
+        /// </summary>
+        /// <returns></returns>
+        public Stop GetStop(string stopId)
+        {
+            if (_feeds.Count > 0)
+            {
+                var feedIdx = 0;
+                var stop = _feeds[feedIdx].GetStop(stopId);
+                while(stop == null && feedIdx < _feeds.Count)
+                {
+                    stop = _feeds[feedIdx].GetStop(stopId);
+                    feedIdx++;
+                }
+                return stop;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the agency for the given stop.
+        /// </summary>
+        /// <param name="stopId"></param>
+        /// <returns></returns>
+        public Agency GetAgencyForStop(string stopId)
+        {
+            IEnumerable<Agency> agencies = new List<Agency>();
+            foreach(var feed in _feeds)
+            {
+                agencies = agencies.Concat(from a in feed.Agencies
+                           join r in feed.Routes on a.Id equals r.AgencyId
+                           join t in feed.Trips on r.Id equals t.RouteId
+                           join st in feed.StopTimes on t.Id equals st.TripId
+                           join s in feed.Stops on st.StopId equals s.Id
+                           where s.Id == stopId
+                           select a);
+            }
+            return agencies.FirstOrDefault();
         }
 
         /// <summary>
@@ -435,6 +496,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // create all the other entries except the last one.
             var nodePrevious = vertices[0];
+            var perviousIsTransit = false;
             for (int idx = 1; idx < vertices.Length - 1; idx++)
             {
                 // get all the data needed to calculate the next route entry.
@@ -523,9 +585,45 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 routeEntry.WayFromNames = names.ConvertFrom();
                                 entries.Add(routeEntry);
                             }
+                            perviousIsTransit = false;
                         }
                         else if(liveEdge.IsTransit())
                         { // edge is a transit edge.
+                            // add previous station as poi.
+                            string stopId;
+                            if(entries.Count > 0 && !perviousIsTransit && _reverseStops.TryGetValue((uint)nodePrevious.Item1.Vertex, out stopId))
+                            { // a first entry in a transit series. add previous station.
+                                var stop = this.GetStop(stopId);
+                                if (stop != null)
+                                {
+                                    var routePoints = new List<RoutePoint>();
+                                    if (entries[entries.Count - 1].Points != null)
+                                    {
+                                        routePoints.AddRange(entries[entries.Count - 1].Points);
+                                    }
+                                    var agency = this.GetAgencyForStop(stopId);
+                                    var stopPoint = new RoutePoint();
+                                    stopPoint.Latitude = (float)stop.Latitude;
+                                    stopPoint.Longitude = (float)stop.Longitude;
+                                    stopPoint.Tags = new RouteTags[3];
+                                    stopPoint.Tags[0] = new RouteTags();
+                                    stopPoint.Tags[0].Key = "name";
+                                    stopPoint.Tags[0].Value = stop.Name;
+                                    stopPoint.Tags[1] = new RouteTags();
+                                    stopPoint.Tags[1].Key = "description";
+                                    stopPoint.Tags[1].Value = stop.Description;
+                                    stopPoint.Tags[2] = new RouteTags();
+                                    stopPoint.Tags[2].Key = "agency";
+                                    stopPoint.Tags[2].Value = string.Empty;
+                                    if(agency != null)
+                                    {
+                                        stopPoint.Tags[2].Value = agency.Name;
+                                    }
+                                    routePoints.Add(stopPoint);
+                                    entries[entries.Count - 1].Points = routePoints.ToArray();
+                                }
+                            }
+
                             // get edge details and create tags.
                             var forwardSchedule = liveEdge.GetForwardSchedule(_source.Schedules);
                             var forwardScheduleEntry = forwardSchedule == null ? 
@@ -597,7 +695,37 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             routeEntry.Type = RoutePointEntryType.Along;
                             routeEntry.WayFromName = string.Empty;
                             routeEntry.WayFromNames = new RouteTags[0];
+                            if (_reverseStops.TryGetValue((uint)nodeCurrent.Item1.Vertex, out stopId))
+                            { // a first entry in a transit series. add previous station.
+                                var stop = this.GetStop(stopId);
+                                if (stop != null)
+                                {
+                                    var agency = this.GetAgencyForStop(stopId);
+                                    var routePoints = new List<RoutePoint>();
+                                    var stopPoint = new RoutePoint();
+                                    stopPoint.Latitude = (float)stop.Latitude;
+                                    stopPoint.Longitude = (float)stop.Longitude;
+                                    stopPoint.Tags = new RouteTags[3];
+                                    stopPoint.Tags[0] = new RouteTags();
+                                    stopPoint.Tags[0].Key = "name";
+                                    stopPoint.Tags[0].Value = stop.Name;
+                                    stopPoint.Tags[1] = new RouteTags();
+                                    stopPoint.Tags[1].Key = "description";
+                                    stopPoint.Tags[1].Value = stop.Description;
+                                    stopPoint.Tags[2] = new RouteTags();
+                                    stopPoint.Tags[2].Key = "agency";
+                                    stopPoint.Tags[2].Value = string.Empty;
+                                    if (agency != null)
+                                    {
+                                        stopPoint.Tags[2].Value = agency.Name;
+                                    }
+                                    routePoints.Add(stopPoint);
+                                    routeEntry.Points = routePoints.ToArray();
+                                }
+                            }
+
                             entries.Add(routeEntry);
+                            perviousIsTransit = true;
                         }
                         else
                         { // edge is something else.
@@ -634,6 +762,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             routeEntry.WayFromName = string.Empty;
                             routeEntry.WayFromNames = new RouteTags[0];
                             entries.Add(routeEntry);
+                            perviousIsTransit = false;
                         }
                     }
                 }
@@ -801,6 +930,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         {
             if (route == null) { throw new ArgumentNullException("route"); }
             var featureCollection = new FeatureCollection();
+            var pointsCollection = new FeatureCollection();
             if (!aggregated)
             { // do not aggregate, just add geometry.
                 var coordinates = route.GetPoints();
@@ -818,7 +948,6 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 var aggregatedRoute = aggregator.Aggregate(route);
 
                 var current = aggregatedRoute;
-                var previousIsTransit = false;
                 while (current != null)
                 {
                     var currentArc = current.Next;
@@ -839,26 +968,6 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             var attributesTable = new AttributesTable();
                             if (currentArcTags != null)
                             { // there are tags.
-                                if (previousIsTransit)
-                                {
-                                    var point = new Point(new Coordinate(current.Location.Longitude, current.Location.Longitude));
-                                    featureCollection.Add(new Feature(point, new AttributesTable()));
-                                }
-                                string type;
-                                if(currentArc.Tags.TryGetValue("type", out type) &&
-                                    type == "transit")
-                                { // this one is a transit edge.
-                                    if (!previousIsTransit)
-                                    { // first of the transit edges.
-                                        var point = new Point(new Coordinate(current.Location.Longitude, current.Location.Longitude));
-                                        featureCollection.Add(new Feature(point, new AttributesTable()));
-                                    }
-                                    previousIsTransit = true;
-                                }
-                                else
-                                { // this one is not a transit edge anymore.
-                                    previousIsTransit = false;
-                                }
                                 foreach (var tag in currentArcTags)
                                 {
                                     attributesTable.AddAttribute(tag.Key, tag.Value);
@@ -869,6 +978,28 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             var lineString = new LineString(coordinates.ToArray());
                             featureCollection.Add(new Feature(lineString, attributesTable));
                         }
+
+                        if(current.Points != null)
+                        {
+                            foreach(var point in current.Points)
+                            {
+                                // build attributes.
+                                var currentPointTags = point.Tags;
+                                var attributesTable = new AttributesTable();
+                                if (currentPointTags != null)
+                                { // there are tags.
+                                    foreach (var tag in currentPointTags)
+                                    {
+                                        attributesTable.AddAttribute(tag.Key, tag.Value);
+                                    }
+                                }
+
+                                // build feature.
+                                var pointGeometry = new Point(new Coordinate(point.Location.Longitude, point.Location.Latitude));
+                                pointsCollection.Add(new Feature(pointGeometry, attributesTable));
+                            }
+                        }
+
                         // get the next point.
                         current = currentArc.Next;
                     }
@@ -877,6 +1008,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                         current = null;
                     }
                 }
+            }
+            
+            // add points
+            foreach(var point in pointsCollection.Features)
+            {
+                featureCollection.Add(point);
             }
             return featureCollection;
         }

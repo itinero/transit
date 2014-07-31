@@ -48,7 +48,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 (previousType == "intermodal" || previousType == "transit");
             if (previousTypeFound && nextTypeFound)
             { // both modal types.
-                return previousType != nextType;
+                // always return true, all intermediate stops still need to be in the resulting aggregation.
+                return true;
             }
             else if(previousTypeFound && !nextTypeFound)
             { // intermodal difference.

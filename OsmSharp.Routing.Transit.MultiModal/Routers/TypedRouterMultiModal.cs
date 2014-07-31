@@ -818,6 +818,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 var aggregatedRoute = aggregator.Aggregate(route);
 
                 var current = aggregatedRoute;
+                var previousIsTransit = false;
                 while (current != null)
                 {
                     var currentArc = current.Next;
@@ -838,6 +839,26 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             var attributesTable = new AttributesTable();
                             if (currentArcTags != null)
                             { // there are tags.
+                                if (previousIsTransit)
+                                {
+                                    var point = new Point(new Coordinate(current.Location.Longitude, current.Location.Longitude));
+                                    featureCollection.Add(new Feature(point, new AttributesTable()));
+                                }
+                                string type;
+                                if(currentArc.Tags.TryGetValue("type", out type) &&
+                                    type == "transit")
+                                { // this one is a transit edge.
+                                    if (!previousIsTransit)
+                                    { // first of the transit edges.
+                                        var point = new Point(new Coordinate(current.Location.Longitude, current.Location.Longitude));
+                                        featureCollection.Add(new Feature(point, new AttributesTable()));
+                                    }
+                                    previousIsTransit = true;
+                                }
+                                else
+                                { // this one is not a transit edge anymore.
+                                    previousIsTransit = false;
+                                }
                                 foreach (var tag in currentArcTags)
                                 {
                                     attributesTable.AddAttribute(tag.Key, tag.Value);

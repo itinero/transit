@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using GTFS.IO;
+using GTFS.IO.CSV;
 using System;
 using System.Collections.Generic;
 using System.Linq;

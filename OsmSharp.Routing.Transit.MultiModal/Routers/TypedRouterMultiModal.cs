@@ -280,7 +280,6 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
         #endregion
 
-
         /// <summary>
         /// Calculates a route between two given location that is possible multimodal.
         /// </summary>
@@ -354,9 +353,57 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         }
 
         /// <summary>
+        /// Calculates the weight to all vertices that are within a certain range from the source.
+        /// </summary>
+        /// <param name="departureTime"></param>
+        /// <param name="toFirstStop"></param>
+        /// <param name="interModal"></param>
+        /// <param name="fromLastStop"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="parameters"></param>
+        /// <param name="maxWeight"></param>
+        /// <returns></returns>
+        public Dictionary<GeoCoordinate, double> CalculateAllWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, Dictionary<string, object> parameters, double maxWeight)
+        {
+            // calculate source/target.
+            var source = this.RouteResolvedGraph(toFirstStop, from, false);
+
+            // make sure all parameters are set.
+            var routingParameters = this.BuildRoutingParameters(parameters, departureTime);
+
+            // calculate path.
+            var weightMatrix = new WeightMatrix(new GeoCoordinateBox(
+                new GeoCoordinate(from.Location.Latitude - 0.1, from.Location.Longitude - 0.1),
+                new GeoCoordinate(from.Location.Latitude + 0.1, from.Location.Longitude + 0.1)), 18);
+            _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
+                source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
+                {
+                    var coordinate = this.GetCoordinate(toFirstStop, vertexTimeAndTrip.VertexId.Vertex);
+                    weightMatrix.AddSample(coordinate.Latitude, coordinate.Longitude, vertexTimeAndTrip.Weight);
+                });
+
+            // extract coordinates of all withing.
+            var allWithinCoordinates = new Dictionary<GeoCoordinate, double>(weightMatrix.Rows * weightMatrix.Columns);
+            for (int row = 0; row < weightMatrix.Rows; row++)
+            {
+                for (int column = 0; column < weightMatrix.Columns; column++)
+                {
+                    double value, latitude, longitude;
+                    if(weightMatrix.GetSample(row, column, out latitude, out longitude, out value))
+                    {
+                        allWithinCoordinates[new GeoCoordinate(latitude, longitude)] = value;
+                    }
+                }
+            }
+            return allWithinCoordinates;
+        }
+
+        /// <summary>
         /// Adds all default pararameters.
         /// </summary>
         /// <param name="parameters"></param>
+        /// <param name="departureTime"></param>
         private Dictionary<string, object> BuildRoutingParameters(Dictionary<string, object> parameters, DateTime departureTime)
         {
             if (parameters == null)

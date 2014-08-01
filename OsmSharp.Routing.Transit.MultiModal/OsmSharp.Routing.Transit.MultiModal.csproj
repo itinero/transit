@@ -114,6 +114,7 @@
     <Compile Include="RouteCalculators\ReferenceCalculator.cs" />
     <Compile Include="Routers\MultiModalArcAggregator.cs" />
     <Compile Include="Routers\TypedRouterMultiModal.cs" />
+    <Compile Include="Routers\WeightMatrix.cs" />
     <Compile Include="Streams\MultiModalGraphOsmStreamTarget.cs" />
   </ItemGroup>
   <ItemGroup>

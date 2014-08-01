@@ -303,12 +303,30 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="source"></param>
         /// <param name="weight"></param>
         /// <param name="forward"></param>
-        /// <returns></returns>
+        /// <param name="parameters"></param>
         public HashSet<long> CalculateRange(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList source, double weight, bool forward, Dictionary<string, object> parameters)
         {
+            return this.CalculateRange(graph, interpreter, vehicle, source, weight, true, parameters, null);
+        }
+
+        /// <summary>
+        /// Calculates all points that are at or close to the given weight.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="interpreter"></param>
+        /// <param name="vehicle"></param>
+        /// <param name="source"></param>
+        /// <param name="weight"></param>
+        /// <param name="forward"></param>
+        /// <param name="parameters"></param>
+        /// <param name="currentHandler"></param>
+        /// <returns></returns>
+        public HashSet<long> CalculateRange(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
+            Vehicle vehicle, PathSegmentVisitList source, double weight, bool forward, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler)
+        {
             var result = this.DoCalculation(graph, interpreter, vehicle,
-                   source, new PathSegmentVisitList[0], weight, false, true, forward, parameters).ConvertTo();
+                   source, new PathSegmentVisitList[0], weight, false, true, forward, parameters, currentHandler).ConvertTo();
 
             var resultVertices = new HashSet<long>();
             for (int idx = 0; idx < result.Length; idx++)
@@ -326,6 +344,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="vehicle"></param>
         /// <param name="source"></param>
         /// <param name="weight"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public bool CheckConnectivity(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList source, double weight, Dictionary<string, object> parameters)
@@ -379,10 +398,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="returnAtWeight"></param>
         /// <param name="forward"></param>
         /// <param name="parameters"></param>
+        /// <param name="currentHandler"></param>
         /// <returns></returns>
         private PathSegment<VertexTimeAndTrip>[] DoCalculation(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList sourceList, PathSegmentVisitList[] targetList, double weight,
-            bool stopAtFirst, bool returnAtWeight, bool forward, Dictionary<string, object> parameters)
+            bool stopAtFirst, bool returnAtWeight, bool forward, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler = null)
         {
             // get parameters.
             Func<uint, DateTime, bool> isTripPossible = (x, y) => { return true; };
@@ -596,6 +616,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             // loop until target is found and the route is the shortest!
             while (true)
             {
+
                 // get the current labels list (if needed).
                 IList<RoutingLabel> currentLabels = null;
                 if (interpreter.Constraints != null)
@@ -806,7 +827,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                         segmentsAtWeight.Add(current.Item);
                     }
 
-                    // choose the next vertex.
+                    // choose the next vertex if the weight has been reached.
                     current = heap.Pop();
                     while (current != null &&
                         chosenVertices.Contains(current.Item.VertexId))
@@ -819,6 +840,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 { // route is not found, there are no vertices left
                     // or the search went outside of the max bounds.
                     break;
+                }
+
+                // report current if needed.
+                if (currentHandler != null)
+                {
+                    currentHandler.Invoke(current.Item);
                 }
 
                 // check target.

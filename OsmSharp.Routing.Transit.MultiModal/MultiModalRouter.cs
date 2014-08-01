@@ -65,6 +65,8 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <param name="toFirstStop"></param>
         /// <param name="interModal"></param>
         /// <param name="fromLastStop"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
         public Route CalculateTransit(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, RouterPoint to)
         {
@@ -81,6 +83,21 @@ namespace OsmSharp.Routing.Transit.MultiModal
         public Route CalculateTransit(DateTime departureTime, string from, string to)
         {
             return _multiModalRouter.CalculateTransit(departureTime, from, to, null);
+        }
+
+        /// <summary>
+        /// Calculates the time to all the vertices within the given range.
+        /// </summary>
+        /// <param name="departureTime"></param>
+        /// <param name="toFirstStop"></param>
+        /// <param name="interModal"></param>
+        /// <param name="fromLastStop"></param>
+        /// <param name="from"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public Dictionary<GeoCoordinate, double> CalculateTransitWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, double max)
+        {
+            return _multiModalRouter.CalculateAllWithin(departureTime, toFirstStop, interModal, fromLastStop, from, null, max);
         }
 
         #region GFTS

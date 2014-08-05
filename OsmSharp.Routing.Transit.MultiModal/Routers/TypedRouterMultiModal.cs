@@ -374,8 +374,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var weightMatrix = new WeightMatrix(new GeoCoordinateBox(
-                new GeoCoordinate(from.Location.Latitude - 0.1, from.Location.Longitude - 0.1),
-                new GeoCoordinate(from.Location.Latitude + 0.1, from.Location.Longitude + 0.1)), 18);
+                new GeoCoordinate(from.Location.Latitude - 1, from.Location.Longitude - 1),
+                new GeoCoordinate(from.Location.Latitude + 1, from.Location.Longitude + 1)), 16);
             _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {

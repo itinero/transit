@@ -714,7 +714,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             {
                                 var seconds = entry.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
                                 { // still not over the search threshold.
                                     Dictionary<uint, bool> tripsForDate;
                                     if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
@@ -745,7 +745,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             { // there is a next entry along the same trip.
                                 var seconds = entry.Value.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
-                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
                                 { // still not over the search threshold.
                                     var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
                                     heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
@@ -776,7 +776,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             { // there is a next entry in the same station.
                                 var seconds = entry.Value.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour < MAX_SEARCH_TIME)
+                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
                                 { // still not over the search threshold.
                                     Dictionary<uint, bool> tripsForDate;
                                     if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))

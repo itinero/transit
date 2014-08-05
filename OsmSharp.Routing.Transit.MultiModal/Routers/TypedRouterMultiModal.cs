@@ -374,8 +374,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var weightMatrix = new WeightMatrix(new GeoCoordinateBox(
-                new GeoCoordinate(from.Location.Latitude - 1, from.Location.Longitude - 1),
-                new GeoCoordinate(from.Location.Latitude + 1, from.Location.Longitude + 1)), 16);
+                new GeoCoordinate(from.Location.Latitude - 3, from.Location.Longitude - 3),
+                new GeoCoordinate(from.Location.Latitude + 3, from.Location.Longitude + 3)), 16);
             _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {
@@ -913,6 +913,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         public FeatureCollection GetNetworkFeatures(GeoCoordinateBox box)
         {
             var features = new FeatureCollection();
+            var vertexFeatures = new FeatureCollection();
 
             // add all stops.
             var handledVertices = new HashSet<uint>();
@@ -926,7 +927,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 if(box.Contains(new GeoCoordinate(latitude, longitude)))
                 {
                     var point = new Point(new Coordinate(longitude, latitude));
-                    features.Add(new Feature(point, attributes));
+                    vertexFeatures.Add(new Feature(point, attributes));
 
                     handledVertices.Add(stop.Value);
                 }
@@ -946,7 +947,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                     attributes.AddAttribute("vertex_id", vertex);
 
                     var point = new Point(new Coordinate(longitude, latitude));
-                    features.Add(new Feature(point, attributes));
+                    vertexFeatures.Add(new Feature(point, attributes));
                 }
 
                 var arcs = _source.Graph.GetArcs(vertex);
@@ -1009,6 +1010,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                     }
                 }
             }
+
+            // add points at the end.
+            foreach(var vertexFeature in vertexFeatures.Features)
+            {
+                features.Add(vertexFeature);
+            }
+
             return features;
         }
 

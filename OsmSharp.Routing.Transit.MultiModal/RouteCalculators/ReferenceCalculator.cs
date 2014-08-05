@@ -626,6 +626,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 }
 
                 // update the visited nodes.
+                bool currentIsStation = false;
                 foreach (var neighbour in arcs)
                 {
                     var neighbourKey = new VertexTimeAndTrip(neighbour.Key);
@@ -695,16 +696,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                         if (current.Item.VertexId.Seconds == 0 &&
                             current.Item.VertexId.Trip == 0)
                         { // current vertex is a station (because it has a transit edge) but it does not have a trip.
+                            currentIsStation = true;
                             if(current.Weight.Transfers >= maxTransferCount)
                             { // reached maxim tranfers, do no transfer anymore please!
                                 continue;
                             }
 
                             if(chosenStations.Contains(current.Item.VertexId.Vertex))
-                            { // this station was already chosen.
+                            {
                                 continue;
                             }
-                            chosenStations.Add(current.Item.VertexId.Vertex);
 
                             // add all points at this station at a time later than the current timestamp.
                             var entriesAfter = forwardSchedule.GetAfter(ticksDate);
@@ -803,6 +804,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                         var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, current.Weight.Time + modalTransferTime, current.Item);
                         heap.Push(neighbourRoute, new ModalWeight((float)current.Weight.Time + modalTransferTime, current.Weight.Transfers));
                     }
+                }
+
+                // add to stations list if needed.
+                if(currentIsStation)
+                {
+                    chosenStations.Add(current.Item.VertexId.Vertex);
                 }
 
                 // while the visit list is not empty.

@@ -22,19 +22,15 @@ namespace OsmSharp.Transit.Console
             // read the nmbs feed.
             var reader = new GTFSReader<GTFSFeed>(false);
             System.Console.Write("Parsing feed 'De Lijn'...");
-            var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"c:\work\osmsharp_data\delijn\"));
+            var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"d:\work\osmsharp_data\delijn\"));
             System.Console.WriteLine("Done!");
             System.Console.Write("Parsing feed 'NMBS'...");
-            var nmbs = reader.Read(new GTFS.IO.GTFSDirectorySource(@"c:\work\osmsharp_data\nmbs\"));
+            var nmbs = reader.Read(new GTFS.IO.GTFSDirectorySource(@"d:\work\osmsharp_data\nmbs\"));
             System.Console.WriteLine("Done!");
 
             // create router.
-            //var progress = new OsmSharp.Osm.Streams.Filters.OsmStreamFilterProgress();
-            //progress.RegisterSource(new OsmSharp.Osm.PBF.Streams.PBFOsmStreamSource(new FileInfo(@"d:\OSM\bin\belgium-latest.osm.pbf").OpenRead()));
-            //var router = MultiModalRouter.CreateFrom(progress,
-            //    new OsmRoutingInterpreter());
             System.Console.Write("Loading routing graph...");
-            var router = MultiModalRouter.CreateFrom(new FileInfo(@"c:\temp\belgium-latest.simple.flat.routing").OpenRead(),
+            var router = MultiModalRouter.CreateFrom(new FileInfo(@"d:\temp\belgium-latest.simple.flat.routing").OpenRead(),
                 new OsmRoutingInterpreter());
             System.Console.WriteLine("Done!");
 

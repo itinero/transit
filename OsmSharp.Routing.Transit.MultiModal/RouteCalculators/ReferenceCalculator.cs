@@ -18,6 +18,7 @@
 
 using OsmSharp.Collections.Tags;
 using OsmSharp.Logging;
+using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Constraints;
 using OsmSharp.Routing.Graph.Router;
 using OsmSharp.Routing.Interpreter;
@@ -49,7 +50,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the maximum transfer count.
         /// </summary>
-        private const uint MAX_TRANSFER_COUNT = 10;
+        private const uint MAX_TRANSFER_COUNT = 3;
 
         /// <summary>
         /// Holds the transfer time penalty being 1 min here.
@@ -82,6 +83,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public const string SCHEDULES_KEY = "schedules";
 
         /// <summary>
+        /// Holds the no-transit key.
+        /// </summary>
+        public const string NO_TRANSIT_KEY = "no_transit";
+
+        /// <summary>
+        /// Holds the destination location.
+        /// </summary>
+        public const string DESTINATION_LOCATION_KEY = "destination_location";
+
+        /// <summary>
         /// Calculates the shortest path from the given vertex to the given vertex given the weights in the graph.
         /// </summary>
         /// <param name="vehicle"></param>
@@ -111,10 +122,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="parameters"></param>
         /// <returns></returns>
         public PathSegment<VertexTimeAndTrip> CalculateAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
-            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters)
+            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler)
         {
             return this.CalculateToClosestAndTime(graph, interpreter, vehicle, from,
-                new PathSegmentVisitList[] { to }, max, parameters);
+                new PathSegmentVisitList[] { to }, max, parameters, currentHandler);
         }
 
         /// <summary>
@@ -198,14 +209,22 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="parameters"></param>
         /// <returns></returns>
         public PathSegment<VertexTimeAndTrip> CalculateToClosestAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
-            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters)
+            Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler)
         {
-            var result = this.DoCalculation(graph, interpreter, vehicle,
-                from, targets, max, false, false, parameters);
-            if (result != null && result.Length == 1)
-            {
-                return result[0];
-            }
+            //parameters[NO_TRANSIT_KEY] = true;
+            //var resultNoTransit = this.DoCalculation(graph, interpreter, vehicle,
+            //    from, targets, max, false, false, parameters);
+            //if (resultNoTransit != null && resultNoTransit.Length == 1)
+            //{
+            //    parameters[NO_TRANSIT_KEY] = false;
+            //    max = System.Math.Min(max, resultNoTransit[0].Weight);
+                var result = this.DoCalculation(graph, interpreter, vehicle,
+                    from, targets, max, false, false, parameters);
+                if (result != null && result.Length == 1)
+                {
+                    return result[0];
+                }
+           // }
             return null;
         }
 
@@ -426,15 +445,22 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 schedules = (List<TransitEdgeSchedulePair>)parameters[SCHEDULES_KEY];
             }
             var maxTransferCount = MAX_TRANSFER_COUNT;
-            //if (parameters != null && parameters.ContainsKey(START_TIME_KEY))
-            //{ // there is a start time parameter set.
-            //    maxTransferCount = (DateTime)parameters[START_TIME_KEY];
-            //}
+            var noTransit = false;
+            if(parameters != null && parameters.ContainsKey(NO_TRANSIT_KEY))
+            {
+                noTransit = (bool)parameters[NO_TRANSIT_KEY];
+            }
 
             var onlyTransit = false;
             if(vehicle == null)
             { // only transit, no vehicle given!
                 onlyTransit = true;
+            }
+
+            // make sure the maximum search weight is set.
+            if (weight > MAX_SEARCH_TIME)
+            { // set to default max if greater.
+                weight = MAX_SEARCH_TIME;
             }
 
             // instantiate possible trips data structures.
@@ -616,7 +642,6 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             // loop until target is found and the route is the shortest!
             while (true)
             {
-
                 // get the current labels list (if needed).
                 IList<RoutingLabel> currentLabels = null;
                 if (interpreter.Constraints != null)
@@ -644,8 +669,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value == neighbour.Value.Forward);
                             if ((current.Item.From == null ||
                                 interpreter.CanBeTraversed(current.Item.From.VertexId.Vertex, current.Item.VertexId.Vertex, neighbour.Key)) && // test for turning restrictions.
-                                canBeTraversedOneWay &&
-                                !chosenVertices.Contains(neighbourKey))
+                                canBeTraversedOneWay)
                             { // the neighbor is forward and is not settled yet!
                                 // check the labels (if needed).
                                 bool constraintsOk = true;
@@ -680,13 +704,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                     double totalWeight = current.Item.Weight + vehicle.Weight(tags, neighbour.Value.Distance);
 
                                     // update the visit list.
-                                    var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
-                                    heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
+                                    if (totalWeight < weight)
+                                    {
+                                        var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
+                                        heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
+                                    }
                                 }
                             }
                         }
                     }
-                    else if (neighbour.Value.IsTransit())
+                    else if (neighbour.Value.IsTransit() && !noTransit)
                     { // transit edge.
                         // calculate ticks.
                         var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
@@ -714,8 +741,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             {
                                 var seconds = entry.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
-                                { // still not over the search threshold.
+                                if (secondsNeighbour + entry.Duration < weight)
+                                { // departure + duration still not over the search threshold.
                                     Dictionary<uint, bool> tripsForDate;
                                     if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
                                     {
@@ -745,7 +772,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             { // there is a next entry along the same trip.
                                 var seconds = entry.Value.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
-                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
+                                if (secondsNeighbour < weight)
                                 { // still not over the search threshold.
                                     var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
                                     heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
@@ -776,8 +803,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             { // there is a next entry in the same station.
                                 var seconds = entry.Value.DepartsIn(ticksDate);
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour < MAX_SEARCH_TIME && (!returnAtWeight || secondsNeighbour < weight))
-                                { // still not over the search threshold.
+                                if (secondsNeighbour + entry.Value.Duration < weight)
+                                { // departure + duration still not over the search threshold.
                                     Dictionary<uint, bool> tripsForDate;
                                     if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
                                     {
@@ -801,8 +828,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     }
                     else if (!neighbour.Value.IsTransit() && !neighbour.Value.IsRoad())
                     { // no transit no road, just a connection between modes.
-                        var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, current.Weight.Time + modalTransferTime, current.Item);
-                        heap.Push(neighbourRoute, new ModalWeight((float)current.Weight.Time + modalTransferTime, current.Weight.Transfers));
+                        var secondsNeighbour = current.Weight.Time + modalTransferTime;
+                        if (secondsNeighbour < weight)
+                        {
+                            var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, secondsNeighbour, current.Item);
+                            heap.Push(neighbourRoute, new ModalWeight((float)secondsNeighbour, current.Weight.Transfers));
+                        }
                     }
                 }
 

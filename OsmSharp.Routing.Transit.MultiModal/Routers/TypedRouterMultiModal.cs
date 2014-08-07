@@ -299,7 +299,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var path = _basicRouter.CalculateAndTime(_source.Graph, this.Interpreter, interModal,
-                source, target, double.MaxValue, routingParameters);
+                source, target, double.MaxValue, routingParameters, null);
 
             return this.ConstructRoute(departureTime, new List<Vehicle>(new Vehicle[] { toFirstStop, interModal, fromLastStop }), path, from, to);
         }
@@ -340,7 +340,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var path = _basicRouter.CalculateAndTime(_source.Graph, this.Interpreter, null,
-                sourceVisitList, targetVisitList, double.MaxValue, routingParameters);
+                sourceVisitList, targetVisitList, double.MaxValue, routingParameters, null);
 
             // construct router points.
             float latitude, longitude;

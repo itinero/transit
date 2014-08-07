@@ -38,7 +38,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.PriorityQueues
         /// Creates a new binairy heap.
         /// </summary>
         public ComparableBinairyHeap()
-            : this(2)
+            : this(10000)
         {
 
         }
@@ -75,8 +75,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.PriorityQueues
             // increase size if needed.
             if (_latest_index == _priorities.Length - 1)
             { // time to increase size!
-                Array.Resize<T>(ref _heap, _heap.Length + 100);
-                Array.Resize<TWeight>(ref _priorities, _priorities.Length + 100);
+                Array.Resize<T>(ref _heap, _heap.Length + 10000);
+                Array.Resize<TWeight>(ref _priorities, _priorities.Length + 10000);
             }
 
             // add the item at the first free point 

@@ -94,10 +94,11 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <param name="fromLastStop"></param>
         /// <param name="from"></param>
         /// <param name="max"></param>
-        /// <returns></returns>
-        public Dictionary<GeoCoordinate, double> CalculateTransitWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, double max)
+        /// <param name="sampleZoom"></param>
+        /// <returns>A collection of tuples containing the sample position, sample id and sample value.</returns>
+        public IEnumerable<Tuple<GeoCoordinate, ulong, double>> CalculateTransitWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, double max, int sampleZoom)
         {
-            return _multiModalRouter.CalculateAllWithin(departureTime, toFirstStop, interModal, fromLastStop, from, null, max);
+            return _multiModalRouter.CalculateAllWithin(departureTime, toFirstStop, interModal, fromLastStop, from, null, max, sampleZoom);
         }
 
         #region GFTS

@@ -360,11 +360,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <param name="interModal"></param>
         /// <param name="fromLastStop"></param>
         /// <param name="from"></param>
-        /// <param name="to"></param>
         /// <param name="parameters"></param>
         /// <param name="maxWeight"></param>
+        /// <param name="sampleZoom"></param>
         /// <returns></returns>
-        public Dictionary<GeoCoordinate, double> CalculateAllWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, Dictionary<string, object> parameters, double maxWeight)
+        public IEnumerable<Tuple<GeoCoordinate, ulong, double>> CalculateAllWithin(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, Dictionary<string, object> parameters, double maxWeight, int sampleZoom)
         {
             // calculate source/target.
             var source = this.RouteResolvedGraph(toFirstStop, from, false);
@@ -373,28 +373,20 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             var routingParameters = this.BuildRoutingParameters(parameters, departureTime);
 
             // calculate path.
-            var weightMatrix = new WeightMatrix(new GeoCoordinateBox(
-                new GeoCoordinate(from.Location.Latitude - 3, from.Location.Longitude - 3),
-                new GeoCoordinate(from.Location.Latitude + 3, from.Location.Longitude + 3)), 16);
+            var tiledSamples = new TiledWeights(sampleZoom);
             _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {
                     var coordinate = this.GetCoordinate(toFirstStop, vertexTimeAndTrip.VertexId.Vertex);
-                    weightMatrix.AddSample(coordinate.Latitude, coordinate.Longitude, vertexTimeAndTrip.Weight);
+                    tiledSamples.AddSample(coordinate.Latitude, coordinate.Longitude, vertexTimeAndTrip.Weight);
                 });
 
             // extract coordinates of all withing.
-            var allWithinCoordinates = new Dictionary<GeoCoordinate, double>(weightMatrix.Rows * weightMatrix.Columns);
-            for (int row = 0; row < weightMatrix.Rows; row++)
+            var allWithinCoordinates = new List<Tuple<GeoCoordinate, ulong, double>>(tiledSamples.Count);
+            foreach(var sampleTuple in tiledSamples)
             {
-                for (int column = 0; column < weightMatrix.Columns; column++)
-                {
-                    double value, latitude, longitude;
-                    if(weightMatrix.GetSample(row, column, out latitude, out longitude, out value))
-                    {
-                        allWithinCoordinates[new GeoCoordinate(latitude, longitude)] = value;
-                    }
-                }
+                var center = sampleTuple.Item1.Box.Center;
+                allWithinCoordinates.Add(new Tuple<GeoCoordinate,ulong,double>(new GeoCoordinate(center.Latitude, center.Longitude), sampleTuple.Item1.Id, sampleTuple.Item2));
             }
             return allWithinCoordinates;
         }

@@ -709,10 +709,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 }
                                 tags[4] = new RouteTags();
                                 tags[4].Key = "departure_time";
-                                tags[4].Value = departureTime.AddSeconds(forwardScheduleEntry.Value.DepartureTime).ToInvariantString();
+                                tags[4].Value = departureTime.Date.AddSeconds(forwardScheduleEntry.Value.DepartureTime).ToInvariantString();
                                 tags[5] = new RouteTags();
                                 tags[5].Key = "arrival_time";
-                                tags[5].Value = departureTime.AddSeconds(forwardScheduleEntry.Value.ArrivalTime).ToInvariantString();
+                                tags[5].Value = departureTime.Date.AddSeconds(forwardScheduleEntry.Value.ArrivalTime).ToInvariantString();
                             }
                             else
                             { // there is no schedule entry.

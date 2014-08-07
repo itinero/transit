@@ -27,12 +27,25 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// Creates a vertex that exists in all times and for all trips.
         /// </summary>
         /// <param name="vertex"></param>
+        /// <param name="secondsMode"></param>
         public VertexTimeAndTrip(long vertex)
+            : this(vertex, 0)
+        {
+            
+        }
+
+        /// <summary>
+        /// Creates a vertex that exists in all times and for all trips.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="secondsMode"></param>
+        public VertexTimeAndTrip(long vertex, uint secondsMode)
             : this()
         {
             this.Vertex = vertex;
             this.Trip = 0;
             this.Seconds = 0;
+            this.SecondsMode = secondsMode;
         }
 
         /// <summary>
@@ -47,6 +60,7 @@ namespace OsmSharp.Routing.Transit.Graphs
             this.Vertex = vertex;
             this.Seconds = seconds;
             this.Trip = trip;
+            this.SecondsMode = 0;
         }
 
         /// <summary>
@@ -58,6 +72,11 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// Gets or sets the seconds from the start.
         /// </summary>
         public uint Seconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the seconds from the last mode change.
+        /// </summary>
+        public uint SecondsMode { get; set; }
 
         /// <summary>
         /// Gets or sets the trip.

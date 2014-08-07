@@ -88,9 +88,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public const string NO_TRANSIT_KEY = "no_transit";
 
         /// <summary>
-        /// Holds the destination location.
+        /// Holds the max mode time key.
         /// </summary>
-        public const string DESTINATION_LOCATION_KEY = "destination_location";
+        public const string MAX_MODE_TIME = "max_mode_time";
 
         /// <summary>
         /// Calculates the shortest path from the given vertex to the given vertex given the weights in the graph.
@@ -218,6 +218,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             //{
             //    parameters[NO_TRANSIT_KEY] = false;
             //    max = System.Math.Min(max, resultNoTransit[0].Weight);
+            // parameters[MAX_MODE_TIME] = (uint)(60 * 30);
                 var result = this.DoCalculation(graph, interpreter, vehicle,
                     from, targets, max, false, false, parameters);
                 if (result != null && result.Length == 1)
@@ -463,6 +464,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 weight = MAX_SEARCH_TIME;
             }
 
+            // get weight mode.
+            var weightMode = weight;
+            if(parameters != null && parameters.ContainsKey(MAX_MODE_TIME))
+            {
+                weightMode = (uint)parameters[MAX_MODE_TIME];
+            }
+
             // instantiate possible trips data structures.
             var possibleTrips = new Dictionary<DateTime, Dictionary<uint, bool>>();
             Func<VertexTimeAndTrip, VertexTimeAndTrip, int> comparePaths = (vertex1, vertex2) =>
@@ -480,6 +488,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 targetsCount[targetIdx] = targetList[targetIdx].Count;
             }
 
+            // expand the target lists by using a small backward search.
+            this.DoBackwardSearch(graph, interpreter, vehicle, targetList, weight / 5);
+
             //  initialize the result data structures.
             var segmentsAtWeight = new List<PathSegment<VertexTimeAndTrip>>();
             var segmentsToTarget = new PathSegment<VertexTimeAndTrip>[targets.Length]; // the resulting target segments.
@@ -488,12 +499,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             var chosenStations = new HashSet<long>(); // keep a list of statops that have been visited up until now, visited meaning foot on the ground.
 
             // intialize dykstra data structures.
-            var heap = new ComparableBinairyHeap<PathSegment<VertexTimeAndTrip>, ModalWeight>(100);
+            var heap = new ComparableBinairyHeap<PathSegment<VertexTimeAndTrip>, ModalWeight>();
             var chosenVertices = new HashSet<VertexTimeAndTrip>();
             var labels = new Dictionary<VertexTimeAndTrip, IList<RoutingLabel>>();
             foreach (long vertex in source.GetVertices())
             {
-                labels[new VertexTimeAndTrip((uint)vertex)] = new List<RoutingLabel>();
+                labels[new VertexTimeAndTrip((uint)vertex, 0)] = new List<RoutingLabel>();
 
                 var path = source.GetPathTo(vertex).ConvertFrom();
                 heap.Push(path, new ModalWeight((float)path.Weight));
@@ -654,7 +665,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 bool currentIsStation = false;
                 foreach (var neighbour in arcs)
                 {
-                    var neighbourKey = new VertexTimeAndTrip(neighbour.Key);
+                    var neighbourKey = new VertexTimeAndTrip(neighbour.Key, 0);
                     if (chosenVertices.Contains(neighbourKey))
                     { // this neighbour has already been visited.
                         continue;
@@ -701,11 +712,17 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 if (constraintsOk)
                                 { // all constraints are validated or there are none.
                                     // calculate neighbors weight.
-                                    double totalWeight = current.Item.Weight + vehicle.Weight(tags, neighbour.Value.Distance);
+                                    double relativeWeight = vehicle.Weight(tags, neighbour.Value.Distance);
+                                    double totalWeight = current.Item.Weight + relativeWeight;
+                                    uint secondsMode = current.Item.VertexId.SecondsMode + (uint)relativeWeight;
 
                                     // update the visit list.
-                                    if (totalWeight < weight)
+                                    if (totalWeight < weight &&
+                                        secondsMode < weightMode)
                                     {
+                                        // create new vertex and time containing secondsMode.
+                                        neighbourKey = new VertexTimeAndTrip(neighbour.Key, secondsMode);
+
                                         var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
                                         heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
                                     }
@@ -938,6 +955,166 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 return segmentsToTarget.ToArray();
             }
             return segmentsAtWeight.ToArray();
+        }
+
+        /// <summary>
+        /// Does a backward search for all the given targets.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="interpreter"></param>
+        /// <param name="vehicle"></param>
+        /// <param name="targetList"></param>
+        /// <param name="maxWeight"></param>
+        /// <returns>All the vertices that were chosen.</returns>
+        private HashSet<long>[] DoBackwardSearch(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle, PathSegmentVisitList[] targetList, double maxWeight)
+        {
+            var sets = new HashSet<long>[targetList.Length];
+            for(int idx = 0; idx < targetList.Length; idx++)
+            {
+                sets[idx] = this.DoBackwardSearch(graph, interpreter, vehicle, targetList[idx], maxWeight);
+            }
+            return sets;
+        }
+
+        /// <summary>
+        /// Does a backward search for the given target.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="interpreter"></param>
+        /// <param name="vehicle"></param>
+        /// <param name="target"></param>
+        /// <param name="maxWeight"></param>
+        /// <returns>All the vertices that were chosen.</returns>
+        private HashSet<long> DoBackwardSearch(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle, PathSegmentVisitList target, double maxWeight)
+        {
+            // intialize dykstra data structures.
+            var heap = new OsmSharp.Collections.PriorityQueues.BinairyHeap<PathSegment<long>>();
+            var chosenVertices = new HashSet<long>();
+            var labels = new Dictionary<long, IList<RoutingLabel>>();
+            foreach (long vertex in target.GetVertices())
+            {
+                labels[vertex] = new List<RoutingLabel>();
+
+                var path = target.GetPathTo(vertex);
+                heap.Push(path, (float)path.Weight);
+            }
+
+            // set the from node as the current node and put it in the correct data structures.
+            // initialize the source's neighbors.
+            var current = heap.Pop();
+            while (current != null &&
+                chosenVertices.Contains(current.VertexId))
+            { // keep dequeuing.
+                current = heap.Pop();
+            }
+
+            // start OsmSharp.Routing.
+            var arcs = graph.GetArcs(Convert.ToUInt32(current.VertexId));
+            chosenVertices.Add(current.VertexId);
+
+            // loop until target is found and the route is the shortest!
+            while (true)
+            {
+                // add the current path to the visit list.
+                target.UpdateVertex(current);
+
+                // get the current labels list (if needed).
+                IList<RoutingLabel> currentLabels = null;
+                if (interpreter.Constraints != null)
+                { // there are constraints, get the labels.
+                    currentLabels = labels[current.VertexId];
+                    labels.Remove(current.VertexId);
+                }
+
+                // update the visited nodes.
+                foreach (var neighbour in arcs)
+                {
+                    if (chosenVertices.Contains(neighbour.Key))
+                    { // this neighbour has already been visited.
+                        continue;
+                    }
+                    if (neighbour.Value.IsRoad())
+                    { // a 'road' edge.
+                        // check the tags against the interpreter.
+                        var tags = graph.TagsIndex.Get(neighbour.Value.Tags);
+                        if (vehicle.CanTraverse(tags))
+                        { // it's ok; the edge can be traversed by the given vehicle.
+                            bool? oneWay = vehicle.IsOneWay(tags);
+                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value != neighbour.Value.Forward); // BACKWARD!
+                            if ((current.From == null ||
+                                interpreter.CanBeTraversed(current.VertexId, current.From.VertexId, neighbour.Key)) && // test for turning restrictions.
+                                canBeTraversedOneWay)
+                            { // the neighbor is forward and is not settled yet!
+                                // check the labels (if needed).
+                                bool constraintsOk = true;
+                                if (interpreter.Constraints != null)
+                                { // check if the label is ok.
+                                    RoutingLabel neighbourLabel = interpreter.Constraints.GetLabelFor(
+                                        graph.TagsIndex.Get(neighbour.Value.Tags));
+
+                                    // only test labels if there is a change.
+                                    if (currentLabels.Count == 0 || !neighbourLabel.Equals(currentLabels[currentLabels.Count - 1]))
+                                    { // labels are different, test them!
+                                        constraintsOk = interpreter.Constraints.ForwardSequenceAllowed(currentLabels,
+                                            neighbourLabel);
+
+                                        if (constraintsOk)
+                                        { // update the labels.
+                                            var neighbourLabels = new List<RoutingLabel>(currentLabels);
+                                            neighbourLabels.Add(neighbourLabel);
+
+                                            labels[neighbour.Key] = neighbourLabels;
+                                        }
+                                    }
+                                    else
+                                    { // set the same label(s).
+                                        labels[neighbour.Key] = currentLabels;
+                                    }
+                                }
+
+                                if (constraintsOk)
+                                { // all constraints are validated or there are none.
+                                    // calculate neighbors weight.
+                                    double relativeWeight = vehicle.Weight(tags, neighbour.Value.Distance);
+                                    double totalWeight = current.Weight + relativeWeight;
+
+                                    // update the visit list.
+                                    if (totalWeight < maxWeight)
+                                    {
+                                        var neighbourRoute = new PathSegment<long>(neighbour.Key, totalWeight, current);
+                                        heap.Push(neighbourRoute, (float)totalWeight);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // while the visit list is not empty.
+                current = null;
+                if (heap.Count > 0)
+                { // choose the next vertex.
+                    current = heap.Pop();
+                    while (current != null &&
+                        chosenVertices.Contains(current.VertexId))
+                    { // keep dequeuing.
+                        current = heap.Pop();
+                    }
+                    if (current != null)
+                    {
+                        chosenVertices.Add(current.VertexId);
+                    }
+                }
+
+                if (current == null)
+                { // route is not found, there are no vertices left
+                    // or the search went outside of the max bounds.
+                    break;
+                }
+
+                arcs = graph.GetArcs(Convert.ToUInt32(current.VertexId));
+            }
+            return chosenVertices;
         }
 
         #endregion

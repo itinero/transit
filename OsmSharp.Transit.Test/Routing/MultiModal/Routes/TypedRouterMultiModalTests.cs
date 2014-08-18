@@ -199,7 +199,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             var to = antwerpen;
             var route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 45, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             var routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             var routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -209,7 +209,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = antwerpen;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -219,7 +219,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = brussel;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -229,7 +229,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = gent;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -239,7 +239,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = antwerpen;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 06, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -249,7 +249,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = brussel;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);
@@ -259,7 +259,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             to = aalst;
             route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 09, 00, 0), vehicle, vehicle, vehicle,
                 multiModalEdgeRouter.Resolve(vehicle, from, true), multiModalEdgeRouter.Resolve(vehicle, to, true), parameters);
-            route.Vehicle = Vehicle.Pedestrian;
+            route.Vehicle = Vehicle.Pedestrian.UniqueName;
             routeFeatures = multiModalEdgeRouter.GetFeatures(route, true);
             routeGeoJson = geoJsonWriter.Write(routeFeatures);
             Assert.IsNotNull(route);

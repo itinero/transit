@@ -57,27 +57,27 @@ namespace OsmSharp.Transit.Test
 
             // 4->6 @ 05:30
             var route = router.Calculate("STAGECOACH", "NANAA", new System.DateTime(2008, 01, 01, 05, 30, 0));
-            Assert.AreEqual(1, route.Entries.Count);
-            Assert.AreEqual(2, route.Entries[0].Stops.Count);
-            Assert.AreEqual("STAGECOACH", route.Entries[0].Stops[0].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 0, 0), route.Entries[0].Stops[0].Time);
-            Assert.AreEqual("NANAA", route.Entries[0].Stops[1].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 5, 0), route.Entries[0].Stops[1].Time);
+            Assert.AreEqual(1, route.Segments.Count);
+            Assert.AreEqual(2, route.Segments[0].Stops.Count);
+            Assert.AreEqual("STAGECOACH", route.Segments[0].Stops[0].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 0, 0), route.Segments[0].Stops[0].Time);
+            Assert.AreEqual("NANAA", route.Segments[0].Stops[1].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 5, 0), route.Segments[0].Stops[1].Time);
 
             // 4-8 @ 05:30
             route = router.Calculate("STAGECOACH", "EMSI", new System.DateTime(2008, 01, 01, 05, 30, 0));
-            Assert.AreEqual(1, route.Entries.Count);
-            Assert.AreEqual(5, route.Entries[0].Stops.Count);
-            Assert.AreEqual("STAGECOACH", route.Entries[0].Stops[0].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 0, 0), route.Entries[0].Stops[0].Time);
-            Assert.AreEqual("NANAA", route.Entries[0].Stops[1].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 5, 0), route.Entries[0].Stops[1].Time);
-            Assert.AreEqual("NADAV", route.Entries[0].Stops[2].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 12, 0), route.Entries[0].Stops[2].Time);
-            Assert.AreEqual("DADAN", route.Entries[0].Stops[3].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 19, 0), route.Entries[0].Stops[3].Time);
-            Assert.AreEqual("EMSI", route.Entries[0].Stops[4].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 26, 0), route.Entries[0].Stops[4].Time);
+            Assert.AreEqual(1, route.Segments.Count);
+            Assert.AreEqual(5, route.Segments[0].Stops.Count);
+            Assert.AreEqual("STAGECOACH", route.Segments[0].Stops[0].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 0, 0), route.Segments[0].Stops[0].Time);
+            Assert.AreEqual("NANAA", route.Segments[0].Stops[1].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 5, 0), route.Segments[0].Stops[1].Time);
+            Assert.AreEqual("NADAV", route.Segments[0].Stops[2].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 12, 0), route.Segments[0].Stops[2].Time);
+            Assert.AreEqual("DADAN", route.Segments[0].Stops[3].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 19, 0), route.Segments[0].Stops[3].Time);
+            Assert.AreEqual("EMSI", route.Segments[0].Stops[4].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 01, 6, 26, 0), route.Segments[0].Stops[4].Time);
 
             // 4->6 @ 05:30 @ 2007-06-04
             route = router.Calculate("STAGECOACH", "NANAA", new System.DateTime(2007, 06, 04, 05, 30, 0));
@@ -108,18 +108,18 @@ namespace OsmSharp.Transit.Test
 
             // 4-9 @ 05:30 @ 2008-01-05
             var route = router.Calculate("STAGECOACH", "AMV", new System.DateTime(2008, 01, 05, 05, 30, 0));
-            Assert.AreEqual(2, route.Entries.Count);
-            Assert.AreEqual(2, route.Entries[0].Stops.Count);
-            Assert.AreEqual("STAGECOACH", route.Entries[0].Stops[0].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 05, 6, 0, 0), route.Entries[0].Stops[0].Time);
-            Assert.AreEqual("BEATTY_AIRPORT", route.Entries[0].Stops[1].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 05, 6, 20, 0), route.Entries[0].Stops[1].Time);
+            Assert.AreEqual(2, route.Segments.Count);
+            Assert.AreEqual(2, route.Segments[0].Stops.Count);
+            Assert.AreEqual("STAGECOACH", route.Segments[0].Stops[0].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 05, 6, 0, 0), route.Segments[0].Stops[0].Time);
+            Assert.AreEqual("BEATTY_AIRPORT", route.Segments[0].Stops[1].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 05, 6, 20, 0), route.Segments[0].Stops[1].Time);
 
-            Assert.AreEqual(2, route.Entries[1].Stops.Count);
-            Assert.AreEqual("BEATTY_AIRPORT", route.Entries[1].Stops[0].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 05, 8, 0, 0), route.Entries[1].Stops[0].Time);
-            Assert.AreEqual("AMV", route.Entries[1].Stops[1].Stop.Id);
-            Assert.AreEqual(new System.DateTime(2008, 01, 05, 9, 0, 0), route.Entries[1].Stops[1].Time);
+            Assert.AreEqual(2, route.Segments[1].Stops.Count);
+            Assert.AreEqual("BEATTY_AIRPORT", route.Segments[1].Stops[0].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 05, 8, 0, 0), route.Segments[1].Stops[0].Time);
+            Assert.AreEqual("AMV", route.Segments[1].Stops[1].Stop.Id);
+            Assert.AreEqual(new System.DateTime(2008, 01, 05, 9, 0, 0), route.Segments[1].Stops[1].Time);
 
             // 4-9 @ 05:30 @ 2008-01-01
             route = router.Calculate("STAGECOACH", "AMV", new System.DateTime(2008, 01, 01, 05, 30, 0));

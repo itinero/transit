@@ -106,7 +106,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <param name="coordinate"></param>
         /// <returns></returns>
         public static uint GetVertexAt<TEdgeData>(this DynamicGraphRouterDataSource<TEdgeData> graph, GeoCoordinate coordinate)
-            where TEdgeData : IDynamicGraphEdgeData
+            where TEdgeData : IGraphEdgeData
         {
             double distance = double.MaxValue;
             uint vertex = 0;
@@ -134,7 +134,7 @@ namespace OsmSharp.Routing.Transit.MultiModal
         /// <summary>
         /// Encodes the given schedule id.
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="id"></param>
         public static uint EncodeScheduleId(int id)
         {
             return (uint)(SCHEDULE_ID_MAX - id);

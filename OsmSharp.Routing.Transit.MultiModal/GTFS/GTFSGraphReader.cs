@@ -98,30 +98,29 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                     uint vertex = stopVertices[stopTime.StopId];
 
                     // FORWARD: add edge or get the edge data.
-                    if (!graph.HasArc(previousVertex, vertex))
+                    LiveEdge transitEdge;
+                    if (!graph.GetEdge(previousVertex, vertex, out transitEdge))
                     { // the arc is not there yet, add it.
-                        var edge = new LiveEdge();
+                        transitEdge = new LiveEdge();
                         var schedulePair = new TransitEdgeSchedulePair();
                         schedules.Add(schedulePair);
-                        edge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
-                        graph.AddArc(previousVertex, vertex, edge, null);
+                        transitEdge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
+                        graph.AddEdge(previousVertex, vertex, transitEdge, null);
                     }
-                    var transitEdge = graph.GetArc(previousVertex, vertex);
 
                     // get the schedule and add entry.
                     var schedule = transitEdge.GetForwardSchedule(schedules);
                     schedule.Add(tripIds[stopTime.TripId], departure, arrival);
 
                     // BACKWARD: add edge or get the edge data.
-                    if (!graph.HasArc(vertex, previousVertex))
+                    if (!graph.GetEdge(vertex, previousVertex, out transitEdge))
                     { // the arc is not there yet, add it.
-                        var edge = new LiveEdge();
+                        transitEdge = new LiveEdge();
                         var schedulePair = new TransitEdgeSchedulePair();
                         schedules.Add(schedulePair);
-                        edge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
-                        graph.AddArc(vertex, previousVertex, edge, null);
+                        transitEdge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
+                        graph.AddEdge(vertex, previousVertex, transitEdge, null);
                     }
-                    transitEdge = graph.GetArc(vertex, previousVertex);
 
                     // get the schedule and add entry.
                     schedule = transitEdge.GetBackwardSchedule(schedules);
@@ -133,15 +132,15 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
             // sort all schedules in all arcs.
             for (uint vertex = 1; vertex < graph.VertexCount + 1; vertex++)
             {
-                var arcs = graph.GetArcs(vertex);
+                var arcs = graph.GetEdges(vertex);
                 foreach (var arc in arcs)
                 {
-                    var forwardSchedule = arc.Value.GetForwardSchedule(schedules);
+                    var forwardSchedule = arc.EdgeData.GetForwardSchedule(schedules);
                     if (forwardSchedule != null)
                     { // sort the forward schedule.
                         forwardSchedule.Entries.Sort();
                     }
-                    var backwardSchedule = arc.Value.GetBackwardSchedule(schedules);
+                    var backwardSchedule = arc.EdgeData.GetBackwardSchedule(schedules);
                     if (backwardSchedule != null)
                     { // sort the backward schedule.
                         backwardSchedule.Entries.Sort();
@@ -161,7 +160,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                     var stopLocation = new GeoCoordinate(latitude, longitude);
 
                     // neighbouring vertices.
-                    var arcs = graph.GetArcs(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.005, longitude - 0.0025),
+                    var arcs = graph.GetEdges(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(latitude - 0.005, longitude - 0.0025),
                         new Math.Geo.GeoCoordinate(latitude + 0.005, longitude + 0.0025)));
 
                     foreach (var vehicle in vehicles)
@@ -209,13 +208,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                                 if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE.Value)
                                 { // only attach stations that are relatively close.
                                     var closest = sorted.Current.Key;
-                                    if (!graph.HasArc(stop, closest))
+                                    if (!graph.ContainsEdge(stop, closest))
                                     {
-                                        graph.AddArc(stop, closest, new LiveEdge(), null);
+                                        graph.AddEdge(stop, closest, new LiveEdge(), null);
                                     }
-                                    if (!graph.HasArc(closest, stop))
+                                    if (!graph.ContainsEdge(closest, stop))
                                     {
-                                        graph.AddArc(closest, stop, new LiveEdge(), null);
+                                        graph.AddEdge(closest, stop, new LiveEdge(), null);
                                     }
                                 }
                             }

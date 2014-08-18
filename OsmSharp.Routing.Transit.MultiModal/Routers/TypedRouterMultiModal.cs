@@ -1,8 +1,8 @@
-﻿using GeoAPI.Geometries;
-using GTFS;
+﻿using GTFS;
 using GTFS.Entities;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using OsmSharp.Collections.Coordinates.Collections;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.ArcAggregation;
 using OsmSharp.Routing.Graph;
@@ -283,10 +283,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <summary>
         /// Calculates a route between two given location that is possible multimodal.
         /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <param name="departureTime"></param>
         /// <param name="toFirstStop"></param>
         /// <param name="interModal"></param>
         /// <param name="fromLastStop"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
         public Route CalculateTransit(DateTime departureTime, Vehicle toFirstStop, Vehicle interModal, Vehicle fromLastStop, RouterPoint from, RouterPoint to, Dictionary<string, object> parameters)
         {
@@ -476,16 +479,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 route = new Route();
 
                 // set the vehicle.
-                route.Vehicle = vehicles[0];
+                route.Vehicle = vehicles[0].UniqueName;
 
-                RoutePointEntry[] entries;
+                RouteSegment[] entries;
                 if (vertices.Length > 0)
                 {
                     entries = this.GenerateEntries(departureTime, vehicles, vertices);
                 }
                 else
                 {
-                    entries = new RoutePointEntry[0];
+                    entries = new RouteSegment[0];
                 }
 
                 // create the from routing point.
@@ -514,7 +517,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 }
 
                 // set the routing points.
-                route.Entries = entries;
+                route.Segments = entries;
 
                 //// calculate metrics.
                 //var calculator = new TimeCalculator(_interpreter);
@@ -533,20 +536,20 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <param name="vehicles"></param>
         /// <param name="vertices"></param>
         /// <returns></returns>
-        protected virtual RoutePointEntry[] GenerateEntries(DateTime departureTime,
+        protected virtual RouteSegment[] GenerateEntries(DateTime departureTime,
             List<Vehicle> vehicles, Tuple<VertexTimeAndTrip, double>[] vertices)
         {
             // create an entries list.
-            var entries = new List<RoutePointEntry>();
+            var entries = new List<RouteSegment>();
 
             // create the first entry.
             var coordinate = this.GetCoordinate(vehicles[0], vertices[0].Item1.Vertex);
-            var first = new RoutePointEntry();
+            var first = new RouteSegment();
             first.Latitude = (float)coordinate.Latitude;
             first.Longitude = (float)coordinate.Longitude;
-            first.Type = RoutePointEntryType.Start;
-            first.WayFromName = null;
-            first.WayFromNames = null;
+            first.Type = RouteSegmentType.Start;
+            first.Name = null;
+            first.Names = null;
 
             entries.Add(first);
 
@@ -563,6 +566,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 if (nodePrevious.Item1.Vertex != nodeCurrent.Item1.Vertex)
                 {
                     var edge = this.GetEdgeData(vehicles[0], nodePrevious.Item1.Vertex, nodeCurrent.Item1.Vertex);
+                    var edgeCoordinates = this.GetEdgeShape(vehicles[0], nodePrevious.Item1.Vertex, nodeCurrent.Item1.Vertex);
 
                     if(edge is LiveEdge)
                     { // regular road.
@@ -574,23 +578,23 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
 
                             // add intermediate entries.
-                            if (edge.Coordinates != null)
+                            if (edgeCoordinates != null)
                             { // loop over coordinates.
-                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                for (int coordinateIdx = 0; coordinateIdx < edgeCoordinates.Length; coordinateIdx++)
                                 {
-                                    var entry = new RoutePointEntry();
-                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
-                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
-                                    entry.Type = RoutePointEntryType.Along;
+                                    var entry = new RouteSegment();
+                                    entry.Latitude = edgeCoordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edgeCoordinates[coordinateIdx].Longitude;
+                                    entry.Type = RouteSegmentType.Along;
                                     entry.Tags = currentTags.ConvertFrom();
-                                    entry.WayFromName = name;
-                                    entry.WayFromNames = names.ConvertFrom();
+                                    entry.Name = name;
+                                    entry.Names = names.ConvertFrom();
 
                                     entries.Add(entry);
                                 }
 
                                 // Get the side streets
-                                var sideStreets = new List<RoutePointEntrySideStreet>();
+                                var sideStreets = new List<RouteSegmentBranch>();
                                 var neighbours = this.GetNeighboursUndirectedWithEdges(vehicles[0], nodeCurrent.Item1.Vertex, nodePrevious.Item1.Vertex, nodeNext.Item1.Vertex);
                                 var consideredNeighbours = new HashSet<GeoCoordinate>();
                                 if (neighbours.Count > 0)
@@ -600,12 +604,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                         if (((LiveEdge)neighbour.Value).IsRoad())
                                         { // neighour edge is a road.
                                             var neighbourKeyCoordinate = this.GetCoordinate(vehicles[0], neighbour.Key);
-                                            if (neighbour.Value.Coordinates != null &&
-                                                neighbour.Value.Coordinates.Length > 0)
+                                            var neighbourValueCoordinates = this.GetEdgeShape(vehicles[0], nodeCurrent.Item1.Vertex, neighbour.Key);
+                                            if (neighbourValueCoordinates != null &&
+                                                neighbourValueCoordinates.Length > 0)
                                             { // get the first of the coordinates array.
                                                 neighbourKeyCoordinate = new GeoCoordinate(
-                                                    neighbour.Value.Coordinates[0].Latitude,
-                                                    neighbour.Value.Coordinates[0].Longitude);
+                                                    neighbourValueCoordinates[0].Latitude,
+                                                    neighbourValueCoordinates[0].Longitude);
                                             }
                                             if (!consideredNeighbours.Contains(neighbourKeyCoordinate))
                                             { // neighbour has not been considered yet.
@@ -615,12 +620,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                                 var tags = _source.Graph.TagsIndex.Get(neighbour.Value.Tags);
 
                                                 // build the side street info.
-                                                var sideStreet = new RoutePointEntrySideStreet();
+                                                var sideStreet = new RouteSegmentBranch();
                                                 sideStreet.Latitude = (float)neighbourCoordinate.Latitude;
                                                 sideStreet.Longitude = (float)neighbourCoordinate.Longitude;
                                                 sideStreet.Tags = tags.ConvertFrom();
-                                                sideStreet.WayName = _interpreter.EdgeInterpreter.GetName(tags);
-                                                sideStreet.WayNames = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
+                                                sideStreet.Name = _interpreter.EdgeInterpreter.GetName(tags);
+                                                sideStreet.Names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
 
                                                 sideStreets.Add(sideStreet);
                                             }
@@ -631,14 +636,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 // create the route entry.
                                 var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
 
-                                var routeEntry = new RoutePointEntry();
+                                var routeEntry = new RouteSegment();
                                 routeEntry.Latitude = (float)nextCoordinate.Latitude;
                                 routeEntry.Longitude = (float)nextCoordinate.Longitude;
                                 routeEntry.SideStreets = sideStreets.ToArray();
                                 routeEntry.Tags = currentTags.ConvertFrom();
-                                routeEntry.Type = RoutePointEntryType.Along;
-                                routeEntry.WayFromName = name;
-                                routeEntry.WayFromNames = names.ConvertFrom();
+                                routeEntry.Type = RouteSegmentType.Along;
+                                routeEntry.Name = name;
+                                routeEntry.Names = names.ConvertFrom();
                                 entries.Add(routeEntry);
                             }
                             perviousIsTransit = false;
@@ -715,14 +720,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             }
 
                             // add intermediate entries.
-                            if (edge.Coordinates != null)
+                            if (edgeCoordinates != null)
                             { // loop over coordinates.
-                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                for (int coordinateIdx = 0; coordinateIdx < edgeCoordinates.Length; coordinateIdx++)
                                 {
-                                    var entry = new RoutePointEntry();
-                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
-                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
-                                    entry.Type = RoutePointEntryType.Along;
+                                    var entry = new RouteSegment();
+                                    entry.Latitude = edgeCoordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edgeCoordinates[coordinateIdx].Longitude;
+                                    entry.Type = RouteSegmentType.Along;
                                     entry.Tags = tags;
                                     entries.Add(entry);
                                 }
@@ -731,14 +736,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             // create the route entry.
                             var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
 
-                            var routeEntry = new RoutePointEntry();
+                            var routeEntry = new RouteSegment();
                             routeEntry.Latitude = (float)nextCoordinate.Latitude;
                             routeEntry.Longitude = (float)nextCoordinate.Longitude;
-                            routeEntry.SideStreets = new RoutePointEntrySideStreet[0];
+                            routeEntry.SideStreets = new RouteSegmentBranch[0];
                             routeEntry.Tags = tags;
-                            routeEntry.Type = RoutePointEntryType.Along;
-                            routeEntry.WayFromName = string.Empty;
-                            routeEntry.WayFromNames = new RouteTags[0];
+                            routeEntry.Type = RouteSegmentType.Along;
+                            routeEntry.Name = string.Empty;
+                            routeEntry.Names = new RouteTags[0];
                             if (_reverseStops.TryGetValue((uint)nodeCurrent.Item1.Vertex, out stopId))
                             { // a first entry in a transit series. add previous station.
                                 double stopLatitude, stopLongitude;
@@ -766,14 +771,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                         else
                         { // edge is something else.
                             // add intermediate entries.
-                            if (edge.Coordinates != null)
+                            if (edgeCoordinates != null)
                             { // loop over coordinates.
-                                for (int coordinateIdx = 0; coordinateIdx < edge.Coordinates.Length; coordinateIdx++)
+                                for (int coordinateIdx = 0; coordinateIdx < edgeCoordinates.Length; coordinateIdx++)
                                 {
-                                    var entry = new RoutePointEntry();
-                                    entry.Latitude = edge.Coordinates[coordinateIdx].Latitude;
-                                    entry.Longitude = edge.Coordinates[coordinateIdx].Longitude;
-                                    entry.Type = RoutePointEntryType.Along;
+                                    var entry = new RouteSegment();
+                                    entry.Latitude = edgeCoordinates[coordinateIdx].Latitude;
+                                    entry.Longitude = edgeCoordinates[coordinateIdx].Longitude;
+                                    entry.Type = RouteSegmentType.Along;
                                     entry.Tags = new RouteTags[1];
                                     entry.Tags[0] = new RouteTags();
                                     entry.Tags[0].Key = "type";
@@ -786,17 +791,17 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             // create the route entry.
                             var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
 
-                            var routeEntry = new RoutePointEntry();
+                            var routeEntry = new RouteSegment();
                             routeEntry.Latitude = (float)nextCoordinate.Latitude;
                             routeEntry.Longitude = (float)nextCoordinate.Longitude;
-                            routeEntry.SideStreets = new RoutePointEntrySideStreet[0];
+                            routeEntry.SideStreets = new RouteSegmentBranch[0];
                             routeEntry.Tags = new RouteTags[1];
                             routeEntry.Tags[0] = new RouteTags();
                             routeEntry.Tags[0].Key = "type";
                             routeEntry.Tags[0].Value = "intermodal";
-                            routeEntry.Type = RoutePointEntryType.Along;
-                            routeEntry.WayFromName = string.Empty;
-                            routeEntry.WayFromNames = new RouteTags[0];
+                            routeEntry.Type = RouteSegmentType.Along;
+                            routeEntry.Name = string.Empty;
+                            routeEntry.Names = new RouteTags[0];
                             entries.Add(routeEntry);
                             perviousIsTransit = false;
                         }
@@ -812,24 +817,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             {
                 int last_idx = vertices.Length - 1;
                 var edge = this.GetEdgeData(vehicles[0], vertices[last_idx - 1].Item1.Vertex, vertices[last_idx].Item1.Vertex);
-                //TagsCollectionBase tags = _dataGraph.TagsIndex.Get(edge.Tags);
+                var edgeCoordinates = this.GetEdgeShape(vehicles[0], vertices[last_idx - 1].Item1.Vertex, vertices[last_idx].Item1.Vertex);
 
                 //// get names.
                 //var name = _interpreter.EdgeInterpreter.GetName(tags);
                 //var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
 
                 // add intermediate entries.
-                if (edge.Coordinates != null)
+                if (edgeCoordinates != null)
                 { // loop over coordinates.
-                    for (int idx = 0; idx < edge.Coordinates.Length; idx++)
+                    for (int idx = 0; idx < edgeCoordinates.Length; idx++)
                     {
-                        var entry = new RoutePointEntry();
-                        entry.Latitude = edge.Coordinates[idx].Latitude;
-                        entry.Longitude = edge.Coordinates[idx].Longitude;
-                        entry.Type = RoutePointEntryType.Along;
-                        //entry.Tags = tags.ConvertFrom();
-                        //entry.WayFromName = name;
-                        //entry.WayFromNames = names;
+                        var entry = new RouteSegment();
+                        entry.Latitude = edgeCoordinates[idx].Latitude;
+                        entry.Longitude = edgeCoordinates[idx].Longitude;
+                        entry.Type = RouteSegmentType.Along;
 
                         entries.Add(entry);
                     }
@@ -837,10 +839,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
                 // add last entry.
                 coordinate = this.GetCoordinate(vehicles[0], vertices[last_idx].Item1.Vertex);
-                var last = new RoutePointEntry();
+                var last = new RouteSegment();
                 last.Latitude = (float)coordinate.Latitude;
                 last.Longitude = (float)coordinate.Longitude;
-                last.Type = RoutePointEntryType.Stop;
+                last.Type = RouteSegmentType.Stop;
                 //last.Tags = tags.ConvertFrom();
                 //last.WayFromName = name;
                 //last.WayFromNames = names;
@@ -856,6 +858,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// Creates an array of routetags for the given stopId.
         /// </summary>
         /// <param name="stopId"></param>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
         /// <returns></returns>
         private RouteTags[] GetStopDetails(string stopId, out double latitude, out double longitude)
         {
@@ -897,11 +901,20 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
         #endregion
 
+        /// <summary>
+        /// Returns a feature collection containing all network features.
+        /// </summary>
+        /// <returns></returns>
         public FeatureCollection GetNetworkFeatures()
         {
             return this.GetNetworkFeatures(new GeoCoordinateBox(new GeoCoordinate(-1000, -1000), new GeoCoordinate(1000, 1000)));
         }
 
+        /// <summary>
+        /// Returns a feature collection containing all network features in the given box.
+        /// </summary>
+        /// <param name="box"></param>
+        /// <returns></returns>
         public FeatureCollection GetNetworkFeatures(GeoCoordinateBox box)
         {
             var features = new FeatureCollection();
@@ -918,7 +931,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 _source.Graph.GetVertex(stop.Value, out latitude, out longitude);
                 if(box.Contains(new GeoCoordinate(latitude, longitude)))
                 {
-                    var point = new Point(new Coordinate(longitude, latitude));
+                    var point = new Point(new GeoAPI.Geometries.Coordinate(longitude, latitude));
                     vertexFeatures.Add(new Feature(point, attributes));
 
                     handledVertices.Add(stop.Value);
@@ -938,33 +951,33 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                     var attributes = new AttributesTable();
                     attributes.AddAttribute("vertex_id", vertex);
 
-                    var point = new Point(new Coordinate(longitude, latitude));
+                    var point = new Point(new GeoAPI.Geometries.Coordinate(longitude, latitude));
                     vertexFeatures.Add(new Feature(point, attributes));
                 }
 
-                var arcs = _source.Graph.GetArcs(vertex);
+                var arcs = _source.Graph.GetEdges(vertex);
                 foreach(var arc in arcs)
                 {
-                    if (arc.Value.Forward)
+                    if (arc.EdgeData.Forward)
                     {
-                        var coordinates = new List<Coordinate>();
+                        var coordinates = new List<GeoAPI.Geometries.Coordinate>();
                         _source.Graph.GetVertex(vertex, out latitude, out longitude);
-                        coordinates.Add(new Coordinate(longitude, latitude));
+                        coordinates.Add(new GeoAPI.Geometries.Coordinate(longitude, latitude));
 
-                        if (arc.Value.Coordinates != null)
+                        if (arc.Intermediates != null)
                         {
-                            for (int idx = 0; idx < arc.Value.Coordinates.Length; idx++)
+                            foreach (var coordinate in arc.Intermediates)
                             {
-                                coordinates.Add(new Coordinate(arc.Value.Coordinates[idx].Longitude, arc.Value.Coordinates[idx].Latitude));
+                                coordinates.Add(new GeoAPI.Geometries.Coordinate(coordinate.Longitude, coordinate.Latitude));
                             }
                         }
-                        _source.Graph.GetVertex(arc.Key, out latitude, out longitude);
-                        coordinates.Add(new Coordinate(longitude, latitude));
+                        _source.Graph.GetVertex(arc.Neighbour, out latitude, out longitude);
+                        coordinates.Add(new GeoAPI.Geometries.Coordinate(longitude, latitude));
 
                         var attributes = new AttributesTable();
-                        if (arc.Value.IsRoad())
+                        if (arc.EdgeData.IsRoad())
                         {
-                            var tags = _source.Graph.TagsIndex.Get(arc.Value.Tags);
+                            var tags = _source.Graph.TagsIndex.Get(arc.EdgeData.Tags);
                             if (tags != null)
                             {
                                 foreach (var tag in tags)
@@ -973,18 +986,18 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 }
                             }
                         }
-                        else if(arc.Value.IsTransit())
+                        else if (arc.EdgeData.IsTransit())
                         {
-                            uint? scheduleId = arc.Value.GetScheduleId();
+                            uint? scheduleId = arc.EdgeData.GetScheduleId();
                             attributes.AddAttribute("type", "transit");
                             attributes.AddAttribute("schedule_id", scheduleId.ToInvariantString());
-                            var forwardSchedule = arc.Value.GetForwardSchedule(_source.Schedules);
+                            var forwardSchedule = arc.EdgeData.GetForwardSchedule(_source.Schedules);
                             for(int idx = 0; idx < forwardSchedule.Entries.Count; idx++)
                             {
                                 var entry = forwardSchedule.Entries[idx];
                                 attributes.AddAttribute("forward_schedule_" + idx.ToString("D4"), entry.ToInvariantString());
                             }
-                            var backwardSchedule = arc.Value.GetBackwardSchedule(_source.Schedules);
+                            var backwardSchedule = arc.EdgeData.GetBackwardSchedule(_source.Schedules);
                             for (int idx = 0; idx < backwardSchedule.Entries.Count; idx++)
                             {
                                 var entry = backwardSchedule.Entries[idx];
@@ -996,7 +1009,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             attributes.AddAttribute("type", "intermodal");
                         }
                         attributes.AddAttribute("from_vertex", vertex);
-                        attributes.AddAttribute("to_vertex", arc.Key);
+                        attributes.AddAttribute("to_vertex", arc.Neighbour);
                         var lineString = new LineString(coordinates.ToArray());
                         features.Add(new Feature(lineString, attributes));
                     }
@@ -1026,7 +1039,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             if (!aggregated)
             { // do not aggregate, just add geometry.
                 var coordinates = route.GetPoints();
-                var ntsCoordinates = coordinates.Select(x => { return new Coordinate(x.Longitude, x.Latitude); });
+                var ntsCoordinates = coordinates.Select(x => { return new GeoAPI.Geometries.Coordinate(x.Longitude, x.Latitude); });
                 var geometryFactory = new GeometryFactory();
                 var lineString = geometryFactory.CreateLineString(ntsCoordinates.ToArray());
                 var feature = new Feature(lineString, new AttributesTable());
@@ -1049,10 +1062,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                         if(next != null)
                         { // there is a next point, now there can be a segment extracted from the route.
                             // build geometry.
-                            var coordinates = new List<Coordinate>();
+                            var coordinates = new List<GeoAPI.Geometries.Coordinate>();
                             for (int idx = current.EntryIdx; idx < next.EntryIdx + 1; idx++)
                             {
-                                coordinates.Add(new Coordinate(route.Entries[idx].Longitude, route.Entries[idx].Latitude));
+                                coordinates.Add(new GeoAPI.Geometries.Coordinate(route.Segments[idx].Longitude, route.Segments[idx].Latitude));
                             }
 
                             // build attributes.
@@ -1087,7 +1100,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 }
 
                                 // build feature.
-                                var pointGeometry = new Point(new Coordinate(point.Location.Longitude, point.Location.Latitude));
+                                var pointGeometry = new Point(new GeoAPI.Geometries.Coordinate(point.Location.Longitude, point.Location.Latitude));
                                 pointsCollection.Add(new Feature(pointGeometry, attributesTable));
                             }
                         }

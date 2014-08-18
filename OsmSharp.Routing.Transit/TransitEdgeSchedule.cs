@@ -54,6 +54,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Adds a new schedule entry.
         /// </summary>
+        /// <param name="trip"></param>
         /// <param name="departure"></param>
         /// <param name="arrival"></param>
         public void Add(uint trip, int departure, int arrival)
@@ -132,6 +133,7 @@ namespace OsmSharp.Routing.Transit
         /// Returns the entry for the given trip.
         /// </summary>
         /// <param name="trip"></param>
+        /// <param name="start"></param>
         /// <returns></returns>
         public TransitEdgeScheduleEntry? GetForTrip(uint trip, DateTime start)
         {

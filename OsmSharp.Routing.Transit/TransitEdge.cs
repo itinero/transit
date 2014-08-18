@@ -28,7 +28,7 @@ namespace OsmSharp.Routing.Transit
     /// <summary>
     /// An edge representing a transit link between two stops.
     /// </summary>
-    public class TransitEdge : IDynamicGraphEdgeData
+    public class TransitEdge : IGraphEdgeData
     {
         /// <summary>
         /// Creates a new transit edge.
@@ -39,35 +39,38 @@ namespace OsmSharp.Routing.Transit
             this.BackwardSchedule = new TransitEdgeSchedule();
         }
 
-        public OsmSharp.Math.Geo.Simple.GeoCoordinateSimple[] Coordinates
-        {
-            get;
-            set;
-        }
-
-        public bool EqualsGeometrically(IDynamicGraphEdgeData other)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// Gets or sets the forward flag.
+        /// </summary>
         public bool Forward
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Gets the neighbour relations flag.
+        /// </summary>
         public bool RepresentsNeighbourRelations
         {
             get { return true; }
         }
 
+        /// <summary>
+        /// Gets or sets the tags id.
+        /// </summary>
         public uint Tags
         {
             get;
             set;
         }
 
-        public bool Equals(IDynamicGraphEdgeData other)
+        /// <summary>
+        /// Returns true if this edge is equal to the given edge.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(IGraphEdgeData other)
         {
             throw new NotImplementedException();
         }
@@ -81,5 +84,20 @@ namespace OsmSharp.Routing.Transit
         /// Gets or sets the backward transit edge schedule.
         /// </summary>
         public TransitEdgeSchedule BackwardSchedule { get; private set; }
+
+        /// <summary>
+        /// Returns the exact reverse of this edge.
+        /// </summary>
+        /// <returns></returns>
+        public IGraphEdgeData Reverse()
+        {
+            return new TransitEdge()
+            {
+                Forward = !this.Forward,
+                BackwardSchedule = this.ForwardSchedule,
+                ForwardSchedule = this.BackwardSchedule,
+                Tags = this.Tags
+            };
+        }
     }
 }

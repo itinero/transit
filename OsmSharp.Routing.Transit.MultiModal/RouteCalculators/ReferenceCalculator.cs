@@ -120,6 +120,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="interpreter"></param>
         /// <param name="max"></param>
         /// <param name="parameters"></param>
+        /// <param name="currentHandler"></param>
         /// <returns></returns>
         public PathSegment<VertexTimeAndTrip> CalculateAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList to, double max, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler)
@@ -207,6 +208,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="targets"></param>
         /// <param name="max"></param>
         /// <param name="parameters"></param>
+        /// <param name="currentHandler"></param>
         /// <returns></returns>
         public PathSegment<VertexTimeAndTrip> CalculateToClosestAndTime(IBasicRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter,
             Vehicle vehicle, PathSegmentVisitList from, PathSegmentVisitList[] targets, double max, Dictionary<string, object> parameters, Action<PathSegment<VertexTimeAndTrip>> currentHandler)
@@ -647,7 +649,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             }
 
             // start OsmSharp.Routing.
-            var arcs = graph.GetArcs(Convert.ToUInt32(current.Item.VertexId.Vertex));
+            var arcs = graph.GetEdges(Convert.ToUInt32(current.Item.VertexId.Vertex));
             chosenVertices.Add(current.Item.VertexId);
 
             // loop until target is found and the route is the shortest!
@@ -665,21 +667,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 bool currentIsStation = false;
                 foreach (var neighbour in arcs)
                 {
-                    var neighbourKey = new VertexTimeAndTrip(neighbour.Key, 0);
+                    var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
                     if (chosenVertices.Contains(neighbourKey))
                     { // this neighbour has already been visited.
                         continue;
                     }
-                    if (neighbour.Value.IsRoad() && !onlyTransit)
+                    if (neighbour.EdgeData.IsRoad() && !onlyTransit)
                     { // a 'road' edge.
                         // check the tags against the interpreter.
-                        var tags = graph.TagsIndex.Get(neighbour.Value.Tags);
+                        var tags = graph.TagsIndex.Get(neighbour.EdgeData.Tags);
                         if (vehicle.CanTraverse(tags))
                         { // it's ok; the edge can be traversed by the given vehicle.
                             bool? oneWay = vehicle.IsOneWay(tags);
-                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value == neighbour.Value.Forward);
+                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value == neighbour.EdgeData.Forward);
                             if ((current.Item.From == null ||
-                                interpreter.CanBeTraversed(current.Item.From.VertexId.Vertex, current.Item.VertexId.Vertex, neighbour.Key)) && // test for turning restrictions.
+                                interpreter.CanBeTraversed(current.Item.From.VertexId.Vertex, current.Item.VertexId.Vertex, neighbour.Neighbour)) && // test for turning restrictions.
                                 canBeTraversedOneWay)
                             { // the neighbor is forward and is not settled yet!
                                 // check the labels (if needed).
@@ -687,7 +689,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 if (interpreter.Constraints != null)
                                 { // check if the label is ok.
                                     RoutingLabel neighbourLabel = interpreter.Constraints.GetLabelFor(
-                                        graph.TagsIndex.Get(neighbour.Value.Tags));
+                                        graph.TagsIndex.Get(neighbour.EdgeData.Tags));
 
                                     // only test labels if there is a change.
                                     if (currentLabels.Count == 0 || !neighbourLabel.Equals(currentLabels[currentLabels.Count - 1]))
@@ -712,7 +714,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 if (constraintsOk)
                                 { // all constraints are validated or there are none.
                                     // calculate neighbors weight.
-                                    double relativeWeight = vehicle.Weight(tags, neighbour.Value.Distance);
+                                    double relativeWeight = vehicle.Weight(tags, neighbour.EdgeData.Distance);
                                     double totalWeight = current.Item.Weight + relativeWeight;
                                     uint secondsMode = current.Item.VertexId.SecondsMode + (uint)relativeWeight;
 
@@ -721,7 +723,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                         secondsMode < weightMode)
                                     {
                                         // create new vertex and time containing secondsMode.
-                                        neighbourKey = new VertexTimeAndTrip(neighbour.Key, secondsMode);
+                                        neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, secondsMode);
 
                                         var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
                                         heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
@@ -730,12 +732,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             }
                         }
                     }
-                    else if (neighbour.Value.IsTransit() && !noTransit)
+                    else if (neighbour.EdgeData.IsTransit() && !noTransit)
                     { // transit edge.
                         // calculate ticks.
                         var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
                         var ticksDate = new DateTime(currentTicks);
-                        var forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
+                        var forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
 
                         if (current.Item.VertexId.Seconds == 0 &&
                             current.Item.VertexId.Trip == 0)
@@ -791,7 +793,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
                                 if (secondsNeighbour < weight)
                                 { // still not over the search threshold.
-                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
+                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
                                     heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
                                 }
                             }
@@ -814,7 +816,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             }
                             var minTransferTime = MIN_TRANSFER_TIME;
                             var transfers = current.Weight.Transfers + 1;
-                            forwardSchedule = neighbour.Value.GetForwardSchedule(schedules);
+                            forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
                             entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
                             if (entry.HasValue)
                             { // there is a next entry in the same station.
@@ -843,7 +845,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             }
                         }
                     }
-                    else if (!neighbour.Value.IsTransit() && !neighbour.Value.IsRoad())
+                    else if (!neighbour.EdgeData.IsTransit() && !neighbour.EdgeData.IsRoad())
                     { // no transit no road, just a connection between modes.
                         var secondsNeighbour = current.Weight.Time + modalTransferTime;
                         if (secondsNeighbour < weight)
@@ -946,7 +948,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 }
 
                 // get the neighbors of the current node.
-                arcs = graph.GetArcs(Convert.ToUInt32(current.Item.VertexId.Vertex));
+                arcs = graph.GetEdges(Convert.ToUInt32(current.Item.VertexId.Vertex));
             }
 
             // return the result.
@@ -1009,7 +1011,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             }
 
             // start OsmSharp.Routing.
-            var arcs = graph.GetArcs(Convert.ToUInt32(current.VertexId));
+            var arcs = graph.GetEdges(Convert.ToUInt32(current.VertexId));
             chosenVertices.Add(current.VertexId);
 
             // loop until target is found and the route is the shortest!
@@ -1029,20 +1031,20 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 // update the visited nodes.
                 foreach (var neighbour in arcs)
                 {
-                    if (chosenVertices.Contains(neighbour.Key))
+                    if (chosenVertices.Contains(neighbour.Neighbour))
                     { // this neighbour has already been visited.
                         continue;
                     }
-                    if (neighbour.Value.IsRoad())
+                    if (neighbour.EdgeData.IsRoad())
                     { // a 'road' edge.
                         // check the tags against the interpreter.
-                        var tags = graph.TagsIndex.Get(neighbour.Value.Tags);
+                        var tags = graph.TagsIndex.Get(neighbour.EdgeData.Tags);
                         if (vehicle.CanTraverse(tags))
                         { // it's ok; the edge can be traversed by the given vehicle.
                             bool? oneWay = vehicle.IsOneWay(tags);
-                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value != neighbour.Value.Forward); // BACKWARD!
+                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value != neighbour.EdgeData.Forward); // BACKWARD!
                             if ((current.From == null ||
-                                interpreter.CanBeTraversed(current.VertexId, current.From.VertexId, neighbour.Key)) && // test for turning restrictions.
+                                interpreter.CanBeTraversed(current.VertexId, current.From.VertexId, neighbour.Neighbour)) && // test for turning restrictions.
                                 canBeTraversedOneWay)
                             { // the neighbor is forward and is not settled yet!
                                 // check the labels (if needed).
@@ -1050,7 +1052,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 if (interpreter.Constraints != null)
                                 { // check if the label is ok.
                                     RoutingLabel neighbourLabel = interpreter.Constraints.GetLabelFor(
-                                        graph.TagsIndex.Get(neighbour.Value.Tags));
+                                        graph.TagsIndex.Get(neighbour.EdgeData.Tags));
 
                                     // only test labels if there is a change.
                                     if (currentLabels.Count == 0 || !neighbourLabel.Equals(currentLabels[currentLabels.Count - 1]))
@@ -1063,25 +1065,25 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                             var neighbourLabels = new List<RoutingLabel>(currentLabels);
                                             neighbourLabels.Add(neighbourLabel);
 
-                                            labels[neighbour.Key] = neighbourLabels;
+                                            labels[neighbour.Neighbour] = neighbourLabels;
                                         }
                                     }
                                     else
                                     { // set the same label(s).
-                                        labels[neighbour.Key] = currentLabels;
+                                        labels[neighbour.Neighbour] = currentLabels;
                                     }
                                 }
 
                                 if (constraintsOk)
                                 { // all constraints are validated or there are none.
                                     // calculate neighbors weight.
-                                    double relativeWeight = vehicle.Weight(tags, neighbour.Value.Distance);
+                                    double relativeWeight = vehicle.Weight(tags, neighbour.EdgeData.Distance);
                                     double totalWeight = current.Weight + relativeWeight;
 
                                     // update the visit list.
                                     if (totalWeight < maxWeight)
                                     {
-                                        var neighbourRoute = new PathSegment<long>(neighbour.Key, totalWeight, current);
+                                        var neighbourRoute = new PathSegment<long>(neighbour.Neighbour, totalWeight, current);
                                         heap.Push(neighbourRoute, (float)totalWeight);
                                     }
                                 }
@@ -1112,11 +1114,19 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     break;
                 }
 
-                arcs = graph.GetArcs(Convert.ToUInt32(current.VertexId));
+                arcs = graph.GetEdges(Convert.ToUInt32(current.VertexId));
             }
             return chosenVertices;
         }
 
         #endregion
+
+        /// <summary>
+        /// Returns the unit of the weight type used in this router implementation.
+        /// </summary>
+        public RouterWeightType WeightType
+        {
+            get { return RouterWeightType.Time; }
+        }
     }
 }

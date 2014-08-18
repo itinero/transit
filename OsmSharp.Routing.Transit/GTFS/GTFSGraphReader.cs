@@ -36,7 +36,7 @@ namespace OsmSharp.Routing.Transit.GTFS
         /// </summary>
         /// <param name="feed"></param>
         /// <returns></returns>
-        public static IDynamicGraph<TransitEdge> CreateGraph(GTFSFeed feed)
+        public static IGraph<TransitEdge> CreateGraph(GTFSFeed feed)
         {
             return GTFSGraphReader.CreateGraph(feed, new Dictionary<string, uint>(), new Dictionary<string, uint>());
         }
@@ -48,14 +48,14 @@ namespace OsmSharp.Routing.Transit.GTFS
         /// <param name="stopVertices">The vertex for each stop.</param>
         /// <param name="tripIds">The trip ids per trip.</param>
         /// <returns></returns>
-        public static IDynamicGraph<TransitEdge> CreateGraph(GTFSFeed feed, Dictionary<string, uint> stopVertices, Dictionary<string, uint> tripIds)
+        public static IGraph<TransitEdge> CreateGraph(GTFSFeed feed, Dictionary<string, uint> stopVertices, Dictionary<string, uint> tripIds)
         {
             if (feed == null) { throw new ArgumentNullException("feed"); }
             if (feed.Stops == null || feed.Stops.Count == 0) { throw new ArgumentException("No stops in the given feed."); }
             if (feed.StopTimes == null || feed.StopTimes.Count == 0) { throw new ArgumentException("No stop times in the given feed."); }
 
             // instantiate the graph.
-            var graph = new MemoryDynamicGraph<TransitEdge>(feed.Stops.Count);
+            var graph = new MemoryGraph<TransitEdge>(feed.Stops.Count);
 
             // read all the stops.
             foreach (var stop in feed.Stops)
@@ -92,22 +92,29 @@ namespace OsmSharp.Routing.Transit.GTFS
                     uint vertex = stopVertices[stopTime.StopId];
 
                     // FORWARD: add edge or get the edge data.
-                    if (!graph.HasArc(previousVertex, vertex))
+                    if (!graph.ContainsEdge(previousVertex, vertex))
                     { // the arc is not there yet, add it.
-                        graph.AddArc(previousVertex, vertex, new TransitEdge(), null);
+                        graph.AddEdge(previousVertex, vertex, new TransitEdge(), null);
                     }
-                    var transitEdge = graph.GetArc(previousVertex, vertex);
+                    TransitEdge transitEdge;
+                    if(!graph.GetEdge(previousVertex, vertex, out transitEdge))
+                    {
+                        throw new InvalidOperationException("Edge that was just added not found in graph.");
+                    }
 
                     // get the schedule and add entry.
                     var schedule = transitEdge.ForwardSchedule;
                     schedule.Add(tripIds[stopTime.TripId], departure, arrival);
 
                     // BACKWARD: add edge or get the edge data.
-                    if (!graph.HasArc(vertex, previousVertex))
+                    if (!graph.ContainsEdge(vertex, previousVertex))
                     { // the arc is not there yet, add it.
-                        graph.AddArc(vertex, previousVertex, new TransitEdge(), null);
+                        graph.AddEdge(vertex, previousVertex, new TransitEdge(), null);
                     }
-                    transitEdge = graph.GetArc(vertex, previousVertex);
+                    if (!graph.GetEdge(vertex, previousVertex, out transitEdge))
+                    {
+                        throw new InvalidOperationException("Edge that was just added not found in graph.");
+                    }
 
                     // get the schedule and add entry.
                     schedule = transitEdge.BackwardSchedule;
@@ -118,16 +125,16 @@ namespace OsmSharp.Routing.Transit.GTFS
 
             for (uint vertex = 1; vertex < graph.VertexCount + 1; vertex++)
             {
-                var arcs = graph.GetArcs(vertex);
+                var arcs = graph.GetEdges(vertex);
                 foreach (var arc in arcs)
                 {
-                    if (arc.Value.ForwardSchedule != null)
+                    if (arc.EdgeData.ForwardSchedule != null)
                     {
-                        arc.Value.ForwardSchedule.Entries.Sort();
+                        arc.EdgeData.ForwardSchedule.Entries.Sort();
                     }
-                    if (arc.Value.BackwardSchedule != null)
+                    if (arc.EdgeData.BackwardSchedule != null)
                     {
-                        arc.Value.BackwardSchedule.Entries.Sort();
+                        arc.EdgeData.BackwardSchedule.Entries.Sort();
                     }
                 }
             }

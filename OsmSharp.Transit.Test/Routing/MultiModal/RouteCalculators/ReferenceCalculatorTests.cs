@@ -639,33 +639,33 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(5, route.Entries.Length);
+            Assert.AreEqual(5, route.Segments.Length);
 
             // float latitude, longitude;
             // data.GetVertex(20, out latitude, out longitude);
-            Assert.AreEqual(51.0578537, route.Entries[0].Latitude, 0.00001);
-            Assert.AreEqual(3.71922278, route.Entries[0].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Start, route.Entries[0].Type);
+            Assert.AreEqual(51.0578537, route.Segments[0].Latitude, 0.00001);
+            Assert.AreEqual(3.71922278, route.Segments[0].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Start, route.Segments[0].Type);
 
             // data.GetVertex(21, out latitude, out longitude);
-            Assert.AreEqual(51.0578537, route.Entries[1].Latitude, 0.00001);
-            Assert.AreEqual(3.71956539, route.Entries[1].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Along, route.Entries[1].Type);
+            Assert.AreEqual(51.0578537, route.Segments[1].Latitude, 0.00001);
+            Assert.AreEqual(3.71956539, route.Segments[1].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Along, route.Segments[1].Type);
 
             // data.GetVertex(16, out latitude, out longitude);
-            Assert.AreEqual(51.05773, route.Entries[2].Latitude, 0.00001);
-            Assert.AreEqual(3.719745, route.Entries[2].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Along, route.Entries[2].Type);
+            Assert.AreEqual(51.05773, route.Segments[2].Latitude, 0.00001);
+            Assert.AreEqual(3.719745, route.Segments[2].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Along, route.Segments[2].Type);
 
             // data.GetVertex(22, out latitude, out longitude);
-            Assert.AreEqual(51.05762, route.Entries[3].Latitude, 0.00001);
-            Assert.AreEqual(3.71965814, route.Entries[3].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Along, route.Entries[3].Type);
+            Assert.AreEqual(51.05762, route.Segments[3].Latitude, 0.00001);
+            Assert.AreEqual(3.71965814, route.Segments[3].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Along, route.Segments[3].Type);
 
             // data.GetVertex(23, out latitude, out longitude);
-            Assert.AreEqual(51.05762, route.Entries[4].Latitude, 0.00001);
-            Assert.AreEqual(3.71918, route.Entries[4].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Stop, route.Entries[4].Type);
+            Assert.AreEqual(51.05762, route.Segments[4].Latitude, 0.00001);
+            Assert.AreEqual(3.71918, route.Segments[4].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Stop, route.Segments[4].Type);
         }
 
         /// <summary>
@@ -685,24 +685,24 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(5, route.Entries.Length);
+            Assert.AreEqual(5, route.Segments.Length);
 
             // float latitude, longitude;
             // data.GetVertex(20, out latitude, out longitude);
-            Assert.AreEqual(51.0578537, route.Entries[0].Latitude, 0.00001);
-            Assert.AreEqual(3.71922278, route.Entries[0].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Start, route.Entries[0].Type);
-            Assert.IsNotNull(route.Entries[0].Points[0].Tags);
-            Assert.AreEqual(1, route.Entries[0].Points[0].Tags.Length);
-            Assert.AreEqual("source", route.Entries[0].Points[0].Tags[0].Value);
+            Assert.AreEqual(51.0578537, route.Segments[0].Latitude, 0.00001);
+            Assert.AreEqual(3.71922278, route.Segments[0].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Start, route.Segments[0].Type);
+            Assert.IsNotNull(route.Segments[0].Points[0].Tags);
+            Assert.AreEqual(1, route.Segments[0].Points[0].Tags.Length);
+            Assert.AreEqual("source", route.Segments[0].Points[0].Tags[0].Value);
 
             // data.GetVertex(23, out latitude, out longitude);
-            Assert.AreEqual(51.05762, route.Entries[4].Latitude, 0.00001);
-            Assert.AreEqual(3.71918, route.Entries[4].Longitude, 0.00001);
-            Assert.AreEqual(RoutePointEntryType.Stop, route.Entries[4].Type);
-            Assert.IsNotNull(route.Entries[4].Points[0].Tags);
-            Assert.AreEqual(1, route.Entries[4].Points[0].Tags.Length);
-            Assert.AreEqual("target", route.Entries[4].Points[0].Tags[0].Value);
+            Assert.AreEqual(51.05762, route.Segments[4].Latitude, 0.00001);
+            Assert.AreEqual(3.71918, route.Segments[4].Longitude, 0.00001);
+            Assert.AreEqual(RouteSegmentType.Stop, route.Segments[4].Type);
+            Assert.IsNotNull(route.Segments[4].Points[0].Tags);
+            Assert.AreEqual(1, route.Segments[4].Points[0].Tags.Length);
+            Assert.AreEqual("target", route.Segments[4].Points[0].Tags[0].Value);
         }
 
         /// <summary>
@@ -722,16 +722,16 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(5, route.Entries.Length);
+            Assert.AreEqual(5, route.Segments.Length);
 
-            Assert.AreEqual("highway", route.Entries[1].Tags[0].Key);
-            Assert.AreEqual("residential", route.Entries[1].Tags[0].Value);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
 
-            Assert.AreEqual("highway", route.Entries[2].Tags[0].Key);
-            Assert.AreEqual("residential", route.Entries[2].Tags[0].Value);
+            Assert.AreEqual("highway", route.Segments[2].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[2].Tags[0].Value);
 
-            Assert.AreEqual("highway", route.Entries[3].Tags[0].Key);
-            Assert.AreEqual("residential", route.Entries[3].Tags[0].Value);
+            Assert.AreEqual("highway", route.Segments[3].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[3].Tags[0].Value);
         }
 
         /// <summary>
@@ -749,7 +749,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(6, route.Entries.Length);
+            Assert.AreEqual(6, route.Segments.Length);
         }
 
         /// <summary>
@@ -767,7 +767,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(6, route.Entries.Length);
+            Assert.AreEqual(6, route.Segments.Length);
         }
 
         /// <summary>
@@ -785,7 +785,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(6, route.Entries.Length);
+            Assert.AreEqual(6, route.Segments.Length);
         }
 
         /// <summary>
@@ -803,7 +803,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(6, route.Entries.Length);
+            Assert.AreEqual(6, route.Segments.Length);
         }
 
         /// <summary>
@@ -821,7 +821,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(7, route.Entries.Length);
+            Assert.AreEqual(7, route.Segments.Length);
         }
 
         /// <summary>
@@ -839,7 +839,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(10, route.Entries.Length);
+            Assert.AreEqual(10, route.Segments.Length);
         }
 
         /// <summary>
@@ -857,7 +857,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
 
             Route route = router.Calculate(Vehicle.Car, source, target);
             Assert.IsNotNull(route);
-            Assert.AreEqual(5, route.Entries.Length);
+            Assert.AreEqual(5, route.Segments.Length);
         }
 
         /// <summary>
@@ -954,26 +954,26 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             // first test a non-between node.
             var resolved = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0576193, 3.7191801));
             var route = router.Calculate(Vehicle.Car, resolved, resolved);
-            Assert.AreEqual(1, route.Entries.Length);
+            Assert.AreEqual(1, route.Segments.Length);
             Assert.AreEqual(0, route.TotalDistance);
             Assert.AreEqual(0, route.TotalTime);
 
             resolved = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0578761, 3.7193972)); //,-103,  -4,  -8
             route = router.Calculate(Vehicle.Car, resolved, resolved);
-            Assert.AreEqual(1, route.Entries.Length);
+            Assert.AreEqual(1, route.Segments.Length);
             Assert.AreEqual(0, route.TotalDistance);
             Assert.AreEqual(0, route.TotalTime);
 
 
             resolved = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0576510, 3.7194124)); //,-104, -14, -12
             route = router.Calculate(Vehicle.Car, resolved, resolved);
-            Assert.AreEqual(1, route.Entries.Length);
+            Assert.AreEqual(1, route.Segments.Length);
             Assert.AreEqual(0, route.TotalDistance);
             Assert.AreEqual(0, route.TotalTime);
 
             resolved = router.Resolve(Vehicle.Car, new GeoCoordinate(51.0576829, 3.7196791)); //,-105, -12, -10
             route = router.Calculate(Vehicle.Car, resolved, resolved);
-            Assert.AreEqual(1, route.Entries.Length);
+            Assert.AreEqual(1, route.Segments.Length);
             Assert.AreEqual(0, route.TotalDistance);
             Assert.AreEqual(0, route.TotalTime);
         }
@@ -1008,15 +1008,15 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                         router.Resolve(Vehicle.Car, vertex2021),
                         router.Resolve(Vehicle.Car, vertex2116));
 
-                    Assert.AreEqual(3, route.Entries.Length);
-                    Assert.AreEqual(vertex2021.Latitude, route.Entries[0].Latitude, 0.0001);
-                    Assert.AreEqual(vertex2021.Longitude, route.Entries[0].Longitude, 0.0001);
+                    Assert.AreEqual(3, route.Segments.Length);
+                    Assert.AreEqual(vertex2021.Latitude, route.Segments[0].Latitude, 0.0001);
+                    Assert.AreEqual(vertex2021.Longitude, route.Segments[0].Longitude, 0.0001);
 
-                    Assert.AreEqual(vertex21.Latitude, route.Entries[1].Latitude, 0.0001);
-                    Assert.AreEqual(vertex21.Longitude, route.Entries[1].Longitude, 0.0001);
+                    Assert.AreEqual(vertex21.Latitude, route.Segments[1].Latitude, 0.0001);
+                    Assert.AreEqual(vertex21.Longitude, route.Segments[1].Longitude, 0.0001);
 
-                    Assert.AreEqual(vertex2116.Latitude, route.Entries[2].Latitude, 0.0001);
-                    Assert.AreEqual(vertex2116.Longitude, route.Entries[2].Longitude, 0.0001);
+                    Assert.AreEqual(vertex2116.Latitude, route.Segments[2].Latitude, 0.0001);
+                    Assert.AreEqual(vertex2116.Longitude, route.Segments[2].Longitude, 0.0001);
                 }
             }
         }
@@ -1052,12 +1052,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                 if (vertex2021.Latitude != vertex2120.Latitude &&
                     vertex2021.Longitude != vertex2120.Longitude)
                 {
-                    Assert.AreEqual(2, route.Entries.Length);
-                    Assert.AreEqual(vertex2021.Latitude, route.Entries[0].Latitude, 0.0001);
-                    Assert.AreEqual(vertex2021.Longitude, route.Entries[0].Longitude, 0.0001);
+                    Assert.AreEqual(2, route.Segments.Length);
+                    Assert.AreEqual(vertex2021.Latitude, route.Segments[0].Latitude, 0.0001);
+                    Assert.AreEqual(vertex2021.Longitude, route.Segments[0].Longitude, 0.0001);
 
-                    Assert.AreEqual(vertex2120.Latitude, route.Entries[1].Latitude, 0.0001);
-                    Assert.AreEqual(vertex2120.Longitude, route.Entries[1].Longitude, 0.0001);
+                    Assert.AreEqual(vertex2120.Latitude, route.Segments[1].Latitude, 0.0001);
+                    Assert.AreEqual(vertex2120.Longitude, route.Segments[1].Longitude, 0.0001);
                 }
             }
         }
@@ -1091,15 +1091,15 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                 router.Resolve(Vehicle.Car, vertex2021),
                 router.Resolve(Vehicle.Car, vertex2116));
 
-            Assert.AreEqual(3, route.Entries.Length);
-            Assert.AreEqual(vertex2021.Latitude, route.Entries[0].Latitude, 0.0001);
-            Assert.AreEqual(vertex2021.Longitude, route.Entries[0].Longitude, 0.0001);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(vertex2021.Latitude, route.Segments[0].Latitude, 0.0001);
+            Assert.AreEqual(vertex2021.Longitude, route.Segments[0].Longitude, 0.0001);
 
-            Assert.AreEqual(vertex21.Latitude, route.Entries[1].Latitude, 0.0001);
-            Assert.AreEqual(vertex21.Longitude, route.Entries[1].Longitude, 0.0001);
+            Assert.AreEqual(vertex21.Latitude, route.Segments[1].Latitude, 0.0001);
+            Assert.AreEqual(vertex21.Longitude, route.Segments[1].Longitude, 0.0001);
 
-            Assert.AreEqual(vertex2116.Latitude, route.Entries[2].Latitude, 0.0001);
-            Assert.AreEqual(vertex2116.Longitude, route.Entries[2].Longitude, 0.0001);
+            Assert.AreEqual(vertex2116.Latitude, route.Segments[2].Latitude, 0.0001);
+            Assert.AreEqual(vertex2116.Longitude, route.Segments[2].Longitude, 0.0001);
         }
 
         /// <summary>
@@ -1131,12 +1131,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
                 router.Resolve(Vehicle.Car, vertex20211),
                 router.Resolve(Vehicle.Car, vertex20212));
 
-            Assert.AreEqual(2, route.Entries.Length);
-            Assert.AreEqual(vertex20211.Latitude, route.Entries[0].Latitude, 0.0001);
-            Assert.AreEqual(vertex20211.Longitude, route.Entries[0].Longitude, 0.0001);
+            Assert.AreEqual(2, route.Segments.Length);
+            Assert.AreEqual(vertex20211.Latitude, route.Segments[0].Latitude, 0.0001);
+            Assert.AreEqual(vertex20211.Longitude, route.Segments[0].Longitude, 0.0001);
 
-            Assert.AreEqual(vertex20212.Latitude, route.Entries[1].Latitude, 0.0001);
-            Assert.AreEqual(vertex20212.Longitude, route.Entries[1].Longitude, 0.0001);
+            Assert.AreEqual(vertex20212.Latitude, route.Segments[1].Latitude, 0.0001);
+            Assert.AreEqual(vertex20212.Longitude, route.Segments[1].Longitude, 0.0001);
         }
 
         /// <summary>

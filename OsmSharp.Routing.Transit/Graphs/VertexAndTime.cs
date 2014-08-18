@@ -27,7 +27,6 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// Creates a vertex that exists in all times and for all trips.
         /// </summary>
         /// <param name="vertex"></param>
-        /// <param name="secondsMode"></param>
         public VertexTimeAndTrip(long vertex)
             : this(vertex, 0)
         {

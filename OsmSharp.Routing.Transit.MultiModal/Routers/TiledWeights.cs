@@ -74,6 +74,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             }
         }
 
+        /// <summary>
+        /// Returns the enumerator.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<Tuple<Tile, double>> GetEnumerator()
         {
             return new Enumerator(_valuePerTile.GetEnumerator());

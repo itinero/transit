@@ -52,8 +52,9 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <param name="startTime"></param>
+        /// <param name="isTripPossible"></param>
         /// <returns></returns>
-        public PathSegment<VertexTimeAndTrip> Calculate(IDynamicGraphReadOnly<TransitEdge> graph, uint from, uint to, DateTime startTime, Func<uint, DateTime, bool> isTripPossible)
+        public PathSegment<VertexTimeAndTrip> Calculate(IGraphReadOnly<TransitEdge> graph, uint from, uint to, DateTime startTime, Func<uint, DateTime, bool> isTripPossible)
         {
             // initialize dykstra heap and visited set.
             var heap = new BinairyHeap<PathSegment<VertexTimeAndTrip>>(100);
@@ -64,11 +65,11 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
             long currentTicks = startTime.Ticks; // calculate ticks.
 
             // get 'neighbours'.
-            var arcs = graph.GetArcs(from);
+            var arcs = graph.GetEdges(from);
             var ticksDate = new DateTime(currentTicks);
             foreach (var arc in arcs)
             {
-                foreach (var entry in arc.Value.ForwardSchedule.GetAfter(ticksDate))
+                foreach (var entry in arc.EdgeData.ForwardSchedule.GetAfter(ticksDate))
                 {
                     var seconds = (uint)entry.DepartsIn(ticksDate);
                     if (isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(seconds)))
@@ -97,19 +98,19 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                     currentTicks = startTime.AddSeconds(current.VertexId.Seconds).Ticks;
 
                     // get 'neighbours'.
-                    arcs = graph.GetArcs((uint)current.VertexId.Vertex);
+                    arcs = graph.GetEdges((uint)current.VertexId.Vertex);
                     ticksDate = new DateTime(currentTicks);
                     foreach (var arc in arcs)
                     {
                         // find the next entry along the same trip.
-                        var entry = arc.Value.ForwardSchedule.GetForTrip(current.VertexId.Trip, ticksDate);
+                        var entry = arc.EdgeData.ForwardSchedule.GetForTrip(current.VertexId.Trip, ticksDate);
                         if (entry.HasValue)
                         { // there is a next entry along the same trip.
                             var seconds = entry.Value.DepartsIn(ticksDate);
                             uint secondsNeighbour = (uint)(seconds + current.VertexId.Seconds + entry.Value.Duration);
                             if (secondsNeighbour < MAX_SEARCH_TIME)
                             { // still not over the search threshold.
-                                var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(arc.Key, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current);
+                                var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(arc.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current);
                                 heap.Push(path, secondsNeighbour);
                             }
                         }
@@ -120,7 +121,7 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                         { // the current vertex has not previous or previous vertex is already a transfer.
                             minTransferTime = 0; // allow a transfer time of zero.
                         }
-                        entry = arc.Value.ForwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.VertexId.Trip);
+                        entry = arc.EdgeData.ForwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.VertexId.Trip);
                         if (entry.HasValue)
                         { // there is a next entry in the same station.
                             var seconds = entry.Value.DepartsIn(ticksDate);

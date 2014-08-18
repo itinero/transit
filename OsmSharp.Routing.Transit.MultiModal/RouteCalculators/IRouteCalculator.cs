@@ -37,7 +37,8 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <param name="startTime"></param>
+        /// <param name="isTripPossible"></param>
         /// <returns></returns>
-        PathSegment<VertexTimeAndTrip> Calculate(IDynamicGraphReadOnly<LiveEdge> graph, uint from, uint to, DateTime startTime, Func<string, DateTime, bool> isTripPossible);
+        PathSegment<VertexTimeAndTrip> Calculate(IGraphReadOnly<LiveEdge> graph, uint from, uint to, DateTime startTime, Func<string, DateTime, bool> isTripPossible);
     }
 }

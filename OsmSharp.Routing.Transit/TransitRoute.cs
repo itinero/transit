@@ -28,6 +28,6 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Gets or sets the end.
         /// </summary>
-        public List<TransitRouteEntry> Entries { get; set; }
+        public List<TransitRouteEntry> Segments { get; set; }
     }
 }

@@ -48,10 +48,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.PriorityQueues
         HeapTuple<T, TWeight> Pop();
     }
 
+    /// <summary>
+    /// Represents a heap entry;
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TWeight"></typeparam>
     public class HeapTuple<T, TWeight>
     {
+        /// <summary>
+        /// Gets or sets the item.
+        /// </summary>
         public T Item { get; set; }
 
+        /// <summary>
+        /// Gets or sets the weight.
+        /// </summary>
         public TWeight Weight { get; set; }
     }
 }

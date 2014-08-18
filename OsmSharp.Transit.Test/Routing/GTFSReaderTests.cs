@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OsmSharp.Routing.Osm.Graphs;
 
 namespace OsmSharp.Transit.Test.Routing
 {
@@ -101,102 +102,103 @@ namespace OsmSharp.Transit.Test.Routing
             // check edges and schedule.
 
             // check 4<->2
-            var transideEdge = graph.GetArc(4, 2);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["STBA"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 20, 0)));
-            Assert.AreEqual(0, transideEdge.BackwardSchedule.Count);
-            transideEdge = graph.GetArc(2, 4);
-            Assert.AreEqual(0, transideEdge.ForwardSchedule.Count);
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["STBA"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 20, 0)));
+            TransitEdge transitEdge;
+            Assert.IsTrue(graph.GetEdge(4, 2, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["STBA"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 20, 0)));
+            Assert.AreEqual(0, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(graph.GetEdge(2, 4, out transitEdge));
+            Assert.AreEqual(0, transitEdge.ForwardSchedule.Count);
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["STBA"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 20, 0)));
 
             // check 4<->6
-            transideEdge = graph.GetArc(4, 6);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
-            transideEdge = graph.GetArc(6, 4);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
+            Assert.IsTrue(graph.GetEdge(4, 6, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
+            Assert.IsTrue(graph.GetEdge(6, 4, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 51, 0), new DateTime(2014, 1, 1, 6, 56, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 0, 0), new DateTime(2014, 1, 1, 6, 05, 0)));
 
             // check 5<->6
-            transideEdge = graph.GetArc(5, 6);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
-            transideEdge = graph.GetArc(6, 5);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
+            Assert.IsTrue(graph.GetEdge(5, 6, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
+            Assert.IsTrue(graph.GetEdge(6, 5, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 07, 0), new DateTime(2014, 1, 1, 6, 12, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 44, 0), new DateTime(2014, 1, 1, 6, 49, 0)));
 
             // check 5<->7
-            transideEdge = graph.GetArc(5, 7);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
-            transideEdge = graph.GetArc(7, 5);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
+            Assert.IsTrue(graph.GetEdge(5, 7, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
+            Assert.IsTrue(graph.GetEdge(7, 5, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 37, 0), new DateTime(2014, 1, 1, 6, 42, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 14, 0), new DateTime(2014, 1, 1, 6, 19, 0)));
 
             // check 8<->7
-            transideEdge = graph.GetArc(8, 7);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
-            transideEdge = graph.GetArc(7, 8);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));
+            Assert.IsTrue(graph.GetEdge(8, 7, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
+            Assert.IsTrue(graph.GetEdge(7, 8, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["CITY1"], new DateTime(2014, 1, 1, 6, 21, 0), new DateTime(2014, 1, 1, 6, 26, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["CITY2"], new DateTime(2014, 1, 1, 6, 30, 0), new DateTime(2014, 1, 1, 6, 35, 0)));
 
             // check 2<->3
-            transideEdge = graph.GetArc(2, 3);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AB1"], new DateTime(2014, 1, 1, 8, 00, 0), new DateTime(2014, 1, 1, 8, 10, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AB2"], new DateTime(2014, 1, 1, 12, 05, 0), new DateTime(2014, 1, 1, 12, 15, 0)));
-            transideEdge = graph.GetArc(3, 2);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AB2"], new DateTime(2014, 1, 1, 12, 05, 0), new DateTime(2014, 1, 1, 12, 15, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AB1"], new DateTime(2014, 1, 1, 8, 00, 0), new DateTime(2014, 1, 1, 8, 10, 0)));
+            Assert.IsTrue(graph.GetEdge(2, 3, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AB1"], new DateTime(2014, 1, 1, 8, 00, 0), new DateTime(2014, 1, 1, 8, 10, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AB2"], new DateTime(2014, 1, 1, 12, 05, 0), new DateTime(2014, 1, 1, 12, 15, 0)));
+            Assert.IsTrue(graph.GetEdge(3, 2, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AB2"], new DateTime(2014, 1, 1, 12, 05, 0), new DateTime(2014, 1, 1, 12, 15, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AB1"], new DateTime(2014, 1, 1, 8, 00, 0), new DateTime(2014, 1, 1, 8, 10, 0)));
 
             // check 3<->1
-            transideEdge = graph.GetArc(3, 1);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["BFC1"], new DateTime(2014, 1, 1, 8, 20, 0), new DateTime(2014, 1, 1, 9, 20, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["BFC2"], new DateTime(2014, 1, 1, 11, 0, 0), new DateTime(2014, 1, 1, 12, 0, 0)));
-            transideEdge = graph.GetArc(1, 3);
-            Assert.AreEqual(1, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["BFC2"], new DateTime(2014, 1, 1, 11, 0, 0), new DateTime(2014, 1, 1, 12, 0, 0)));
-            Assert.AreEqual(1, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["BFC1"], new DateTime(2014, 1, 1, 8, 20, 0), new DateTime(2014, 1, 1, 9, 20, 0)));
+            Assert.IsTrue(graph.GetEdge(3, 1, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["BFC1"], new DateTime(2014, 1, 1, 8, 20, 0), new DateTime(2014, 1, 1, 9, 20, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["BFC2"], new DateTime(2014, 1, 1, 11, 0, 0), new DateTime(2014, 1, 1, 12, 0, 0)));
+            Assert.IsTrue(graph.GetEdge(1, 3, out transitEdge));
+            Assert.AreEqual(1, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["BFC2"], new DateTime(2014, 1, 1, 11, 0, 0), new DateTime(2014, 1, 1, 12, 0, 0)));
+            Assert.AreEqual(1, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["BFC1"], new DateTime(2014, 1, 1, 8, 20, 0), new DateTime(2014, 1, 1, 9, 20, 0)));
 
             // check 2<->9
-            transideEdge = graph.GetArc(2, 9);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AAMV1"], new DateTime(2014, 1, 1, 8, 0, 0), new DateTime(2014, 1, 1, 9, 0, 0)));
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AAMV3"], new DateTime(2014, 1, 1, 13, 0, 0), new DateTime(2014, 1, 1, 14, 0, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AAMV2"], new DateTime(2014, 1, 1, 10, 0, 0), new DateTime(2014, 1, 1, 11, 0, 0)));
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AAMV4"], new DateTime(2014, 1, 1, 15, 0, 0), new DateTime(2014, 1, 1, 16, 0, 0)));
-            transideEdge = graph.GetArc(9, 2);
-            Assert.AreEqual(2, transideEdge.ForwardSchedule.Count);
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AAMV2"], new DateTime(2014, 1, 1, 10, 0, 0), new DateTime(2014, 1, 1, 11, 0, 0)));
-            Assert.IsTrue(transideEdge.ForwardSchedule.Contains(tripIds["AAMV4"], new DateTime(2014, 1, 1, 15, 0, 0), new DateTime(2014, 1, 1, 16, 0, 0)));
-            Assert.AreEqual(2, transideEdge.BackwardSchedule.Count);
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AAMV1"], new DateTime(2014, 1, 1, 8, 0, 0), new DateTime(2014, 1, 1, 9, 0, 0)));
-            Assert.IsTrue(transideEdge.BackwardSchedule.Contains(tripIds["AAMV3"], new DateTime(2014, 1, 1, 13, 0, 0), new DateTime(2014, 1, 1, 14, 0, 0)));
+            Assert.IsTrue(graph.GetEdge(2, 9, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AAMV1"], new DateTime(2014, 1, 1, 8, 0, 0), new DateTime(2014, 1, 1, 9, 0, 0)));
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AAMV3"], new DateTime(2014, 1, 1, 13, 0, 0), new DateTime(2014, 1, 1, 14, 0, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AAMV2"], new DateTime(2014, 1, 1, 10, 0, 0), new DateTime(2014, 1, 1, 11, 0, 0)));
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AAMV4"], new DateTime(2014, 1, 1, 15, 0, 0), new DateTime(2014, 1, 1, 16, 0, 0)));
+            Assert.IsTrue(graph.GetEdge(9, 2, out transitEdge));
+            Assert.AreEqual(2, transitEdge.ForwardSchedule.Count);
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AAMV2"], new DateTime(2014, 1, 1, 10, 0, 0), new DateTime(2014, 1, 1, 11, 0, 0)));
+            Assert.IsTrue(transitEdge.ForwardSchedule.Contains(tripIds["AAMV4"], new DateTime(2014, 1, 1, 15, 0, 0), new DateTime(2014, 1, 1, 16, 0, 0)));
+            Assert.AreEqual(2, transitEdge.BackwardSchedule.Count);
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AAMV1"], new DateTime(2014, 1, 1, 8, 0, 0), new DateTime(2014, 1, 1, 9, 0, 0)));
+            Assert.IsTrue(transitEdge.BackwardSchedule.Contains(tripIds["AAMV3"], new DateTime(2014, 1, 1, 13, 0, 0), new DateTime(2014, 1, 1, 14, 0, 0)));
         }
     }
 }

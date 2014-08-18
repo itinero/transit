@@ -53,7 +53,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the graph.
         /// </summary>
-        private IDynamicGraph<TransitEdge> _graph;
+        private IGraph<TransitEdge> _graph;
 
         /// <summary>
         /// Holds the GTFS feed.
@@ -68,9 +68,10 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Creates a new transit router.
         /// </summary>
+        /// <param name="feed"></param>
         /// <param name="stopVertices"></param>
         /// <param name="graph"></param>
-        internal TransitRouter(GTFSFeed feed, Dictionary<string, uint> stopVertices, IDynamicGraph<TransitEdge> graph)
+        internal TransitRouter(GTFSFeed feed, Dictionary<string, uint> stopVertices, IGraph<TransitEdge> graph)
         {
             _feed = feed;
             _graph = graph;
@@ -93,7 +94,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Returns the graph this router is using.
         /// </summary>
-        public IDynamicGraph<TransitEdge> Graph
+        public IGraph<TransitEdge> Graph
         {
             get
             {
@@ -122,6 +123,7 @@ namespace OsmSharp.Routing.Transit
         /// Converts a path to a transit route.
         /// </summary>
         /// <param name="path"></param>
+        /// <param name="departureTime"></param>
         /// <returns></returns>
         private TransitRoute ConvertToTransitRoute(PathSegment<VertexTimeAndTrip> path, DateTime departureTime)
         {
@@ -132,7 +134,7 @@ namespace OsmSharp.Routing.Transit
 
             // instantiate route.
             var route = new TransitRoute();
-            route.Entries = new List<TransitRouteEntry>();
+            route.Segments = new List<TransitRouteEntry>();
 
             // build entries.
             var pathArray = path.ToArray();
@@ -150,7 +152,7 @@ namespace OsmSharp.Routing.Transit
                 { // no trip!
                     if (currentEntries.Count > 1)
                     { // drop entries with only one entry, they are transfers.
-                        route.Entries.Add(new TransitRouteEntry()
+                        route.Segments.Add(new TransitRouteEntry()
                         {
                             Stops = currentEntries,
                             Trip = _feed.GetTrip(_tripIds[current.Trip])
@@ -171,7 +173,7 @@ namespace OsmSharp.Routing.Transit
             }
             if (currentEntries.Count > 1)
             { // drop entries with only one entry, they are transfers.
-                route.Entries.Add(new TransitRouteEntry()
+                route.Segments.Add(new TransitRouteEntry()
                 {
                     Stops = currentEntries,
                     Trip = _feed.GetTrip(_tripIds[previous.Trip])

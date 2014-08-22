@@ -21,8 +21,6 @@ using OsmSharp.Routing.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OsmSharp.Routing.Transit.GTFS
 {
@@ -51,34 +49,37 @@ namespace OsmSharp.Routing.Transit.GTFS
         public static IGraph<TransitEdge> CreateGraph(GTFSFeed feed, Dictionary<string, uint> stopVertices, Dictionary<string, uint> tripIds)
         {
             if (feed == null) { throw new ArgumentNullException("feed"); }
-            if (feed.Stops == null || feed.Stops.Count == 0) { throw new ArgumentException("No stops in the given feed."); }
-            if (feed.StopTimes == null || feed.StopTimes.Count == 0) { throw new ArgumentException("No stop times in the given feed."); }
+            if (feed.GetStops() == null || feed.GetStops().Count() == 0) { throw new ArgumentException("No stops in the given feed."); }
+            if (feed.GetStopTimes() == null || feed.GetStopTimes().Count() == 0) { throw new ArgumentException("No stop times in the given feed."); }
 
             // instantiate the graph.
-            var graph = new MemoryGraph<TransitEdge>(feed.Stops.Count);
+            var graph = new MemoryGraph<TransitEdge>(feed.GetStops().Count());
 
             // read all the stops.
-            foreach (var stop in feed.Stops)
+            foreach (var stop in feed.GetStops())
             {
                 var stopVertex = graph.AddVertex((float)stop.Latitude, (float)stop.Longitude);
-
                 stopVertices.Add(stop.Id, stopVertex);
             }
 
             // build trip ids.
-            for (int tripIdx = 0; tripIdx < feed.Trips.Count; tripIdx++)
+            int tripIdx = 0;
+            foreach(var trip in feed.GetTrips())
             {
-                if (!tripIds.ContainsKey(feed.Trips[tripIdx].Id))
+                if (!tripIds.ContainsKey(trip.Id))
                 {
-                    tripIds[feed.Trips[tripIdx].Id] = (uint)tripIdx;
+                    tripIds[trip.Id] = (uint)tripIdx;
                 }
+                tripIdx++;
             }
 
             // loop over all stoptimes.
-            var previousStopTime = feed.StopTimes[0];
-            for (int stopTimeIdx = 1; stopTimeIdx < feed.StopTimes.Count; stopTimeIdx++)
+            var stopTimesEnumerator = feed.GetStopTimes().GetEnumerator();
+            stopTimesEnumerator.MoveNext();
+            var previousStopTime = stopTimesEnumerator.Current;
+            while(stopTimesEnumerator.MoveNext())
             {
-                var stopTime = feed.StopTimes[stopTimeIdx];
+                var stopTime = stopTimesEnumerator.Current;
 
                 // check if two stop times belong to the same trip.
                 if (previousStopTime.TripId == stopTime.TripId)

@@ -84,9 +84,10 @@ namespace OsmSharp.Routing.Transit
             }
 
             _tripIds = new Dictionary<uint, string>();
-            for (uint tripIdx = 0; tripIdx < feed.Trips.Count; tripIdx++)
+            uint tripIdx = 0;
+            foreach (var trip in feed.GetTrips())
             {
-                _tripIds[tripIdx] = feed.Trips[(int)tripIdx].Id;
+                _tripIds[tripIdx] = trip.Id;
             }
             this.IndexFeed(_feed);
         }
@@ -206,7 +207,7 @@ namespace OsmSharp.Routing.Transit
         /// <param name="feed"></param>
         private void IndexFeed(GTFSFeed feed)
         {
-            foreach(var trip in feed.Trips)
+            foreach(var trip in feed.GetTrips())
             {
                 if(!string.IsNullOrEmpty(trip.ServiceId))
                 {
@@ -214,16 +215,16 @@ namespace OsmSharp.Routing.Transit
                 }
             }
 
-            if (feed.Calendars != null)
+            if (feed.GetCalendars() != null)
             { // there is calendar data.
-                foreach (var calendar in feed.Calendars)
+                foreach (var calendar in feed.GetCalendars())
                 {
                     _calendars[calendar.ServiceId] = calendar;
                 }
             }
-            if(feed.CalendarDates != null)
+            if(feed.GetCalendarDates() != null)
             { // there are calendar date exceptions.
-                foreach (var calendarDate in feed.CalendarDates)
+                foreach (var calendarDate in feed.GetCalendarDates())
                 {
                     Dictionary<DateTime, CalendarDate> calendarDates;
                     if(!_calendarDates.TryGetValue(calendarDate.ServiceId, out calendarDates))
@@ -290,7 +291,7 @@ namespace OsmSharp.Routing.Transit
         /// <returns></returns>
         public IEnumerable<Agency> GetAgencies()
         {
-            return _feed.Agencies;
+            return _feed.GetAgencies();
         }
 
         /// <summary>
@@ -300,7 +301,7 @@ namespace OsmSharp.Routing.Transit
         /// <returns></returns>
         public IEnumerable<Agency> GetAgencies(string query)
         {
-            return _feed.Agencies.Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+            return _feed.GetAgencies().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
         }
 
         /// <summary>
@@ -309,7 +310,7 @@ namespace OsmSharp.Routing.Transit
         /// <returns></returns>
         public IEnumerable<Stop> GetStops()
         {
-            return _feed.Stops;
+            return _feed.GetStops();
         }
 
         /// <summary>
@@ -319,7 +320,7 @@ namespace OsmSharp.Routing.Transit
         /// <returns></returns>
         public IEnumerable<Stop> GetStops(string query)
         {
-            return _feed.Stops.Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
+            return _feed.GetStops().Where(x => { return x.Name != null && x.Name.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) != -1; });
         }
 
         /// <summary>

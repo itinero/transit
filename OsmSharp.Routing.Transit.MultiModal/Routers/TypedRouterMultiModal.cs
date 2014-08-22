@@ -118,7 +118,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             _stops.Clear();
             foreach (var feed in _feeds)
             {
-                foreach (var stop in feed.Stops)
+                foreach (var stop in feed.GetStops())
                 {
                     _stops[stop.Id] = stop;
                 }
@@ -155,10 +155,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         {
             if (_feeds.Count > 0)
             {
-                IEnumerable<Agency> agencies = _feeds[0].Agencies;
+                IEnumerable<Agency> agencies = _feeds[0].GetAgencies();
                 for (int idx = 1; idx < _feeds.Count; idx++)
                 {
-                    agencies = agencies.Concat(_feeds[1].Agencies);
+                    agencies = agencies.Concat(_feeds[1].GetAgencies());
                 }
                 return agencies;
             }
@@ -183,10 +183,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         {
             if (_feeds.Count > 0)
             {
-                IEnumerable<Stop> stops = _feeds[0].Stops;
+                IEnumerable<Stop> stops = _feeds[0].GetStops();
                 for (int idx = 1; idx < _feeds.Count; idx++)
                 {
-                    stops = stops.Concat(_feeds[1].Stops);
+                    stops = stops.Concat(_feeds[1].GetStops());
                 }
                 return stops;
             }

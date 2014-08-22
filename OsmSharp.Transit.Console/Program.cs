@@ -35,20 +35,20 @@ namespace OsmSharp.Transit.Console
             System.Console.WriteLine("Done!");
 
             // prefix all ids in the feeds.
-            foreach(var stop in nmbs.Stops)
+            foreach(var stop in nmbs.GetStops())
             {
                 stop.Id = "nmbs_" + stop.Id;
             }
-            foreach (var item in nmbs.Routes)
+            foreach (var item in nmbs.GetRoutes())
             {
                 item.Id = "nmbs_" + item.Id;
             }
-            foreach (var stopTime in nmbs.StopTimes)
+            foreach (var stopTime in nmbs.GetStopTimes())
             {
                 stopTime.StopId = "nmbs_" + stopTime.StopId;
                 stopTime.TripId = "nmbs_" + stopTime.TripId;
             }
-            foreach (var trip in nmbs.Trips)
+            foreach (var trip in nmbs.GetTrips())
             {
                 trip.Id = "nmbs_" + trip.Id;
                 trip.RouteId = "nmbs_" + trip.RouteId;

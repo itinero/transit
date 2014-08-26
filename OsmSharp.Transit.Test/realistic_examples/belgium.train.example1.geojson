@@ -18,7 +18,9 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "walk"
+      },
       "geometry": {
         "type": "LineString",
         "coordinates": [
@@ -79,7 +81,9 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "walk"
+      },
       "geometry": {
         "type": "LineString",
         "coordinates": [

@@ -72,9 +72,16 @@ namespace OsmSharp.Transit.Console
             arrival = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.8413810765485, 4.33685302734375));
             date = new DateTime(2014, 08, 26, 07, 30, 00);
             route = router.CalculateTransit(date, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, departure, arrival);
-            WriteGeoJSON(router, route, @"c:\temp\belgium.train.exampl2.result.geojson");
+            WriteGeoJSON(router, route, @"c:\temp\belgium.train.example2.result.geojson");
             System.Console.WriteLine("Done!");
 
+            System.Console.Write("belgium.train.example3....");
+            departure = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.99924522240044, 4.831471145153046));
+            arrival = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(51.01972453598589, 4.482502341270447));
+            date = new DateTime(2014, 08, 26, 07, 15, 00);
+            route = router.CalculateTransit(date, Vehicle.Bicycle, Vehicle.Bicycle, Vehicle.Bicycle, departure, arrival);
+            WriteGeoJSON(router, route, @"c:\temp\belgium.train.example3.result.geojson");
+            System.Console.WriteLine("Done!");
 
             //System.Console.Write("Gent naar Wechel....");
             //var from = router.Resolve(Vehicle.Pedestrian, gent); // gent

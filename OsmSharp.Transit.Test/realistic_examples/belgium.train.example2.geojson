@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "tie": "7u30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.831471145153046,
+          50.99924522240044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bike"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.831366539001465,
+            50.999334686117315
+          ],
+          [
+            4.823555946350098,
+            50.984126753274495
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "train",
+        "line": "Aarschot-Brussel-Zuid"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.8236846923828125,
+            50.98415377000653
+          ],
+          [
+            4.336252212524414,
+            50.835594925772526
+          ]
+        ]
+      }
+    }
+  ]
+}

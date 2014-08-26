@@ -5,7 +5,8 @@
       "type": "Feature",
       "properties": {
         "name": "yves",
-        "start_time": "07:27"
+        "start_time": "07:27",
+        "place": "departure"
       },
       "geometry": {
         "type": "Point",
@@ -106,6 +107,19 @@
             4.336788654327393,
             50.84144882582086
           ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "place": "arrival"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.336799383163452,
+          50.84142172612373
         ]
       }
     }

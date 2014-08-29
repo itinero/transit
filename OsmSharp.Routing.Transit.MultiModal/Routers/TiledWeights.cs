@@ -35,8 +35,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         public TiledWeights(int zoomLevel)
         {
             _zoomLevel = zoomLevel;
-            _samplesPerTile = new Dictionary<ulong, int>(1000);
-            _valuePerTile = new Dictionary<ulong, double>(1000);
+            _samplesPerTile = new Dictionary<ulong, int>(10000);
+            _valuePerTile = new Dictionary<ulong, double>(10000);
         }
 
         /// <summary>

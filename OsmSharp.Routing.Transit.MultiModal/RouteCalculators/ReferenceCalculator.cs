@@ -665,8 +665,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
 
                 // update the visited nodes.
                 bool currentIsStation = false;
-                foreach (var neighbour in arcs)
+                while(arcs.MoveNext())
+                // foreach (var neighbour in arcs)
                 {
+                    var neighbour = arcs;
                     var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
                     if (chosenVertices.Contains(neighbourKey))
                     { // this neighbour has already been visited.

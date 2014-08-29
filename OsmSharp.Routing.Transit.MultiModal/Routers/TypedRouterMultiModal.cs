@@ -415,7 +415,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var tiledSamples = new TiledWeights(sampleZoom);
-            _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
+            _basicRouter.CalculateRange(_source.Graph, this.Interpreter, toFirstStop,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {
                     var coordinate = this.GetCoordinate(toFirstStop, vertexTimeAndTrip.VertexId.Vertex);

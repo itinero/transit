@@ -1,0 +1,110 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "time": "06:55"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2665979862213135,
+          50.83659095366402
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tyep": "bus",
+        "time": "07:03"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2658469676971436,
+          50.835371324752735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time": "07:12"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2645058631896973,
+          50.82425090464159
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "foot"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.2666194438934326,
+            50.83659095366402
+          ],
+          [
+            3.2654178142547607,
+            50.836401235704535
+          ],
+          [
+            3.2654285430908203,
+            50.83557459845134
+          ],
+          [
+            3.265836238861084,
+            50.83538487636017
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bus"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.265857696533203,
+            50.835323894095644
+          ],
+          [
+            3.264484405517578,
+            50.82429156913842
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "train"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.264312744140625,
+            50.823939142322516
+          ],
+          [
+            4.336252212524414,
+            50.8356626834458
+          ]
+        ]
+      }
+    }
+  ]
+}

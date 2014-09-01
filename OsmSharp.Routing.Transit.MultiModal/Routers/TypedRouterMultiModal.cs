@@ -278,6 +278,44 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             return null;
         }
 
+        /// <summary>
+        /// Returns the calendar for the given service id.
+        /// </summary>
+        /// <param name="serviceId"></param>
+        /// <returns></returns>
+        public Calendar GetCalendar(string serviceId)
+        {
+            foreach(var feed in _feeds)
+            {
+                var item = feed.GetCalendars().FirstOrDefault(x => x.ServiceId == serviceId);
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the calendar date for the given service id and date.
+        /// </summary>
+        /// <param name="serviceId"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public CalendarDate GetCalendarDate(string serviceId, DateTime date)
+        {
+            foreach (var feed in _feeds)
+            {
+                var items = feed.GetCalendarDates(serviceId);
+                var item = items.FirstOrDefault(x => x.Date == date);
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
         #endregion
 
         /// <summary>
@@ -377,7 +415,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var tiledSamples = new TiledWeights(sampleZoom);
-            _basicRouter.CalculateRange(_source.Graph, this.Interpreter, interModal,
+            _basicRouter.CalculateRange(_source.Graph, this.Interpreter, toFirstStop,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {
                     var coordinate = this.GetCoordinate(toFirstStop, vertexTimeAndTrip.VertexId.Vertex);
@@ -411,12 +449,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             routingParameters[ReferenceCalculator.SCHEDULES_KEY] = _source.Schedules;
             if (!routingParameters.ContainsKey(ReferenceCalculator.IS_TRIP_POSSIBLE_KEY))
             {
-                Func<uint, DateTime, bool> isTripPossible = (x, y) => { return true; }; // TODO: make this actually check schedules!
+                Func<uint, DateTime, bool> isTripPossible = (x, y) => { return this.IsTripPossible(x, y); };
                 routingParameters[ReferenceCalculator.IS_TRIP_POSSIBLE_KEY] = isTripPossible;
             }
             if (!routingParameters.ContainsKey(ReferenceCalculator.MODAL_TRANSFER_TIME_KEY))
             {
-                routingParameters[ReferenceCalculator.MODAL_TRANSFER_TIME_KEY] = (float)(5 * 60); // default 5 mins of tranfer time.
+                routingParameters[ReferenceCalculator.MODAL_TRANSFER_TIME_KEY] = (float)(2.5 * 60); // default 5 mins of tranfer time.
             }
             return routingParameters;
         }
@@ -574,6 +612,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                         if(liveEdge.IsRoad())
                         { // edge is a road.
                             var currentTags = _source.Graph.TagsIndex.Get(edge.Tags);
+                            currentTags.Add("time_seconds", nodePrevious.Item2.ToInvariantString());
                             var name = _interpreter.EdgeInterpreter.GetName(currentTags);
                             var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
 
@@ -681,7 +720,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             RouteTags[] tags = null;
                             if(forwardScheduleEntry != null)
                             { // there is a schedule entry.
-                                tags = new RouteTags[6];
+                                tags = new RouteTags[7];
                                 tags[0] = new RouteTags();
                                 tags[0].Key = "type";
                                 tags[0].Value = "transit";
@@ -710,13 +749,19 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 tags[5] = new RouteTags();
                                 tags[5].Key = "arrival_time";
                                 tags[5].Value = departureTime.Date.AddSeconds(forwardScheduleEntry.Value.ArrivalTime).ToInvariantString();
+                                tags[6] = new RouteTags();
+                                tags[6].Key = "time_seconds";
+                                tags[6].Value = nodePrevious.Item2.ToInvariantString();
                             }
                             else
                             { // there is no schedule entry.
-                                tags = new RouteTags[1];
+                                tags = new RouteTags[2];
                                 tags[0] = new RouteTags();
                                 tags[0].Key = "type";
                                 tags[0].Value = "transit";
+                                tags[1] = new RouteTags();
+                                tags[1].Key = "time_seconds";
+                                tags[1].Value = nodePrevious.Item2.ToInvariantString();
                             }
 
                             // add intermediate entries.
@@ -1121,6 +1166,40 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 featureCollection.Add(point);
             }
             return featureCollection;
+        }
+
+
+
+        /// <summary>
+        /// Returns true if the given trip is possible on the given date.
+        /// </summary>
+        /// <param name="tripId"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        private bool IsTripPossible(uint tripId, DateTime date)
+        {
+            date = date.Date;
+
+            var trip = this.GetTrip(_tripIds.First(x => { return x.Value == tripId; }).Key);
+            if (trip != null)
+            { // the trip and service exist.
+                var calendarDate = this.GetCalendarDate(trip.ServiceId, date);
+                if (calendarDate != null)
+                { // a calendar date exists, this will rule out anything else.
+                    if (calendarDate.ExceptionType == global::GTFS.Entities.Enumerations.ExceptionType.Removed)
+                    { // date was explicitly removed.
+                        return false;
+                    }
+                    return true; // date was explicitly added.
+                }
+
+                var calendar = this.GetCalendar(trip.ServiceId);
+                if (calendar != null)
+                { // a calendar exists.
+                    return calendar.CoversDate(date);
+                }
+            }
+            return false;
         }
     }
 }

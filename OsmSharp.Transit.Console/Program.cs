@@ -21,7 +21,7 @@ namespace OsmSharp.Transit.Console
 
             // create router.
             System.Console.Write("Loading routing graph...");
-            var router = MultiModalRouter.CreateFrom(new FileInfo(@"d:\OSM\bin\belgium-latest.osm.pbf.simple.flat.routing").OpenRead(),
+            var router = MultiModalRouter.CreateFrom(new FileInfo(@"d:\OSM\bin\belgium-latest.osm.pbf.routing").OpenRead(),
                 new OsmRoutingInterpreter());
             System.Console.WriteLine("Done!");
 
@@ -55,7 +55,7 @@ namespace OsmSharp.Transit.Console
             }
 
             router.AddGTFSFeed(nmbs);
-            //router.AddGTFSFeed(delijn);
+            // router.AddGTFSFeed(delijn);
 
             long ticksBefore = DateTime.Now.Ticks;
             System.Console.Write("belgium.train.example1....");

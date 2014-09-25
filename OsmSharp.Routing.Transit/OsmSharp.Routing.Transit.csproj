@@ -32,13 +32,13 @@
     <DocumentationFile>..\Output\OsmSharp.Routing.Transit.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GTFS, Version=0.0.3.58, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=0.0.3.59, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.58-beta\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.59-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.3.58, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=0.0.3.59, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.58-beta\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.59-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp">
       <HintPath>..\packages\OsmSharp.4.3.0.835-beta\lib\net45\OsmSharp.dll</HintPath>

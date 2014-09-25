@@ -50,6 +50,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         private Dictionary<string, uint> _tripIds;
 
         /// <summary>
+        /// Holds the reverse trips.
+        /// </summary>
+        private Dictionary<uint, string> _reverseTrips;
+
+        /// <summary>
+        /// Holds the trips per id.
+        /// </summary>
+        private Dictionary<string, Trip> _trips;
+
+        /// <summary>
+        /// Holds calendar dates per serviceId/Date.
+        /// </summary>
+        private Dictionary<string, Dictionary<DateTime, CalendarDate>> _calendarDates;
+
+        /// <summary>
         /// Holds the router.
         /// </summary>
         private ReferenceCalculator _basicRouter;
@@ -74,7 +89,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             _stopIds = new Dictionary<string, uint>();
             _reverseStops = new Dictionary<uint, string>();
             _tripIds = new Dictionary<string, uint>();
+            _reverseTrips = new Dictionary<uint, string>();
             _stops = new Dictionary<string, Stop>();
+            _trips = new Dictionary<string, Trip>();
+            _calendarDates = new Dictionary<string, Dictionary<DateTime, CalendarDate>>();
         }
 
         #region GFTS
@@ -96,6 +114,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             this.BuildReverseStops();
             this.BuildStopIndex();
+            this.BuildReverseTrips();
+            this.BuildTripIndex();
+            this.BuildCalendarDateIndex();
         }
 
         /// <summary>
@@ -121,6 +142,54 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                 foreach (var stop in feed.GetStops())
                 {
                     _stops[stop.Id] = stop;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the reverse trip index.
+        /// </summary>
+        private void BuildReverseTrips()
+        {
+            _reverseTrips.Clear();
+            foreach (var trip in _tripIds)
+            {
+                _reverseTrips[trip.Value] = trip.Key;
+            }
+        }
+
+        /// <summary>
+        /// Builds the trip index.
+        /// </summary>
+        private void BuildTripIndex()
+        {
+            _trips.Clear();
+            foreach (var feed in _feeds)
+            {
+                foreach (var trip in feed.GetTrips())
+                {
+                    _trips[trip.Id] = trip;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the calendar date index.
+        /// </summary>
+        private void BuildCalendarDateIndex()
+        {
+            _calendarDates.Clear();
+            foreach (var feed in _feeds)
+            {
+                Dictionary<DateTime, CalendarDate> perDate;
+                foreach(var calendarDate in feed.GetCalendarDates())
+                {
+                    if(!_calendarDates.TryGetValue(calendarDate.ServiceId, out perDate))
+                    {
+                        perDate = new Dictionary<DateTime, CalendarDate>();
+                        _calendarDates.Add(calendarDate.ServiceId, perDate);
+                    }
+                    perDate[calendarDate.Date] = calendarDate;
                 }
             }
         }
@@ -267,13 +336,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <returns></returns>
         public Trip GetTrip(string id)
         {
-            foreach (var feed in _feeds)
+            Trip trip;
+            if (_trips.TryGetValue(id, out trip))
             {
-                var item = feed.GetTrip(id);
-                if (item != null)
-                {
-                    return item;
-                }
+                return trip;
             }
             return null;
         }
@@ -304,13 +370,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         /// <returns></returns>
         public CalendarDate GetCalendarDate(string serviceId, DateTime date)
         {
-            foreach (var feed in _feeds)
+            Dictionary<DateTime, CalendarDate> perDate;
+            if(_calendarDates.TryGetValue(serviceId, out perDate))
             {
-                var items = feed.GetCalendarDates(serviceId);
-                var item = items.FirstOrDefault(x => x.Date == date);
-                if (item != null)
+                CalendarDate calendarDate;
+                if(perDate.TryGetValue(date, out calendarDate))
                 {
-                    return item;
+                    return calendarDate;
                 }
             }
             return null;
@@ -1180,23 +1246,27 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         {
             date = date.Date;
 
-            var trip = this.GetTrip(_tripIds.First(x => { return x.Value == tripId; }).Key);
-            if (trip != null)
-            { // the trip and service exist.
-                var calendarDate = this.GetCalendarDate(trip.ServiceId, date);
-                if (calendarDate != null)
-                { // a calendar date exists, this will rule out anything else.
-                    if (calendarDate.ExceptionType == global::GTFS.Entities.Enumerations.ExceptionType.Removed)
-                    { // date was explicitly removed.
-                        return false;
+            string tripIdString;
+            if (_reverseTrips.TryGetValue(tripId, out tripIdString))
+            {
+                var trip = this.GetTrip(tripIdString);
+                if (trip != null)
+                { // the trip and service exist.
+                    var calendarDate = this.GetCalendarDate(trip.ServiceId, date);
+                    if (calendarDate != null)
+                    { // a calendar date exists, this will rule out anything else.
+                        if (calendarDate.ExceptionType == global::GTFS.Entities.Enumerations.ExceptionType.Removed)
+                        { // date was explicitly removed.
+                            return false;
+                        }
+                        return true; // date was explicitly added.
                     }
-                    return true; // date was explicitly added.
-                }
 
-                var calendar = this.GetCalendar(trip.ServiceId);
-                if (calendar != null)
-                { // a calendar exists.
-                    return calendar.CoversDate(date);
+                    var calendar = this.GetCalendar(trip.ServiceId);
+                    if (calendar != null)
+                    { // a calendar exists.
+                        return calendar.CoversDate(date);
+                    }
                 }
             }
             return false;

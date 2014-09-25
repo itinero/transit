@@ -491,7 +491,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             }
 
             // expand the target lists by using a small backward search.
-            this.DoBackwardSearch(graph, interpreter, vehicle, targetList, weight / 5);
+            this.DoBackwardSearch(graph, interpreter, vehicle, targetList, weight / 20);
 
             //  initialize the result data structures.
             var segmentsAtWeight = new List<PathSegment<VertexTimeAndTrip>>();

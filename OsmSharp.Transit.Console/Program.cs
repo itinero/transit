@@ -27,9 +27,9 @@ namespace OsmSharp.Transit.Console
 
             // read the nmbs feed.
             var reader = new GTFSReader<GTFSFeed>(false);
-            //System.Console.Write("Parsing feed 'De Lijn'...");
-            //var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"d:\work\osmsharp_data\delijn\"));
-            //System.Console.WriteLine("Done!");
+            System.Console.Write("Parsing feed 'De Lijn'...");
+            var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"D:\work\osmsharp_data\delijn_2014-04"));
+            System.Console.WriteLine("Done!");
             System.Console.Write("Parsing feed 'NMBS'...");
             var nmbs = reader.Read(new GTFS.IO.GTFSDirectorySource(@"d:\work\osmsharp_data\nmbs\"));
             System.Console.WriteLine("Done!");
@@ -54,14 +54,14 @@ namespace OsmSharp.Transit.Console
                 trip.RouteId = "nmbs_" + trip.RouteId;
             }
 
-            router.AddGTFSFeed(nmbs);
-            // router.AddGTFSFeed(delijn);
+            //router.AddGTFSFeed(nmbs);
+            router.AddGTFSFeed(delijn);
 
             long ticksBefore = DateTime.Now.Ticks;
             System.Console.Write("belgium.train.example1....");
             var departure = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.1405998794364, 4.563612341880798));
             var arrival = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.84142172612373, 4.336799383163452));
-            var date = new DateTime(2014, 09, 05, 07, 20, 00);
+            var date = new DateTime(2014, 09, 26, 07, 20, 00);
             var route = router.CalculateTransit(date, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\belgium.train.example1.result.geojson");
             System.Console.WriteLine("Done!");
@@ -69,7 +69,7 @@ namespace OsmSharp.Transit.Console
             System.Console.Write("belgium.train.example2....");
             departure = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.99924522240044, 4.831471145153046));
             arrival = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.8413810765485, 4.33685302734375));
-            date = new DateTime(2014, 09, 05, 07, 30, 00);
+            date = new DateTime(2014, 09, 26, 07, 30, 00);
             route = router.CalculateTransit(date, Vehicle.Bicycle, Vehicle.Bicycle, Vehicle.Bicycle, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\belgium.train.example2.result.geojson");
             System.Console.WriteLine("Done!");
@@ -77,7 +77,7 @@ namespace OsmSharp.Transit.Console
             System.Console.Write("belgium.train.example3....");
             departure = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.99924522240044, 4.831471145153046));
             arrival = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(51.01972453598589, 4.482502341270447));
-            date = new DateTime(2014, 09, 05, 07, 15, 00);
+            date = new DateTime(2014, 09, 26, 07, 15, 00);
             route = router.CalculateTransit(date, Vehicle.Bicycle, Vehicle.Bicycle, Vehicle.Bicycle, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\belgium.train.example3.result.geojson");
             System.Console.WriteLine("Done!");
@@ -85,7 +85,7 @@ namespace OsmSharp.Transit.Console
             System.Console.Write("belgium.train.example4....");
             departure = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(51.01972453598589, 4.482502341270447));
             arrival = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.99924522240044, 4.831471145153046));
-            date = new DateTime(2014, 09, 05, 17, 55, 00);
+            date = new DateTime(2014, 09, 26, 17, 55, 00);
             route = router.CalculateTransit(date, Vehicle.Bicycle, Vehicle.Bicycle, Vehicle.Bicycle, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\belgium.train.example4.result.geojson");
             System.Console.WriteLine("Done!");
@@ -93,17 +93,18 @@ namespace OsmSharp.Transit.Console
             System.Console.Write("belgium.train.example5....");
             departure = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.8413810765485, 4.33685302734375));
             arrival = router.Resolve(Vehicle.Bicycle, new GeoCoordinate(50.99924522240044, 4.831471145153046));
-            date = new DateTime(2014, 09, 05, 17, 55, 00);
+            date = new DateTime(2014, 09, 26, 17, 55, 00);
             route = router.CalculateTransit(date, Vehicle.Bicycle, Vehicle.Bicycle, Vehicle.Bicycle, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\belgium.train.example5.result.geojson");
             System.Console.WriteLine("Done!");
 
-            //System.Console.Write("Gent naar Wechel....");
-            //var from = router.Resolve(Vehicle.Pedestrian, gent); // gent
-            //var to = router.Resolve(Vehicle.Pedestrian, wechel); // wechel
-            //route = router.CalculateTransit(DateTime.Now, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, from, to);
-            ////route.SaveAsGpx(new FileInfo(@"c:\temp\gent-wechel.gpx").OpenWrite());
-            //System.Console.WriteLine("Done!");
+            System.Console.Write("belgium.trainandbus.example6....");
+            var from = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.05647, 3.72130));
+            var to = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.26798, 4.80193));
+            date = new DateTime(2014, 09, 26, 17, 55, 00);
+            route = router.CalculateTransit(DateTime.Now, Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, from, to);
+            WriteGeoJSON(router, route, @"c:\temp\belgium.trainandbus.example6.result.geojson");
+            System.Console.WriteLine("Done!");
 
             //System.Console.Write("Gent naar Lokeren....");
             //to = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(51.10546, 3.98864)); // lokeren

@@ -264,6 +264,20 @@ namespace OsmSharp.Routing.Transit.MultiModal
             return new MultiModalRouter(multiModalEdgeRouter); // create the actual router.
         }
 
+        /// <summary>
+        /// Creates a new router from a PBF file.
+        /// </summary>
+        /// <param name="pbf"></param>
+        /// <param name="interpreter"></param>
+        /// <returns></returns>
+        public static MultiModalRouter CreateFromPBF(string pbf, IOsmRoutingInterpreter interpreter)
+        {
+            using(var pbfStream = new FileInfo(pbf).OpenRead())
+            {
+                return MultiModalRouter.CreateFrom(new OsmSharp.Osm.PBF.Streams.PBFOsmStreamSource(pbfStream), interpreter);
+            }
+        }
+
         #endregion
     }
 }

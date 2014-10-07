@@ -683,6 +683,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
 
                             // add intermediate entries.
+                            var sideStreets = new List<RouteSegmentBranch>();
                             if (edgeCoordinates != null)
                             { // loop over coordinates.
                                 for (int coordinateIdx = 0; coordinateIdx < edgeCoordinates.Length; coordinateIdx++)
@@ -699,7 +700,6 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                 }
 
                                 // Get the side streets
-                                var sideStreets = new List<RouteSegmentBranch>();
                                 var neighbours = this.GetNeighboursUndirectedWithEdges(vehicles[0], nodeCurrent.Item1.Vertex, nodePrevious.Item1.Vertex, nodeNext.Item1.Vertex);
                                 var consideredNeighbours = new HashSet<GeoCoordinate>();
                                 if (neighbours.Count > 0)
@@ -737,20 +737,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                                         }
                                     }
                                 }
-
-                                // create the route entry.
-                                var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
-
-                                var routeEntry = new RouteSegment();
-                                routeEntry.Latitude = (float)nextCoordinate.Latitude;
-                                routeEntry.Longitude = (float)nextCoordinate.Longitude;
-                                routeEntry.SideStreets = sideStreets.ToArray();
-                                routeEntry.Tags = currentTags.ConvertFrom();
-                                routeEntry.Type = RouteSegmentType.Along;
-                                routeEntry.Name = name;
-                                routeEntry.Names = names.ConvertFrom();
-                                entries.Add(routeEntry);
                             }
+
+                            // create the route entry.
+                            var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
+
+                            var routeEntry = new RouteSegment();
+                            routeEntry.Latitude = (float)nextCoordinate.Latitude;
+                            routeEntry.Longitude = (float)nextCoordinate.Longitude;
+                            routeEntry.SideStreets = sideStreets.ToArray();
+                            routeEntry.Tags = currentTags.ConvertFrom();
+                            routeEntry.Type = RouteSegmentType.Along;
+                            routeEntry.Name = name;
+                            routeEntry.Names = names.ConvertFrom();
+                            entries.Add(routeEntry);
+
                             perviousIsTransit = false;
                         }
                         else if(liveEdge.IsTransit())
@@ -916,6 +917,85 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             entries.Add(routeEntry);
                             perviousIsTransit = false;
                         }
+                    }
+                    else
+                    { // edge is a resolved edge.                           
+                        var currentTags = _source.Graph.TagsIndex.Get(edge.Tags);
+                        currentTags.Add("time_seconds", nodePrevious.Item2.ToInvariantString());
+                        var name = _interpreter.EdgeInterpreter.GetName(currentTags);
+                        var names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(currentTags);
+
+                        // add intermediate entries.
+                        var sideStreets = new List<RouteSegmentBranch>();
+                        if (edgeCoordinates != null)
+                        { // loop over coordinates.
+                            for (int coordinateIdx = 0; coordinateIdx < edgeCoordinates.Length; coordinateIdx++)
+                            {
+                                var entry = new RouteSegment();
+                                entry.Latitude = edgeCoordinates[coordinateIdx].Latitude;
+                                entry.Longitude = edgeCoordinates[coordinateIdx].Longitude;
+                                entry.Type = RouteSegmentType.Along;
+                                entry.Tags = currentTags.ConvertFrom();
+                                entry.Name = name;
+                                entry.Names = names.ConvertFrom();
+
+                                entries.Add(entry);
+                            }
+
+                            // Get the side streets
+                            var neighbours = this.GetNeighboursUndirectedWithEdges(vehicles[0], nodeCurrent.Item1.Vertex, nodePrevious.Item1.Vertex, nodeNext.Item1.Vertex);
+                            var consideredNeighbours = new HashSet<GeoCoordinate>();
+                            if (neighbours.Count > 0)
+                            { // construct neighbours list.
+                                foreach (var neighbour in neighbours)
+                                {
+                                    if (((LiveEdge)neighbour.Value).IsRoad())
+                                    { // neighour edge is a road.
+                                        var neighbourKeyCoordinate = this.GetCoordinate(vehicles[0], neighbour.Key);
+                                        var neighbourValueCoordinates = this.GetEdgeShape(vehicles[0], nodeCurrent.Item1.Vertex, neighbour.Key);
+                                        if (neighbourValueCoordinates != null &&
+                                            neighbourValueCoordinates.Length > 0)
+                                        { // get the first of the coordinates array.
+                                            neighbourKeyCoordinate = new GeoCoordinate(
+                                                neighbourValueCoordinates[0].Latitude,
+                                                neighbourValueCoordinates[0].Longitude);
+                                        }
+                                        if (!consideredNeighbours.Contains(neighbourKeyCoordinate))
+                                        { // neighbour has not been considered yet.
+                                            consideredNeighbours.Add(neighbourKeyCoordinate);
+
+                                            var neighbourCoordinate = this.GetCoordinate(vehicles[0], neighbour.Key);
+                                            var tags = _source.Graph.TagsIndex.Get(neighbour.Value.Tags);
+
+                                            // build the side street info.
+                                            var sideStreet = new RouteSegmentBranch();
+                                            sideStreet.Latitude = (float)neighbourCoordinate.Latitude;
+                                            sideStreet.Longitude = (float)neighbourCoordinate.Longitude;
+                                            sideStreet.Tags = tags.ConvertFrom();
+                                            sideStreet.Name = _interpreter.EdgeInterpreter.GetName(tags);
+                                            sideStreet.Names = _interpreter.EdgeInterpreter.GetNamesInAllLanguages(tags).ConvertFrom();
+
+                                            sideStreets.Add(sideStreet);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // create the route entry.
+                        var nextCoordinate = this.GetCoordinate(vehicles[0], nodeCurrent.Item1.Vertex);
+
+                        var routeEntry = new RouteSegment();
+                        routeEntry.Latitude = (float)nextCoordinate.Latitude;
+                        routeEntry.Longitude = (float)nextCoordinate.Longitude;
+                        routeEntry.SideStreets = sideStreets.ToArray();
+                        routeEntry.Tags = currentTags.ConvertFrom();
+                        routeEntry.Type = RouteSegmentType.Along;
+                        routeEntry.Name = name;
+                        routeEntry.Names = names.ConvertFrom();
+                        entries.Add(routeEntry);
+
+                        perviousIsTransit = false;
                     }
                 }
 

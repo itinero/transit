@@ -56,11 +56,11 @@ namespace OsmSharp.Transit.Console
             //    trip.RouteId = "nmbs_" + trip.RouteId;
             //}
 
-            // http://localhost:12010/kortrijk_new/multimodal?callback=PT.JSONP.callbacks.route0&vehicle=car|car|car&time=201408071200&loc=50.823085,3.274934&loc=50.822787,3.258841
+            // http://localhost:12010/kortrijk_new/multimodal?callback=PT.JSONP.callbacks.route0&vehicle=car|car|car&time=201408071200&loc=50.821808,3.262655&loc=50.821591,3.261169
             long ticksBefore = DateTime.Now.Ticks;
             System.Console.Write("belgium.train.example1....");
-            var departure = router.Resolve(Vehicle.Car, new GeoCoordinate(50.823085, 3.274934));
-            var arrival = router.Resolve(Vehicle.Car, new GeoCoordinate(50.822787, 3.258841));
+            var departure = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821808, 3.262655));
+            var arrival = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821591, 3.261169));
             var date = new DateTime(2014, 09, 26, 07, 20, 00);
             var route = router.CalculateTransit(date, Vehicle.Car, Vehicle.Car, Vehicle.Car, departure, arrival);
             WriteGeoJSON(router, route, @"c:\temp\kortrijk.result.geojson");

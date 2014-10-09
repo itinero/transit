@@ -498,11 +498,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             var segmentsToTarget = new PathSegment<VertexTimeAndTrip>[targets.Length]; // the resulting target segments.
 
             // initialize pt-specific data structures.
-            var chosenStations = new HashSet<long>(); // keep a list of statops that have been visited up until now, visited meaning foot on the ground.
+            var chosenStations = new HashSet<long>(); // keep a list of stations that have been visited up until now, visited meaning foot on the ground.
 
             // intialize dykstra data structures.
             var heap = new ComparableBinairyHeap<PathSegment<VertexTimeAndTrip>, ModalWeight>();
-            var chosenVertices = new HashSet<VertexTimeAndTrip>();
+            var chosenVertices = new DykstraVisitList();
             var labels = new Dictionary<VertexTimeAndTrip, IList<RoutingLabel>>();
             foreach (long vertex in source.GetVertices())
             {
@@ -516,7 +516,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
             // initialize the source's neighbors.
             var current = heap.Pop();
             while (current.Item != null &&
-                chosenVertices.Contains(current.Item.VertexId))
+                chosenVertices.HasBeenVisited(current.Item))
             { // keep dequeuing.
                 current = heap.Pop();
             }
@@ -650,7 +650,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
 
             // start OsmSharp.Routing.
             var arcs = graph.GetEdges(Convert.ToUInt32(current.Item.VertexId.Vertex));
-            chosenVertices.Add(current.Item.VertexId);
+            chosenVertices.SetVisited(current.Item);
 
             // loop until target is found and the route is the shortest!
             while (true)
@@ -670,7 +670,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 {
                     var neighbour = arcs;
                     var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
-                    if (chosenVertices.Contains(neighbourKey))
+                    if (chosenVertices.HasBeenVisited(neighbourKey, current.Item.VertexId))
                     { // this neighbour has already been visited.
                         continue;
                     }
@@ -870,13 +870,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 { // choose the next vertex.
                     current = heap.Pop();
                     while (current != null &&
-                        chosenVertices.Contains(current.Item.VertexId))
+                        chosenVertices.HasBeenVisited(current.Item))
                     { // keep dequeuing.
                         current = heap.Pop();
                     }
                     if (current != null)
                     {
-                        chosenVertices.Add(current.Item.VertexId);
+                        chosenVertices.SetVisited(current.Item);
                     }
                 }
                 while (current != null && current.Item.Weight > weight)
@@ -889,7 +889,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     // choose the next vertex if the weight has been reached.
                     current = heap.Pop();
                     while (current != null &&
-                        chosenVertices.Contains(current.Item.VertexId))
+                        chosenVertices.HasBeenVisited(current.Item))
                     { // keep dequeuing.
                         current = heap.Pop();
                     }

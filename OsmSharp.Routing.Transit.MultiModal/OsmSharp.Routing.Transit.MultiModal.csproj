@@ -116,6 +116,7 @@
     <Compile Include="Routers\MultiModalArcAggregator.cs" />
     <Compile Include="Routers\TypedRouterMultiModal.cs" />
     <Compile Include="Routers\TiledWeights.cs" />
+    <Compile Include="Routers\VertexInfo.cs" />
     <Compile Include="Streams\MultiModalGraphOsmStreamTarget.cs" />
   </ItemGroup>
   <ItemGroup>

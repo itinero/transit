@@ -481,11 +481,21 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
 
             // calculate path.
             var tiledSamples = new TiledWeights(sampleZoom);
+            //var vertexInfo = new List<VertexInfo>();
             _basicRouter.CalculateRange(_source.Graph, this.Interpreter, toFirstStop,
                 source, maxWeight, true, routingParameters, (vertexTimeAndTrip) =>
                 {
                     var coordinate = this.GetCoordinate(toFirstStop, vertexTimeAndTrip.VertexId.Vertex);
                     tiledSamples.AddSample(coordinate.Latitude, coordinate.Longitude, vertexTimeAndTrip.Weight);
+
+                    //vertexInfo.Add(new VertexInfo()
+                    //{
+                    //    FromVertexId = vertexTimeAndTrip.From != null ? vertexTimeAndTrip.From.VertexId.Vertex : -1,
+                    //    VertexId = vertexTimeAndTrip.VertexId.Vertex,
+                    //    Latitude = 0,
+                    //    Longitude = 0,
+                    //    Weight = vertexTimeAndTrip.VertexId.Seconds
+                    //});
                 });
 
             // extract coordinates of all withing.

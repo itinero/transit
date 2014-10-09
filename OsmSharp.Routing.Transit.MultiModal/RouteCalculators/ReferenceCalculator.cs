@@ -663,197 +663,250 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     labels.Remove(current.Item.VertexId);
                 }
 
+                // check turn-restrictions.
+                List<uint[]> restrictions = null;
+                bool isRestricted = false;
+                if (current.Item.From != null &&
+                    graph.TryGetRestrictionAsStart(vehicle, (uint)current.Item.From.VertexId.Vertex, out restrictions))
+                { // there are restrictions!
+                    // search for a restriction that ends in the currently selected vertex.
+                    for (int idx = 0; idx < restrictions.Count; idx++)
+                    {
+                        var restriction = restrictions[idx];
+                        if (restriction[restriction.Length - 1] == current.Item.VertexId.Vertex)
+                        { // oeps, do not consider the neighbours of this vertex.
+                            isRestricted = true;
+                            break;
+                        }
+
+                        for (int restrictedIdx = 0; restrictedIdx < restriction.Length; restrictedIdx++)
+                        { // make sure the restricted vertices can be choosen multiple times.
+                            // restrictedVertices.Add(restriction[restrictedIdx]);
+                            chosenVertices.SetRestricted(restriction[restrictedIdx]);
+                        }
+                    }
+                }
+
                 // update the visited nodes.
                 bool currentIsStation = false;
-                while(arcs.MoveNext())
-                // foreach (var neighbour in arcs)
+                if (!isRestricted)
                 {
-                    var neighbour = arcs;
-                    var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
-                    if (chosenVertices.HasBeenVisited(neighbourKey, current.Item.VertexId))
-                    { // this neighbour has already been visited.
-                        continue;
-                    }
-                    if (neighbour.EdgeData.IsRoad() && !onlyTransit)
-                    { // a 'road' edge.
-                        // check the tags against the interpreter.
-                        var tags = graph.TagsIndex.Get(neighbour.EdgeData.Tags);
-                        if (vehicle.CanTraverse(tags))
-                        { // it's ok; the edge can be traversed by the given vehicle.
-                            bool? oneWay = vehicle.IsOneWay(tags);
-                            bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value == neighbour.EdgeData.Forward);
-                            if ((current.Item.From == null ||
-                                interpreter.CanBeTraversed(current.Item.From.VertexId.Vertex, current.Item.VertexId.Vertex, neighbour.Neighbour)) && // test for turning restrictions.
-                                canBeTraversedOneWay)
-                            { // the neighbor is forward and is not settled yet!
-                                // check the labels (if needed).
-                                bool constraintsOk = true;
-                                if (interpreter.Constraints != null)
-                                { // check if the label is ok.
-                                    RoutingLabel neighbourLabel = interpreter.Constraints.GetLabelFor(
-                                        graph.TagsIndex.Get(neighbour.EdgeData.Tags));
-
-                                    // only test labels if there is a change.
-                                    if (currentLabels.Count == 0 || !neighbourLabel.Equals(currentLabels[currentLabels.Count - 1]))
-                                    { // labels are different, test them!
-                                        constraintsOk = interpreter.Constraints.ForwardSequenceAllowed(currentLabels,
-                                            neighbourLabel);
-
-                                        if (constraintsOk)
-                                        { // update the labels.
-                                            var neighbourLabels = new List<RoutingLabel>(currentLabels);
-                                            neighbourLabels.Add(neighbourLabel);
-
-                                            labels[neighbourKey] = neighbourLabels;
-                                        }
-                                    }
-                                    else
-                                    { // set the same label(s).
-                                        labels[neighbourKey] = currentLabels;
-                                    }
-                                }
-
-                                if (constraintsOk)
-                                { // all constraints are validated or there are none.
-                                    // calculate neighbors weight.
-                                    double relativeWeight = vehicle.Weight(tags, neighbour.EdgeData.Distance);
-                                    double totalWeight = current.Item.Weight + relativeWeight;
-                                    uint secondsMode = current.Item.VertexId.SecondsMode + (uint)relativeWeight;
-
-                                    // update the visit list.
-                                    if (totalWeight < weight &&
-                                        secondsMode < weightMode)
-                                    {
-                                        // create new vertex and time containing secondsMode.
-                                        neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, secondsMode);
-
-                                        var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
-                                        heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
-                                    }
-                                }
-                            }
+                    while (arcs.MoveNext())
+                    // foreach (var neighbour in arcs)
+                    {
+                        var neighbour = arcs;
+                        var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
+                        if (chosenVertices.HasBeenVisited(neighbourKey, current.Item.VertexId))
+                        { // this neighbour has already been visited.
+                            continue;
                         }
-                    }
-                    else if (neighbour.EdgeData.IsTransit() && !noTransit)
-                    { // transit edge.
-                        // calculate ticks.
-                        var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
-                        var ticksDate = new DateTime(currentTicks);
-                        var forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
-
-                        if (current.Item.VertexId.Seconds == 0 &&
-                            current.Item.VertexId.Trip == 0)
-                        { // current vertex is a station (because it has a transit edge) but it does not have a trip.
-                            currentIsStation = true;
-                            if(current.Weight.Transfers >= maxTransferCount)
-                            { // reached maxim tranfers, do no transfer anymore please!
-                                continue;
-                            }
-
-                            if(chosenStations.Contains(current.Item.VertexId.Vertex))
-                            {
-                                continue;
-                            }
-
-                            // add all points at this station at a time later than the current timestamp.
-                            var entriesAfter = forwardSchedule.GetAfter(ticksDate);
-                            // ALL TRANSFERS
-                            foreach (var entry in entriesAfter)
-                            {
-                                var seconds = entry.DepartsIn(ticksDate);
-                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour + entry.Duration < weight)
-                                { // departure + duration still not over the search threshold.
-                                    Dictionary<uint, bool> tripsForDate;
-                                    if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
-                                    {
-                                        tripsForDate = new Dictionary<uint, bool>();
-                                        possibleTrips.Add(ticksDate.Date, tripsForDate);
-                                    }
-                                    bool isTripPossibleResult;
-                                    if (!tripsForDate.TryGetValue(entry.Trip, out isTripPossibleResult))
-                                    {
-                                        isTripPossibleResult = isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(secondsNeighbour));
-                                        tripsForDate.Add(entry.Trip, isTripPossibleResult);
-                                    }
-                                    if (isTripPossibleResult)
-                                    { // ok trip is possible.
-                                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Trip), secondsNeighbour, current.Item);
-                                        heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, current.Weight.Transfers + 1));
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        { // current vertex is a station (because it has a transit edge) and it has a current trip.
-                            // MOVE TO NEXT STATION.
-                            // NO TRANSFER: find the next entry along the same trip.
-                            var entry = forwardSchedule.GetForTrip(current.Item.VertexId.Trip, ticksDate);
-                            if (entry.HasValue)
-                            { // there is a next entry along the same trip.
-                                var seconds = entry.Value.DepartsIn(ticksDate);
-                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
-                                if (secondsNeighbour < weight)
-                                { // still not over the search threshold.
-                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                    heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
-                                }
-                            }
-
-                            // STAY IN THE SAME STATION.
-                            // TRANSFER: find the first entry to transfer to in the same station.
-                            if (current.Weight.Transfers >= maxTransferCount)
-                            { // reached maxim tranfers, do no transfer anymore please!
-                                continue;
-                            }
-                            if(current.Item.From != null && 
-                                current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
-                            { // the previous station was a different station, this means leaving the current trip.
-                                if(!chosenStations.Contains(current.Item.VertexId.Vertex))
-                                { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
-                                    // a 'foot-on-the-ground' can only be created once at every station.
+                        if (neighbour.EdgeData.IsRoad() && !onlyTransit)
+                        { // a 'road' edge.
+                            // prevent u-turns.
+                            if (current.Item.From != null)
+                            { // a possible u-turn.
+                                if (current.Item.From.VertexId.Vertex == neighbour.Neighbour)
+                                { // a u-turn, don't do this please!
                                     continue;
                                 }
-                                chosenStations.Add(current.Item.VertexId.Vertex); // 'foot-on-the-ground' in this station already.
                             }
-                            var minTransferTime = MIN_TRANSFER_TIME;
-                            var transfers = current.Weight.Transfers + 1;
-                            forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
-                            entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
-                            if (entry.HasValue)
-                            { // there is a next entry in the same station.
-                                var seconds = entry.Value.DepartsIn(ticksDate);
-                                uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
-                                if (secondsNeighbour + entry.Value.Duration < weight)
-                                { // departure + duration still not over the search threshold.
-                                    Dictionary<uint, bool> tripsForDate;
-                                    if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
-                                    {
-                                        tripsForDate = new Dictionary<uint, bool>();
-                                        possibleTrips.Add(ticksDate.Date, tripsForDate);
+
+                            // check the tags against the interpreter.
+                            var tags = graph.TagsIndex.Get(neighbour.EdgeData.Tags);
+                            if (vehicle.CanTraverse(tags))
+                            { // it's ok; the edge can be traversed by the given vehicle.
+                                bool? oneWay = vehicle.IsOneWay(tags);
+                                bool canBeTraversedOneWay = (!oneWay.HasValue || oneWay.Value == neighbour.EdgeData.Forward);
+                                if ((current.Item.From == null ||
+                                    interpreter.CanBeTraversed(current.Item.From.VertexId.Vertex, current.Item.VertexId.Vertex, neighbour.Neighbour)) && // test for turning restrictions.
+                                    canBeTraversedOneWay)
+                                { // the neighbor is forward and is not settled yet!
+                                    bool restrictionsOk = true;
+                                    if (restrictions != null)
+                                    { // search for a restriction that ends in the currently selected neighbour and check if it's via-vertex matches.
+                                        for (int idx = 0; idx < restrictions.Count; idx++)
+                                        {
+                                            var restriction = restrictions[idx];
+                                            if (restriction[restriction.Length - 1] == neighbour.Neighbour)
+                                            { // oeps, do not consider the neighbours of this vertex.
+                                                if (restriction[restriction.Length - 2] == current.Item.VertexId.Vertex)
+                                                { // damn this route-part is restricted!
+                                                    restrictionsOk = false;
+                                                    break;
+                                                }
+                                            }
+                                        }
                                     }
-                                    bool isTripPossibleResult;
-                                    if (!tripsForDate.TryGetValue(entry.Value.Trip, out isTripPossibleResult))
-                                    {
-                                        isTripPossibleResult = isTripPossible.Invoke(entry.Value.Trip, startTime.AddSeconds(secondsNeighbour));
-                                        tripsForDate.Add(entry.Value.Trip, isTripPossibleResult);
+
+                                    // check the labels (if needed).
+                                    bool constraintsOk = true;
+                                    if (restrictionsOk && interpreter.Constraints != null)
+                                    { // check if the label is ok.
+                                        RoutingLabel neighbourLabel = interpreter.Constraints.GetLabelFor(
+                                            graph.TagsIndex.Get(neighbour.EdgeData.Tags));
+
+                                        // only test labels if there is a change.
+                                        if (currentLabels.Count == 0 || !neighbourLabel.Equals(currentLabels[currentLabels.Count - 1]))
+                                        { // labels are different, test them!
+                                            constraintsOk = interpreter.Constraints.ForwardSequenceAllowed(currentLabels,
+                                                neighbourLabel);
+
+                                            if (constraintsOk)
+                                            { // update the labels.
+                                                var neighbourLabels = new List<RoutingLabel>(currentLabels);
+                                                neighbourLabels.Add(neighbourLabel);
+
+                                                labels[neighbourKey] = neighbourLabels;
+                                            }
+                                        }
+                                        else
+                                        { // set the same label(s).
+                                            labels[neighbourKey] = currentLabels;
+                                        }
                                     }
-                                    if (isTripPossibleResult)
-                                    { // ok trip is possible.
-                                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                        heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, transfers));
+
+                                    if (constraintsOk && restrictionsOk)
+                                    { // all constraints are validated or there are none.
+                                        // calculate neighbors weight.
+                                        double relativeWeight = vehicle.Weight(tags, neighbour.EdgeData.Distance);
+                                        double totalWeight = current.Item.Weight + relativeWeight;
+                                        uint secondsMode = current.Item.VertexId.SecondsMode + (uint)relativeWeight;
+
+                                        // update the visit list.
+                                        if (totalWeight < weight &&
+                                            secondsMode < weightMode)
+                                        {
+                                            // create new vertex and time containing secondsMode.
+                                            neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, secondsMode);
+
+                                            var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, totalWeight, current.Item);
+                                            heap.Push(neighbourRoute, new ModalWeight((float)neighbourRoute.Weight, current.Weight.Transfers));
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    else if (!neighbour.EdgeData.IsTransit() && !neighbour.EdgeData.IsRoad())
-                    { // no transit no road, just a connection between modes.
-                        var secondsNeighbour = current.Weight.Time + modalTransferTime;
-                        if (secondsNeighbour < weight)
-                        {
-                            var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, secondsNeighbour, current.Item);
-                            heap.Push(neighbourRoute, new ModalWeight((float)secondsNeighbour, current.Weight.Transfers));
+                        else if (neighbour.EdgeData.IsTransit() && !noTransit)
+                        { // transit edge.
+                            // calculate ticks.
+                            var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
+                            var ticksDate = new DateTime(currentTicks);
+                            var forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+
+                            if (current.Item.VertexId.Seconds == 0 &&
+                                current.Item.VertexId.Trip == 0)
+                            { // current vertex is a station (because it has a transit edge) but it does not have a trip.
+                                currentIsStation = true;
+                                if (current.Weight.Transfers >= maxTransferCount)
+                                { // reached maxim tranfers, do no transfer anymore please!
+                                    continue;
+                                }
+
+                                if (chosenStations.Contains(current.Item.VertexId.Vertex))
+                                {
+                                    continue;
+                                }
+
+                                // add all points at this station at a time later than the current timestamp.
+                                var entriesAfter = forwardSchedule.GetAfter(ticksDate);
+                                // ALL TRANSFERS
+                                foreach (var entry in entriesAfter)
+                                {
+                                    var seconds = entry.DepartsIn(ticksDate);
+                                    uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
+                                    if (secondsNeighbour + entry.Duration < weight)
+                                    { // departure + duration still not over the search threshold.
+                                        Dictionary<uint, bool> tripsForDate;
+                                        if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
+                                        {
+                                            tripsForDate = new Dictionary<uint, bool>();
+                                            possibleTrips.Add(ticksDate.Date, tripsForDate);
+                                        }
+                                        bool isTripPossibleResult;
+                                        if (!tripsForDate.TryGetValue(entry.Trip, out isTripPossibleResult))
+                                        {
+                                            isTripPossibleResult = isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(secondsNeighbour));
+                                            tripsForDate.Add(entry.Trip, isTripPossibleResult);
+                                        }
+                                        if (isTripPossibleResult)
+                                        { // ok trip is possible.
+                                            var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Trip), secondsNeighbour, current.Item);
+                                            heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, current.Weight.Transfers + 1));
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            { // current vertex is a station (because it has a transit edge) and it has a current trip.
+                                // MOVE TO NEXT STATION.
+                                // NO TRANSFER: find the next entry along the same trip.
+                                var entry = forwardSchedule.GetForTrip(current.Item.VertexId.Trip, ticksDate);
+                                if (entry.HasValue)
+                                { // there is a next entry along the same trip.
+                                    var seconds = entry.Value.DepartsIn(ticksDate);
+                                    uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
+                                    if (secondsNeighbour < weight)
+                                    { // still not over the search threshold.
+                                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
+                                        heap.Push(path, new ModalWeight(secondsNeighbour, current.Weight.Transfers));
+                                    }
+                                }
+
+                                // STAY IN THE SAME STATION.
+                                // TRANSFER: find the first entry to transfer to in the same station.
+                                if (current.Weight.Transfers >= maxTransferCount)
+                                { // reached maxim tranfers, do no transfer anymore please!
+                                    continue;
+                                }
+                                if (current.Item.From != null &&
+                                    current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
+                                { // the previous station was a different station, this means leaving the current trip.
+                                    if (!chosenStations.Contains(current.Item.VertexId.Vertex))
+                                    { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
+                                        // a 'foot-on-the-ground' can only be created once at every station.
+                                        continue;
+                                    }
+                                    chosenStations.Add(current.Item.VertexId.Vertex); // 'foot-on-the-ground' in this station already.
+                                }
+                                var minTransferTime = MIN_TRANSFER_TIME;
+                                var transfers = current.Weight.Transfers + 1;
+                                forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+                                entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
+                                if (entry.HasValue)
+                                { // there is a next entry in the same station.
+                                    var seconds = entry.Value.DepartsIn(ticksDate);
+                                    uint secondsNeighbour = (uint)(seconds + current.Item.Weight);
+                                    if (secondsNeighbour + entry.Value.Duration < weight)
+                                    { // departure + duration still not over the search threshold.
+                                        Dictionary<uint, bool> tripsForDate;
+                                        if (!possibleTrips.TryGetValue(ticksDate.Date, out tripsForDate))
+                                        {
+                                            tripsForDate = new Dictionary<uint, bool>();
+                                            possibleTrips.Add(ticksDate.Date, tripsForDate);
+                                        }
+                                        bool isTripPossibleResult;
+                                        if (!tripsForDate.TryGetValue(entry.Value.Trip, out isTripPossibleResult))
+                                        {
+                                            isTripPossibleResult = isTripPossible.Invoke(entry.Value.Trip, startTime.AddSeconds(secondsNeighbour));
+                                            tripsForDate.Add(entry.Value.Trip, isTripPossibleResult);
+                                        }
+                                        if (isTripPossibleResult)
+                                        { // ok trip is possible.
+                                            var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
+                                            heap.Push(path, new ModalWeight(secondsNeighbour + TRANSFER_PENALTY, transfers));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (!neighbour.EdgeData.IsTransit() && !neighbour.EdgeData.IsRoad())
+                        { // no transit no road, just a connection between modes.
+                            var secondsNeighbour = current.Weight.Time + modalTransferTime;
+                            if (secondsNeighbour < weight)
+                            {
+                                var neighbourRoute = new PathSegment<VertexTimeAndTrip>(neighbourKey, secondsNeighbour, current.Item);
+                                heap.Push(neighbourRoute, new ModalWeight((float)secondsNeighbour, current.Weight.Transfers));
+                            }
                         }
                     }
                 }

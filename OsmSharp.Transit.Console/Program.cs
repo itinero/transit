@@ -23,9 +23,16 @@ namespace OsmSharp.Transit.Console
 
             // create router.
             System.Console.Write("Loading routing graph...");
+            // 50.823926,3.267725&loc=50.824275,3.271555
             var router = MultiModalRouter.CreateFrom(new PBFOsmStreamSource(new FileInfo(@"d:\OSM\bin\kortrijk.new.osm.pbf").OpenRead()),
                 new OsmRoutingInterpreter());
             System.Console.WriteLine("Done!");
+
+            var from = router.Resolve(Vehicle.Car, new GeoCoordinate(50.823926, 3.267725));
+            var to = router.Resolve(Vehicle.Car, new GeoCoordinate(50.824275, 3.271555));
+            var date1 = new DateTime(2014, 09, 26, 07, 20, 00);
+            var route1 = router.CalculateTransit(date1, Vehicle.Car, Vehicle.Car, Vehicle.Car, from, to);
+            WriteGeoJSON(router, route1, @"c:\temp\kortrijk.result.geojson");
 
             //// read the nmbs feed.
             //var reader = new GTFSReader<GTFSFeed>(false);
@@ -58,13 +65,13 @@ namespace OsmSharp.Transit.Console
 
             // http://localhost:12010/kortrijk_new/multimodal?callback=PT.JSONP.callbacks.route0&vehicle=car|car|car&time=201408071200&loc=50.821808,3.262655&loc=50.821591,3.261169
             long ticksBefore = DateTime.Now.Ticks;
-            System.Console.Write("belgium.train.example1....");
-            var departure = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821808, 3.262655));
-            var arrival = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821591, 3.261169));
-            var date = new DateTime(2014, 09, 26, 07, 20, 00);
-            var route = router.CalculateTransit(date, Vehicle.Car, Vehicle.Car, Vehicle.Car, departure, arrival);
-            WriteGeoJSON(router, route, @"c:\temp\kortrijk.result.geojson");
-            System.Console.WriteLine("Done!");
+            //System.Console.Write("belgium.train.example1....");
+            //var departure = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821808, 3.262655));
+            //var arrival = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821591, 3.261169));
+            //var date = new DateTime(2014, 09, 26, 07, 20, 00);
+            //var route = router.CalculateTransit(date, Vehicle.Car, Vehicle.Car, Vehicle.Car, departure, arrival);
+            //WriteGeoJSON(router, route, @"c:\temp\kortrijk.result.geojson");
+            //System.Console.WriteLine("Done!");
 
             //router.AddGTFSFeed(nmbs);
             //router.AddGTFSFeed(delijn);

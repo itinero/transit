@@ -18,12 +18,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the set of restricted vertices.
         /// </summary>
-        private HashSet<VertexTimeAndTrip> _restricted;
+        private HashSet<long> _restricted;
 
         /// <summary>
         /// Holds the restricted visits.
         /// </summary>
-        private Dictionary<VertexTimeAndTrip, HashSet<VertexTimeAndTrip>> _restrictedVisits;
+        private Dictionary<long, HashSet<long>> _restrictedVisits;
 
         /// <summary>
         /// Creates a new visit list.
@@ -31,8 +31,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public DykstraVisitList()
         {
             _visited = new HashSet<VertexTimeAndTrip>();
-            _restricted = new HashSet<VertexTimeAndTrip>();
-            _restrictedVisits = new Dictionary<VertexTimeAndTrip, HashSet<VertexTimeAndTrip>>();
+            _restricted = new HashSet<long>();
+            _restrictedVisits = new Dictionary<long, HashSet<long>>();
         }
 
         /// <summary>
@@ -57,16 +57,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <returns></returns>
         public bool HasBeenVisited(VertexTimeAndTrip vertex, VertexTimeAndTrip fromVertex)
         {
-            if (!_restricted.Contains(vertex))
+            if (!_restricted.Contains(vertex.Vertex))
             { // not restricted.
                 return _visited.Contains(vertex);
             }
             else
             { // check restricted.
-                HashSet<VertexTimeAndTrip> froms;
-                if (_restrictedVisits.TryGetValue(vertex, out froms))
+                HashSet<long> froms;
+                if (_restrictedVisits.TryGetValue(vertex.Vertex, out froms))
                 {
-                    return froms.Contains(fromVertex);
+                    return froms.Contains(fromVertex.Vertex);
                 }
                 return false;
             }
@@ -97,19 +97,19 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <param name="fromVertex"></param>
         public void SetVisited(VertexTimeAndTrip vertex, VertexTimeAndTrip fromVertex)
         {
-            if (!_restricted.Contains(vertex))
+            if (!_restricted.Contains(vertex.Vertex))
             { // not restricted.
                 _visited.Add(vertex);
             }
             else
             { // check restricted.
-                HashSet<VertexTimeAndTrip> froms;
-                if (!_restrictedVisits.TryGetValue(vertex, out froms))
+                HashSet<long> froms;
+                if (!_restrictedVisits.TryGetValue(vertex.Vertex, out froms))
                 {
-                    froms = new HashSet<VertexTimeAndTrip>();
-                    _restrictedVisits.Add(vertex, froms);
+                    froms = new HashSet<long>();
+                    _restrictedVisits.Add(vertex.Vertex, froms);
                 }
-                froms.Add(fromVertex);
+                froms.Add(fromVertex.Vertex);
             }
         }
 
@@ -117,10 +117,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// Sets the given vertex as restricted.
         /// </summary>
         /// <param name="vertex"></param>
-        public void SetRestricted(VertexTimeAndTrip vertex)
+        public void SetRestricted(long vertex)
         {
             _restricted.Add(vertex);
-            _visited.Remove(vertex);
         }
     }
 }

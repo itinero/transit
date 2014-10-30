@@ -790,7 +790,15 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             }
 
                             // get edge details and create tags.
-                            var forwardSchedule = liveEdge.GetForwardSchedule(_source.Schedules);
+                            TransitEdgeSchedule forwardSchedule = null;
+                            if (liveEdge.Forward)
+                            {
+                                forwardSchedule = liveEdge.GetForwardSchedule(_source.Schedules);
+                            }
+                            else
+                            {
+                                forwardSchedule = liveEdge.GetBackwardSchedule(_source.Schedules);
+                            }
                             var forwardScheduleEntry = forwardSchedule == null ? 
                                 null : forwardSchedule.GetForTrip(nodePrevious.Item1.Trip, 
                                     departureTime.AddSeconds(nodePrevious.Item2));
@@ -1192,13 +1200,24 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
                             uint? scheduleId = arc.EdgeData.GetScheduleId();
                             attributes.AddAttribute("type", "transit");
                             attributes.AddAttribute("schedule_id", scheduleId.ToInvariantString());
-                            var forwardSchedule = arc.EdgeData.GetForwardSchedule(_source.Schedules);
+                            // var forwardSchedule = arc.EdgeData.GetForwardSchedule(_source.Schedules);
+                            TransitEdgeSchedule forwardSchedule = null, backwardSchedule = null;
+                            if (arc.EdgeData.Forward)
+                            { // edge is forward, use forward schedule.
+                                forwardSchedule = arc.EdgeData.GetForwardSchedule(_source.Schedules);
+                                backwardSchedule = arc.EdgeData.GetBackwardSchedule(_source.Schedules);
+                            }
+                            else
+                            { // edge is backward, use backward schedule as forward.
+                                forwardSchedule = arc.EdgeData.GetBackwardSchedule(_source.Schedules);
+                                backwardSchedule = arc.EdgeData.GetForwardSchedule(_source.Schedules);
+                            }
                             for(int idx = 0; idx < forwardSchedule.Entries.Count; idx++)
                             {
                                 var entry = forwardSchedule.Entries[idx];
                                 attributes.AddAttribute("forward_schedule_" + idx.ToString("D4"), entry.ToInvariantString());
                             }
-                            var backwardSchedule = arc.EdgeData.GetBackwardSchedule(_source.Schedules);
+                            // var backwardSchedule = arc.EdgeData.GetBackwardSchedule(_source.Schedules);
                             for (int idx = 0; idx < backwardSchedule.Entries.Count; idx++)
                             {
                                 var entry = backwardSchedule.Entries[idx];

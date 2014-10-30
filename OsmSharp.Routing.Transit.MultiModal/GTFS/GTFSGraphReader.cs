@@ -114,22 +114,30 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
                         }
 
                         // get the schedule and add entry.
-                        var schedule = transitEdge.GetForwardSchedule(schedules);
-                        schedule.Add(tripIds[stopTime.TripId], departure, arrival);
-
-                        // BACKWARD: add edge or get the edge data.
-                        if (!graph.GetEdge(vertex, previousVertex, out transitEdge))
-                        { // the arc is not there yet, add it.
-                            transitEdge = new LiveEdge();
-                            var schedulePair = new TransitEdgeSchedulePair();
-                            schedules.Add(schedulePair);
-                            transitEdge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
-                            graph.AddEdge(vertex, previousVertex, transitEdge, null);
+                        if (transitEdge.Forward)
+                        { // edge is defined from previousVertex -> vertex
+                            var schedule = transitEdge.GetForwardSchedule(schedules);
+                            schedule.Add(tripIds[stopTime.TripId], departure, arrival);
+                        }
+                        else
+                        { // edge is defined from vertex -> previousVertex.
+                            var schedule = transitEdge.GetBackwardSchedule(schedules);
+                            schedule.Add(tripIds[stopTime.TripId], departure, arrival);
                         }
 
-                        // get the schedule and add entry.
-                        schedule = transitEdge.GetBackwardSchedule(schedules);
-                        schedule.Add(tripIds[stopTime.TripId], departure, arrival);
+                        //// BACKWARD: add edge or get the edge data.
+                        //if (!graph.GetEdge(vertex, previousVertex, out transitEdge))
+                        //{ // the arc is not there yet, add it.
+                        //    transitEdge = new LiveEdge();
+                        //    var schedulePair = new TransitEdgeSchedulePair();
+                        //    schedules.Add(schedulePair);
+                        //    transitEdge.Tags = Extensions.EncodeScheduleId(schedules.Count - 1);
+                        //    graph.AddEdge(vertex, previousVertex, transitEdge, null);
+                        //}
+
+                        //// get the schedule and add entry.
+                        //schedule = transitEdge.GetBackwardSchedule(schedules);
+                        //schedule.Add(tripIds[stopTime.TripId], departure, arrival);
                     }
                 }
                 previousStopTime = stopTime;

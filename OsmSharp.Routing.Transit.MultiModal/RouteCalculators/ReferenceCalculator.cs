@@ -773,8 +773,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                         uint secondsMode = current.Item.VertexId.SecondsMode + (uint)relativeWeight;
 
                                         // update the visit list.
-                                        if (totalWeight < weight &&
-                                            secondsMode < weightMode)
+                                        if (returnAtWeight || (totalWeight < weight &&
+                                            secondsMode < weightMode))
                                         {
                                             // create new vertex and time containing secondsMode.
                                             neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, secondsMode);
@@ -791,7 +791,15 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                             // calculate ticks.
                             var currentTicks = startTime.AddSeconds(current.Item.Weight).Ticks;
                             var ticksDate = new DateTime(currentTicks);
-                            var forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+                            TransitEdgeSchedule forwardSchedule = null;
+                            if(neighbour.EdgeData.Forward)
+                            { // edge is forward, use forward schedule.
+                                forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+                            }
+                            else
+                            { // edge is backward, use backward schedule as forward.
+                                forwardSchedule = neighbour.EdgeData.GetBackwardSchedule(schedules);
+                            }
 
                             if (current.Item.VertexId.Seconds == 0 &&
                                 current.Item.VertexId.Trip == 0)
@@ -861,7 +869,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 if (current.Item.From != null &&
                                     current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
                                 { // the previous station was a different station, this means leaving the current trip.
-                                    if (!chosenStations.Contains(current.Item.VertexId.Vertex))
+                                    if (chosenStations.Contains(current.Item.VertexId.Vertex))
                                     { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
                                         // a 'foot-on-the-ground' can only be created once at every station.
                                         continue;
@@ -870,7 +878,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 }
                                 var minTransferTime = MIN_TRANSFER_TIME;
                                 var transfers = current.Weight.Transfers + 1;
-                                forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+                                if (neighbour.EdgeData.Forward)
+                                { // edge is forward, use forward schedule.
+                                    forwardSchedule = neighbour.EdgeData.GetForwardSchedule(schedules);
+                                }
+                                else
+                                { // edge is backward, use backward schedule as forward.
+                                    forwardSchedule = neighbour.EdgeData.GetBackwardSchedule(schedules);
+                                }
                                 entry = forwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.Item.VertexId.Trip);
                                 if (entry.HasValue)
                                 { // there is a next entry in the same station.

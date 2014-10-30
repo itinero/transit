@@ -94,8 +94,8 @@ namespace OsmSharp.Routing.Transit
             return new TransitEdge()
             {
                 Forward = !this.Forward,
-                BackwardSchedule = this.ForwardSchedule,
-                ForwardSchedule = this.BackwardSchedule,
+                BackwardSchedule = this.BackwardSchedule,
+                ForwardSchedule = this.ForwardSchedule,
                 Tags = this.Tags
             };
         }

@@ -94,9 +94,9 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.Routes
             // test some routes.
             var from = new GeoCoordinate(51.0582205, 3.7189946);
             var to = new GeoCoordinate(51.0581291, 3.7205005);
-            var route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 05, 30, 0), Vehicle.Car, Vehicle.Pedestrian, Vehicle.Pedestrian, 
+            var route = multiModalEdgeRouter.CalculateTransit(new System.DateTime(2014, 01, 01, 05, 30, 0), Vehicle.Car, Vehicle.Car, Vehicle.Car, 
                 multiModalEdgeRouter.Resolve(Vehicle.Car, from, true), multiModalEdgeRouter.Resolve(Vehicle.Car, to, true), null);
-            Assert.IsNull(route);
+            Assert.IsNotNull(route);
         }
 
         /// <summary>

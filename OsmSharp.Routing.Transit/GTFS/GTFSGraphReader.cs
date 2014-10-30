@@ -104,22 +104,16 @@ namespace OsmSharp.Routing.Transit.GTFS
                     }
 
                     // get the schedule and add entry.
-                    var schedule = transitEdge.ForwardSchedule;
-                    schedule.Add(tripIds[stopTime.TripId], departure, arrival);
-
-                    // BACKWARD: add edge or get the edge data.
-                    if (!graph.ContainsEdge(vertex, previousVertex))
-                    { // the arc is not there yet, add it.
-                        graph.AddEdge(vertex, previousVertex, new TransitEdge(), null);
+                    if (transitEdge.Forward)
+                    { // edge is defined from previousVertex -> vertex
+                        var schedule = transitEdge.ForwardSchedule;
+                        schedule.Add(tripIds[stopTime.TripId], departure, arrival);
                     }
-                    if (!graph.GetEdge(vertex, previousVertex, out transitEdge))
-                    {
-                        throw new InvalidOperationException("Edge that was just added not found in graph.");
+                    else
+                    { // edge is defined from vertex -> previousVertex.
+                        var schedule = transitEdge.BackwardSchedule;
+                        schedule.Add(tripIds[stopTime.TripId], departure, arrival);
                     }
-
-                    // get the schedule and add entry.
-                    schedule = transitEdge.BackwardSchedule;
-                    schedule.Add(tripIds[stopTime.TripId], departure, arrival);
                 }
                 previousStopTime = stopTime;
             }

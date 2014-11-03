@@ -88,6 +88,7 @@ namespace OsmSharp.Routing.Transit
             foreach (var trip in feed.GetTrips())
             {
                 _tripIds[tripIdx] = trip.Id;
+                tripIdx++;
             }
             this.IndexFeed(_feed);
         }
@@ -248,7 +249,9 @@ namespace OsmSharp.Routing.Transit
             date = date.Date;
 
             string service;
-            if (_services.TryGetValue(_tripIds[trip], out service))
+            string tripId;
+            if (_tripIds.TryGetValue(trip, out tripId) &&
+                _services.TryGetValue(tripId, out service))
             { // the trip and service exist.
                 CalendarDate calendarDate;
                 Dictionary<DateTime, CalendarDate> calendarDates;

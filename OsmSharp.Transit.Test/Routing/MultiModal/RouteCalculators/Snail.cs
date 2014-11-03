@@ -18,12 +18,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             return true;
         }
 
-        protected override Units.Speed.KilometerPerHour MaxSpeed()
+        public override Units.Speed.KilometerPerHour MaxSpeed()
         {
             return 0.01;
         }
 
-        protected override Units.Speed.KilometerPerHour MaxSpeedAllowed(string highwayType)
+        public override Units.Speed.KilometerPerHour MaxSpeedAllowed(string highwayType)
         {
             return 0.01;
         }

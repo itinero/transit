@@ -667,6 +667,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 List<uint[]> restrictions = null;
                 bool isRestricted = false;
                 if (current.Item.From != null &&
+                    vehicle != null &&
                     graph.TryGetRestrictionAsStart(vehicle, (uint)current.Item.From.VertexId.Vertex, out restrictions))
                 { // there are restrictions!
                     // search for a restriction that ends in the currently selected vertex.

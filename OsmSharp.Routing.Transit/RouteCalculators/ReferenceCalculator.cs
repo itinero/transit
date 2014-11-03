@@ -69,7 +69,12 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
             var ticksDate = new DateTime(currentTicks);
             foreach (var arc in arcs)
             {
-                foreach (var entry in arc.EdgeData.ForwardSchedule.GetAfter(ticksDate))
+                TransitEdgeSchedule schedule = arc.EdgeData.ForwardSchedule;
+                if(!arc.EdgeData.Forward)
+                {
+                    schedule = arc.EdgeData.BackwardSchedule;
+                }
+                foreach (var entry in schedule.GetAfter(ticksDate))
                 {
                     var seconds = (uint)entry.DepartsIn(ticksDate);
                     if (isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(seconds)))
@@ -103,7 +108,12 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                     foreach (var arc in arcs)
                     {
                         // find the next entry along the same trip.
-                        var entry = arc.EdgeData.ForwardSchedule.GetForTrip(current.VertexId.Trip, ticksDate);
+                        TransitEdgeSchedule schedule = arc.EdgeData.ForwardSchedule;
+                        if(!arc.EdgeData.Forward)
+                        {
+                            schedule = arc.EdgeData.BackwardSchedule;
+                        }
+                        var entry = schedule.GetForTrip(current.VertexId.Trip, ticksDate);
                         if (entry.HasValue)
                         { // there is a next entry along the same trip.
                             var seconds = entry.Value.DepartsIn(ticksDate);
@@ -121,7 +131,7 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                         { // the current vertex has not previous or previous vertex is already a transfer.
                             minTransferTime = 0; // allow a transfer time of zero.
                         }
-                        entry = arc.EdgeData.ForwardSchedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.VertexId.Trip);
+                        entry = schedule.GetNext(ticksDate.AddSeconds(minTransferTime), current.VertexId.Trip);
                         if (entry.HasValue)
                         { // there is a next entry in the same station.
                             var seconds = entry.Value.DepartsIn(ticksDate);

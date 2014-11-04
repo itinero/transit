@@ -470,12 +470,12 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
             var path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
             Assert.AreEqual(6, path.Length());
-            Assert.AreEqual(11, path.From.From.From.From.From.VertexId);
-            Assert.AreEqual(11, path.From.From.From.From.VertexId);
-            Assert.AreEqual(12, path.From.From.From.VertexId);
-            Assert.AreEqual(13, path.From.From.VertexId);
-            Assert.AreEqual(14, path.From.VertexId);
-            Assert.AreEqual(15, path.VertexId);
+            Assert.AreEqual(12, path.From.From.From.From.From.VertexId);
+            Assert.AreEqual(12, path.From.From.From.From.VertexId);
+            Assert.AreEqual(13, path.From.From.From.VertexId);
+            Assert.AreEqual(14, path.From.From.VertexId);
+            Assert.AreEqual(15, path.From.VertexId);
+            Assert.AreEqual(16, path.VertexId);
 
             // (51.0582205, 3.7189946)-STOP5 @ 05:30
             source = new PathSegmentVisitList();
@@ -484,11 +484,11 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             target.UpdateVertex(new PathSegment<long>(stopVertices["STOP5"]));
             path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
             Assert.AreEqual(5, path.Length());
-            Assert.AreEqual(7, path.From.From.From.From.VertexId);
-            Assert.AreEqual(13, path.From.From.From.VertexId);
-            Assert.AreEqual(13, path.From.From.VertexId);
-            Assert.AreEqual(14, path.From.VertexId);
-            Assert.AreEqual(15, path.VertexId);
+            Assert.AreEqual(8, path.From.From.From.From.VertexId);
+            Assert.AreEqual(14, path.From.From.From.VertexId);
+            Assert.AreEqual(14, path.From.From.VertexId);
+            Assert.AreEqual(15, path.From.VertexId);
+            Assert.AreEqual(16, path.VertexId);
 
             // (51.0582205, 3.7189946)-(51.0581291, 3.7205005) @ 05:30
             source = new PathSegmentVisitList();
@@ -496,12 +496,13 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
             target = new PathSegmentVisitList();
             target.UpdateVertex(new PathSegment<long>(sourceGraph.Graph.GetVertexAt(new GeoCoordinate(51.0581291, 3.7205005))));
             path = router.Calculate(sourceGraph.Graph, interpreter, vehicle, source, target, double.MaxValue, parameters);
-            Assert.AreEqual(6, path.Length());
-            Assert.AreEqual(7, path.From.From.From.From.From.VertexId);
-            Assert.AreEqual(13, path.From.From.From.From.VertexId);
-            Assert.AreEqual(13, path.From.From.From.VertexId);
-            Assert.AreEqual(14, path.From.From.VertexId);
-            Assert.AreEqual(15, path.From.VertexId);
+            Assert.AreEqual(7, path.Length());
+            Assert.AreEqual(8, path.From.From.From.From.From.From.VertexId);
+            Assert.AreEqual(14, path.From.From.From.From.From.VertexId);
+            Assert.AreEqual(14, path.From.From.From.From.VertexId);
+            Assert.AreEqual(15, path.From.From.From.VertexId);
+            Assert.AreEqual(16, path.From.From.VertexId);
+            Assert.AreEqual(2, path.From.VertexId);
             Assert.AreEqual(1, path.VertexId);
         }
 

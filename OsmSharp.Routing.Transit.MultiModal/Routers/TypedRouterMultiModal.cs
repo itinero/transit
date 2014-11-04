@@ -452,9 +452,9 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             // construct router points.
             float latitude, longitude;
             _source.Graph.GetVertex(_stopIds[from], out latitude, out longitude);
-            var source = new RouterPoint(_stopIds[from], new GeoCoordinate(latitude, longitude));
+            var source = new RouterPoint(_stopIds[from], Vehicle.Pedestrian, new GeoCoordinate(latitude, longitude));
             _source.Graph.GetVertex(_stopIds[to], out latitude, out longitude);
-            var target = new RouterPoint(_stopIds[to], new GeoCoordinate(latitude, longitude));
+            var target = new RouterPoint(_stopIds[to], Vehicle.Pedestrian, new GeoCoordinate(latitude, longitude));
 
             return this.ConstructRoute(departureTime, new List<Vehicle>(new Vehicle[] { Vehicle.Pedestrian }), path, source, target);
         }

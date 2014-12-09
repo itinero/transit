@@ -24,6 +24,7 @@ using NetTopologySuite.Geometries;
 using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Math.Geo;
 using OsmSharp.Osm.Streams;
+using OsmSharp.Routing.ArcAggregation;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Osm.Graphs.Serialization;
@@ -56,6 +57,21 @@ namespace OsmSharp.Routing.Transit.MultiModal
             : base(router)
         {
             _multiModalRouter = router;
+        }
+
+        /// <summary>
+        /// Gets or sets the arc aggregator.
+        /// </summary>
+        public ArcAggregator ArcAggreator
+        {
+            get
+            {
+                return _multiModalRouter.ArcAggreator;
+            }
+            set
+            {
+                _multiModalRouter.ArcAggreator = value;
+            }
         }
 
         /// <summary>

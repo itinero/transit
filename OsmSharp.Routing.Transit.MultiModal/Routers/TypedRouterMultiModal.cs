@@ -75,6 +75,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
         private IRoutingInterpreter _interpreter;
 
         /// <summary>
+        /// Holds the arc aggregator.
+        /// </summary>
+        private ArcAggregator _aggregator;
+
+        /// <summary>
         /// Creates a new type router using edges of type MultiModalEdge.
         /// </summary>
         /// <param name="source"></param>
@@ -93,6 +98,26 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             _stops = new Dictionary<string, Stop>();
             _trips = new Dictionary<string, Trip>();
             _calendarDates = new Dictionary<string, Dictionary<DateTime, CalendarDate>>();
+            _aggregator = new MultiModalArcAggregator(_interpreter);
+        }
+
+        /// <summary>
+        /// Gets or sets the arc aggregator.
+        /// </summary>
+        public ArcAggregator ArcAggreator
+        {
+            get
+            {
+                return _aggregator;
+            }
+            set
+            {
+                if(value == null)
+                {
+                    throw new ArgumentNullException("Aggregator cannot be null.");
+                }
+                _aggregator = value;
+            }
         }
 
         #region GFTS
@@ -1269,8 +1294,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.Routers
             { // aggregate similar edges.
                 if (route.Vehicle == null) { throw new InvalidOperationException("Route does not have a vehicle."); }
 
-                var aggregator = new MultiModalArcAggregator(_interpreter);
-                var aggregatedRoute = aggregator.Aggregate(route);
+                var aggregatedRoute = _aggregator.Aggregate(route);
 
                 var current = aggregatedRoute;
                 while (current != null)

@@ -47,7 +47,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the maximum transfer count.
         /// </summary>
-        private const uint MAX_TRANSFER_COUNT = 4;
+        private const uint MAX_TRANSFER_COUNT = 10;
 
         /// <summary>
         /// Holds the transfer time penalty being 1 min here.

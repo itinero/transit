@@ -42,12 +42,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the minimum transfer time being 10 mins here.
         /// </summary>
-        private const uint MIN_TRANSFER_TIME = 5 * 60;
+        private const uint MIN_TRANSFER_TIME = 3 * 60;
 
         /// <summary>
         /// Holds the maximum transfer count.
         /// </summary>
-        private const uint MAX_TRANSFER_COUNT = 10;
+        private const uint MAX_TRANSFER_COUNT = 4;
 
         /// <summary>
         /// Holds the transfer time penalty being 1 min here.
@@ -72,7 +72,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the default intermodal transfer time being 1 min here.
         /// </summary>
-        public const float MODAL_TRANSFER_TIME_DEFAULT = 5 * 60;
+        public const float MODAL_TRANSFER_TIME_DEFAULT = 1 * 60;
 
         /// <summary>
         /// Holds the schedules key.
@@ -906,7 +906,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                         if (isTripPossibleResult)
                                         { // ok trip is possible.
                                             var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                            heap.Push(path, new ModalWeight(secondsNeighbour, transfers));
+                                            heap.Push(path, new ModalWeight(secondsNeighbour, transfers + 1));
                                         }
                                     }
                                 }

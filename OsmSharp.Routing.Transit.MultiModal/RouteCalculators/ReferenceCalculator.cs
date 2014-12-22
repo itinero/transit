@@ -906,7 +906,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                         if (isTripPossibleResult)
                                         { // ok trip is possible.
                                             var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.Item.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
-                                            heap.Push(path, new ModalWeight(secondsNeighbour, transfers + 1));
+                                            heap.Push(path, new ModalWeight(secondsNeighbour, transfers));
                                         }
                                     }
                                 }

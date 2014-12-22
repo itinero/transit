@@ -52,7 +52,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the transfer time penalty being 1 min here.
         /// </summary>
-        private const uint TRANSFER_PENALTY = 3 * 60;
+        private const uint TRANSFER_PENALTY = 0;//3 * 60;
 
         /// <summary>
         /// Holds the start time parameter key.

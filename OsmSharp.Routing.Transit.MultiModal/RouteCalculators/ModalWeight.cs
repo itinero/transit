@@ -50,15 +50,12 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public int CompareTo(object obj)
         {
             var other = (obj as ModalWeight);
-            if (this.Time < other.Time)
-            {
-                return -1;
+            if (this.Transfers != other.Transfers &&
+                System.Math.Abs(this.Time - other.Time) < 5 * 60)
+            { // transfers differ, when time is small only compare transfers.
+                return this.Transfers.CompareTo(other.Transfers);
             }
-            else if (this.Time > other.Time)
-            {
-                return 1;
-            }
-            return this.Transfers.CompareTo(other.Transfers);
+            return this.Time.CompareTo(other.Time);
         }
     }
 }

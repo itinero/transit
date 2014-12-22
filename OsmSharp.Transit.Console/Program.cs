@@ -3,6 +3,7 @@ using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
 using OsmSharp.Osm.PBF.Streams;
 using OsmSharp.Osm.Streams;
+using OsmSharp.Osm.Xml.Streams;
 using OsmSharp.Routing;
 using OsmSharp.Routing.Osm.Graphs.Serialization;
 using OsmSharp.Routing.Osm.Interpreter;
@@ -23,9 +24,23 @@ namespace OsmSharp.Transit.Console
 
             // create router.
             System.Console.Write("Loading routing graph...");
-            var router = MultiModalRouter.CreateFrom(new PBFOsmStreamSource(new FileInfo(@"d:\OSM\bin\kortrijk.new.osm.pbf").OpenRead()),
+            var router = MultiModalRouter.CreateFrom(new XmlOsmStreamSource(
+                new FileInfo(@"D:\Dropbox\Dropbox\SharpSoftware\Projects\Eurostation ReLive\Server_Dropbox\OSM\relive_kortrijk\kortrijk.osm").OpenRead()),
                 new OsmRoutingInterpreter());
             System.Console.WriteLine("Done!");
+
+            // read the nmbs feed.
+            var reader = new GTFSReader<GTFSFeed>(false);
+            System.Console.Write("Parsing feed 'De Lijn'...");
+            var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"D:\Dropbox\Dropbox\SharpSoftware\Projects\Eurostation ReLive\Server_Dropbox\GTFS\relive_kortrijk\delijn"));
+            System.Console.WriteLine("Done!");
+
+            // probleem mechelen:
+            // 50.835324,3.246117&loc=50.884301,3.363533
+            var point1 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.835324, 3.246117));
+            var point2 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.884301, 3.363533));
+            var route = router.CalculateTransit(new DateTime(2014, 09, 29, 08, 00, 0), Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, point1, point2);
+            WriteGeoJSON(router, route, @"c:\temp\mechelen.result.geojson");
 
             //// read the nmbs feed.
             //var reader = new GTFSReader<GTFSFeed>(false);
@@ -57,7 +72,7 @@ namespace OsmSharp.Transit.Console
             //}
 
             // http://localhost:12010/kortrijk_new/multimodal?callback=PT.JSONP.callbacks.route0&vehicle=car|car|car&time=201408071200&loc=50.821808,3.262655&loc=50.821591,3.261169
-            long ticksBefore = DateTime.Now.Ticks;
+            // long ticksBefore = DateTime.Now.Ticks;
             //System.Console.Write("belgium.train.example1....");
             //var departure = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821808, 3.262655));
             //var arrival = router.Resolve(Vehicle.Car, new GeoCoordinate(50.821591, 3.261169));
@@ -173,9 +188,9 @@ namespace OsmSharp.Transit.Console
             ////route.SaveAsGpx(new FileInfo(@"c:\temp\antwerpen-gent.gpx").OpenWrite());
             //System.Console.WriteLine("Done!");
 
-            long ticksAfter = DateTime.Now.Ticks;
-            System.Console.WriteLine(new TimeSpan(ticksAfter - ticksBefore));
-            System.Console.ReadLine();
+            //long ticksAfter = DateTime.Now.Ticks;
+            //System.Console.WriteLine(new TimeSpan(ticksAfter - ticksBefore));
+            //System.Console.ReadLine();
         }
 
         /// <summary>

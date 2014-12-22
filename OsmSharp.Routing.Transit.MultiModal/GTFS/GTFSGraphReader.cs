@@ -21,7 +21,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
         /// <summary>
         /// Holds the maximum distance a station access point can be from the actual station node.
         /// </summary>
-        private static Meter MAX_ACCESS_POINT_DISTANCE = 1000;
+        private static Meter MAX_ACCESS_POINT_DISTANCE = 100;
 
         /// <summary>
         /// Reads and converts a GTFS feed into a routable graph.

@@ -33,12 +33,14 @@ namespace OsmSharp.Transit.Console
             var reader = new GTFSReader<GTFSFeed>(false);
             System.Console.Write("Parsing feed 'De Lijn'...");
             var delijn = reader.Read(new GTFS.IO.GTFSDirectorySource(@"D:\Dropbox\Dropbox\SharpSoftware\Projects\Eurostation ReLive\Server_Dropbox\GTFS\relive_kortrijk\delijn"));
+            router.AddGTFSFeed(delijn);
             System.Console.WriteLine("Done!");
 
             // probleem mechelen:
             // 50.835324,3.246117&loc=50.884301,3.363533
-            var point1 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.835324, 3.246117));
-            var point2 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.884301, 3.363533));
+            // loc=50.883001,3.364048&loc=50.839769,3.137627
+            var point1 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.883001, 3.364048));
+            var point2 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.839769, 3.137627));
             var route = router.CalculateTransit(new DateTime(2014, 09, 29, 08, 00, 0), Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, point1, point2);
             WriteGeoJSON(router, route, @"c:\temp\mechelen.result.geojson");
 

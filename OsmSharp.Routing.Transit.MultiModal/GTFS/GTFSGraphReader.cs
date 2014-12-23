@@ -28,6 +28,17 @@ namespace OsmSharp.Routing.Transit.MultiModal.GTFS
         /// </summary>
         /// <param name="graph">The graph to add the info to.</param>
         /// <param name="feed">The feed to convert.</param>
+        /// <remarks>Use this only when adding just one feed.</remarks>
+        public static void AddToGraph(DynamicGraphRouterDataSource<LiveEdge> graph, GTFSFeed feed)
+        {
+            GTFSGraphReader.AddToGraph(graph, feed, new Dictionary<string, uint>(), new Dictionary<string, uint>(), new List<TransitEdgeSchedulePair>());
+        }
+
+        /// <summary>
+        /// Reads and converts a GTFS feed into a routable graph.
+        /// </summary>
+        /// <param name="graph">The graph to add the info to.</param>
+        /// <param name="feed">The feed to convert.</param>
         /// <param name="stopVertices">The vertex for each stop.</param>
         /// <param name="tripIds">The trip ids per trip.</param>
         /// <param name="schedules">The schedules.</param>

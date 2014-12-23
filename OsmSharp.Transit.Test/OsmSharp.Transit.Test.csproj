@@ -119,6 +119,7 @@
     <Compile Include="Routing\MultiModal\RouteCalculators\ReferenceCalculatorRegressionTests.cs" />
     <Compile Include="Routing\MultiModal\RouteCalculators\ReferenceCalculatorTests.cs" />
     <Compile Include="Routing\MultiModal\RouteCalculators\Snail.cs" />
+    <Compile Include="Routing\MultiModal\RouteCalculators\TinyTransitTests.cs" />
     <Compile Include="Routing\MultiModal\Routes\TypedRouterMultiModalTests.cs" />
     <Compile Include="Routing\RouteCalculators\ReferenceCalculatorTests.cs" />
     <Compile Include="RealisticFeed.cs" />

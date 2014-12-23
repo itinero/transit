@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2013 Abelshausen Ben
+// Copyright (C) 2014 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -238,6 +238,20 @@ namespace OsmSharp.Routing.Transit.MultiModal
         #endregion
 
         #region Static Creation Methods
+
+        /// <summary>
+        /// Creates a new router for the given graph with a default interpreter.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <returns></returns>
+        public static MultiModalRouter CreateFrom(DynamicGraphRouterDataSource<LiveEdge> graph)
+        {
+            // creates the live edge router.
+            var multiModalEdgeRouter = new TypedRouterMultiModal(
+                new MultiModalGraphRouterDataSource(graph), new OsmRoutingInterpreter(), new ReferenceCalculator());
+
+            return new MultiModalRouter(multiModalEdgeRouter); // create the actual router.
+        }
 
         /// <summary>
         /// Creates a new router.

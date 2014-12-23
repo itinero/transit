@@ -88,7 +88,7 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("{0}@{1} {2}",
+            return string.Format("{0}@{1} {2} {3}",
                 this.Vertex, this.Trip, this.Seconds);
         }
 

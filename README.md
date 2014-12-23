@@ -3,7 +3,7 @@ OsmSharp.Transit
 
 This projects enables applications based on OsmSharp to add multimodal routing capabilities for Public Transit related applications. It brings togehter the GTFS module and the OsmSharp core.
 
-<img src="https://raw.githubusercontent.com/OsmSharp/OsmSharp.Transit/master/doc/dependencies.png"/>
+<img src="https://raw.githubusercontent.com/OsmSharp/OsmSharp.Transit/master/doc/dependencies.png?token=ABE2hE-J9cvfm30uMNF76GgEvHPwMLKnks5UorPswA%3D%3D"/>
 
 ### A small sample
 
@@ -19,7 +19,6 @@ var feed = reader.Read(new GTFSDirectorySource(new DirectoryInfo("path/to/feed/d
 
 ```
 
-
 ### Install
 
 Installing OsmSharp.Transit into one of your projects is easiest using Nuget:
@@ -27,3 +26,4 @@ Installing OsmSharp.Transit into one of your projects is easiest using Nuget:
 ```
 PM> Install-Package OsmSharp.Transit
 ```
+

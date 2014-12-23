@@ -32,33 +32,34 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public ModalWeight(float weight)
         {
             this.Time = weight;
+            this.TimeWithoutWaiting = weight;
             this.Transfers = 0;
-            // this.SameTrip = false;
-        }
-
-        /// <summary>
-        /// Creates a new modal weight.
-        /// </summary>
-        /// <param name="weight"></param>
-        /// <param name="transfers"></param>
-        public ModalWeight(float weight, uint transfers)
-        {
-            this.Time = weight;
-            this.Transfers = transfers;
         }
 
         ///// <summary>
         ///// Creates a new modal weight.
         ///// </summary>
         ///// <param name="weight"></param>
-        ///// <param name="transfers"></param>
-        ///// <param name="sameTrip"></param>
-        //public ModalWeight(float weight, uint transfers, bool sameTrip)
+        ///// <param name="timeWithoutWaiting"></param>
+        //public ModalWeight(float weight, float timeWithoutWaiting)
         //{
         //    this.Time = weight;
-        //    this.Transfers = transfers;
-        //    this.SameTrip = sameTrip;
+        //    this.TimeWithoutWaiting = timeWithoutWaiting;
+        //    this.Transfers = 0;
         //}
+
+        /// <summary>
+        /// Creates a new modal weight.
+        /// </summary>
+        /// <param name="weight"></param>
+        /// <param name="timeWithoutWaiting"></param>
+        /// <param name="transfers"></param>
+        public ModalWeight(float weight, float timeWithoutWaiting, uint transfers)
+        {
+            this.Time = weight;
+            this.Transfers = transfers;
+            this.TimeWithoutWaiting = timeWithoutWaiting;
+        }
 
         /// <summary>
         /// Holds the time up until now.
@@ -66,14 +67,14 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public float Time { get; private set; }
 
         /// <summary>
+        /// Holds the time up until now but without waiting.
+        /// </summary>
+        public float TimeWithoutWaiting { get; private set; }
+
+        /// <summary>
         /// Holds the transfer count up until now.
         /// </summary>
         public uint Transfers { get; private set; }
-
-        ///// <summary>
-        ///// True if the previous vertex was on the same trip.
-        ///// </summary>
-        //public bool SameTrip { get; private set; }
 
         /// <summary>
         /// Compares this modal weight to another.
@@ -87,6 +88,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 System.Math.Abs(this.Time - other.Time) < 5 * 60)
             { // transfers differ, when time is small only compare transfers.
                 return this.Transfers.CompareTo(other.Transfers);
+            }
+            if(this.Time == other.Time)
+            { // the time is exactly the same, just check the waiting time.
+                return this.TimeWithoutWaiting.CompareTo(other.TimeWithoutWaiting);
             }
             return this.Time.CompareTo(other.Time);
         }

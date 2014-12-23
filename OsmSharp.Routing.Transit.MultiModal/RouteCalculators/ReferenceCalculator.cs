@@ -694,10 +694,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     {
                         var neighbour = arcs;
                         var neighbourKey = new VertexTimeAndTrip(neighbour.Neighbour, 0);
-                        if (chosenVertices.HasBeenVisited(neighbourKey, current.Item.VertexId))
-                        { // this neighbour has already been visited.
-                            continue;
-                        }
+                        //if (chosenVertices.HasBeenVisited(neighbourKey, current.Item.VertexId))
+                        //{ // this neighbour has already been visited.
+                        //    continue;
+                        //}
                         if (neighbour.EdgeData.IsRoad() && !onlyTransit)
                         { // a 'road' edge.
                             // prevent u-turns.

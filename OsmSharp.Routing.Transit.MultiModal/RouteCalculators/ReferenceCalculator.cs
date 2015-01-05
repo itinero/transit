@@ -852,7 +852,8 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 { // there is a next entry along the same trip.
                                     var seconds = entry.Value.DepartsIn(ticksDate);
                                     uint secondsNeighbour = (uint)(seconds + current.Item.Weight + entry.Value.Duration);
-                                    float secondsWithoutWaiting = seconds + current.Weight.TimeWithoutWaiting + entry.Value.Duration;
+                                    // float secondsWithoutWaiting = seconds + current.Weight.TimeWithoutWaiting + entry.Value.Duration;
+                                    float secondsWithoutWaiting = current.Weight.TimeWithoutWaiting;
                                     if (secondsNeighbour < weight)
                                     { // still not over the search threshold.
                                         var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(neighbour.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current.Item);
@@ -866,16 +867,16 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                                 { // reached maxim tranfers, do no transfer anymore please!
                                     continue;
                                 }
-                                if (current.Item.From != null &&
-                                    current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
-                                { // the previous station was a different station, this means leaving the current trip.
-                                    if (chosenStations.Contains(current.Item.VertexId.Vertex))
-                                    { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
-                                        // a 'foot-on-the-ground' can only be created once at every station.
-                                        continue;
-                                    }
-                                    chosenStations.Add(current.Item.VertexId.Vertex); // 'foot-on-the-ground' in this station already.
-                                }
+                                //if (current.Item.From != null &&
+                                //    current.Item.From.VertexId.Vertex != current.Item.VertexId.Vertex)
+                                //{ // the previous station was a different station, this means leaving the current trip.
+                                //    if (chosenStations.Contains(current.Item.VertexId.Vertex))
+                                //    { // a 'foot-on-the-ground' already exists at this station, no use leaving the current trip.
+                                //        // a 'foot-on-the-ground' can only be created once at every station.
+                                //        continue;
+                                //    }
+                                //    chosenStations.Add(current.Item.VertexId.Vertex); // 'foot-on-the-ground' in this station already.
+                                //}
                                 var minTransferTime = MIN_TRANSFER_TIME;
                                 var transfers = current.Weight.Transfers + 1;
                                 if (neighbour.EdgeData.Forward)
@@ -929,7 +930,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 // add to stations list if needed.
                 if(currentIsStation)
                 {
-                    chosenStations.Add(current.Item.VertexId.Vertex);
+                    // chosenStations.Add(current.Item.VertexId.Vertex);
                 }
 
                 // while the visit list is not empty.

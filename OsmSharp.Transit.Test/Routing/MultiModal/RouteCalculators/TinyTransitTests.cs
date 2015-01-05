@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2014 Abelshausen Ben
+// Copyright (C) 2015 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -90,6 +90,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         ///                          - a trip 0 -> 3 on foot leaving 01/01/2015 10:00: should not take the transit link.
         ///                          - a trip 3 -> 0 on foot leaving 01/01/2015 09:45: should not take the transit link.
         /// </remarks>
+        [Test]
         public void Test1Transit1OneTrip()
         {
             var vehicle = Vehicle.Pedestrian;
@@ -280,6 +281,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         ///                          - a trip 0 -> 3 on foot leaving 01/01/2015 10:00: should not take the transit links.
         ///                          - a trip 3 -> 0 on foot leaving 01/01/2015 09:45: should not take the transit links.
         /// </remarks>
+        [Test]
         public void Test1Transit2OneTrip()
         {
             var vehicle = Vehicle.Pedestrian;
@@ -490,7 +492,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         /// Tests a route in the a basic network.
         /// </summary>
         /// <remarks>The network has 5 vertices: 0 --- 1km --- 1 ---- 10km ---- 2 --- 1km --- 3.
-        ///                                           (STOP1)        (STOP2)        (STOP3)
+        ///                                                 (STOP1)          (STOP2)       (STOP3)
         ///          Between vertex 1 and 2 there is transit connection with one intermediate stop with two trips that take 30 mins in total:
         ///                                      TRIP1 @STOP1 01/01/2015 10:00 -> @STOP2 01/01/2015 10:10
         ///                                      TRIP2 @STOP2 01/01/2015 10:20 -> @STOP3 01/01/2015 10:30
@@ -500,6 +502,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         ///                          - a trip 0 -> 3 on foot leaving 01/01/2015 10:00: should not take the transit links.
         ///                          - a trip 3 -> 0 on foot leaving 01/01/2015 09:45: should not take the transit links.
         /// </remarks>
+        [Test]
         public void Test1Transit3TwoTrips()
         {
             var vehicle = Vehicle.Pedestrian;
@@ -741,7 +744,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         /// Tests a route in the a basic network.
         /// </summary>
         /// <remarks>The network has 5 vertices: 0 --- 1km --- 1 ---- 10km ---- 2 --- 1km --- 3.
-        ///                                           (STOP1)        (STOP2)        (STOP3)
+        ///                                                 (STOP1)          (STOP2)       (STOP3)
         ///          Between vertex 1 and 2 there is transit connection with one intermediate stop with three trips that take 10 mins each:
         ///                                      TRIP1 @STOP1 01/01/2015 10:00 -> @STOP2 01/01/2015 10:10
         ///                                      TRIP2 @STOP2 01/01/2015 10:20 -> @STOP3 01/01/2015 10:30
@@ -752,6 +755,7 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         ///                          - a trip 0 -> 3 on foot leaving 01/01/2015 10:00: should not take the transit links.
         ///                          - a trip 3 -> 0 on foot leaving 01/01/2015 09:45: should not take the transit links.
         /// </remarks>
+        [Test]
         public void Test1Transit4ThreeTrips()
         {
             var vehicle = Vehicle.Pedestrian;
@@ -1043,9 +1047,9 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         /// <summary>
         /// Tests a route in the a basic network.
         /// </summary>
-        /// <remarks>
+        /// <remarks>                           (1)         (2)           (3)      (4)           (5)         (6) 
         ///          The network has 6 vertices: 0 ---1km--- 1 ----5km---- 2 -100m- 3 ----5km---- 4 ---1km--- 5.
-        ///          The network has stops:                STOP1         STOP2    STOP3         STOP4
+        ///          The network has stops:               STOP1(7)      STOP2(8) STOP3(9)      STOP4(10)
         ///          And TRIP1 01/01/2015:                 10:00         10:10    10:20         10:30
         ///          
         ///          This tests is developed to make sure there is no part on foot between vertex 2 and 3. A naive routing algorithm
@@ -1054,15 +1058,16 @@ namespace OsmSharp.Transit.Test.Routing.MultiModal.RouteCalculators
         ///          What is tested: - a trip 0 -> 5 on foot leaving 01/01/2015 09:45: should take the transit links without walking 2->3.
         ///                          - a trip 2 -> 5 on foot leaving 01/01/2015 10:00: should take the transit links without walking 2->3.
         /// </remarks>
+        [Test]
         public void Test1Transit5OneTripFasterOnFoot()
         {
             var vehicle = Vehicle.Pedestrian;
             var coordinate0 = new GeoCoordinate(51.263955769586154, 4.777936935424804);
-            var coordinate1 = new GeoCoordinate(4.792613983154297, 51.2640631837338);
-            var coordinate2 = new GeoCoordinate(4.864389896392822, 51.264694236781665);
-            var coordinate3 = new GeoCoordinate(4.867238402366637, 51.26479157929962);
-            var coordinate4 = new GeoCoordinate(4.938933849334717, 51.26509703206914);
-            var coordinate5 = new GeoCoordinate(4.953128099441527, 51.265170877488934);
+            var coordinate1 = new GeoCoordinate(51.2640631837338, 4.792613983154297);
+            var coordinate2 = new GeoCoordinate(51.264694236781665, 4.864389896392822);
+            var coordinate3 = new GeoCoordinate(51.26479157929962, 4.867238402366637);
+            var coordinate4 = new GeoCoordinate(51.26509703206914, 4.938933849334717);
+            var coordinate5 = new GeoCoordinate(51.265170877488934, 4.953128099441527);
 
             var tags = new TagsTableCollectionIndex();
             var graph = new DynamicGraphRouterDataSource<LiveEdge>(tags);

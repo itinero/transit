@@ -36,13 +36,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.2\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS, Version=0.0.3.70, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.70-beta\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.3.70, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.70-beta\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp, Version=4.3.0.924, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

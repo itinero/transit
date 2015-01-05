@@ -647,7 +647,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
 
             // start OsmSharp.Routing.
             var arcs = graph.GetEdges(Convert.ToUInt32(current.Item.VertexId.Vertex));
-            chosenVertices.SetVisited(current.Item);
+            // chosenVertices.SetVisited(current.Item);
 
             // loop until target is found and the route is the shortest!
             while (true)
@@ -928,9 +928,10 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 }
 
                 // add to stations list if needed.
-                if(currentIsStation)
+                if(!currentIsStation)
                 {
                     // chosenStations.Add(current.Item.VertexId.Vertex);
+                    chosenVertices.SetVisited(current.Item);
                 }
 
                 // while the visit list is not empty.
@@ -945,7 +946,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     }
                     if (current != null)
                     {
-                        chosenVertices.SetVisited(current.Item);
+                        // chosenVertices.SetVisited(current.Item);
                     }
                 }
                 while (current != null && current.Item.Weight > weight)

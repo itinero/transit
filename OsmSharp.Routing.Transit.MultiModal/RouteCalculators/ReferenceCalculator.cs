@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2014 Abelshausen Ben
+// Copyright (C) 2015 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -928,9 +928,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 }
 
                 // add to stations list if needed.
-                if(!currentIsStation)
+                if(currentIsStation)
                 {
                     // chosenStations.Add(current.Item.VertexId.Vertex);
+                }
+
+                if(current.Item.VertexId.Trip == 0)
+                {
                     chosenVertices.SetVisited(current.Item);
                 }
 

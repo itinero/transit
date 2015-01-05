@@ -32,7 +32,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public ModalWeight(float weight)
         {
             this.Time = weight;
-            this.TimeWithoutWaiting = weight;
+            this.TimeWithoutTransit = weight;
             this.Transfers = 0;
         }
 
@@ -58,7 +58,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         {
             this.Time = weight;
             this.Transfers = transfers;
-            this.TimeWithoutWaiting = timeWithoutWaiting;
+            this.TimeWithoutTransit = timeWithoutWaiting;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         /// <summary>
         /// Holds the time up until now but without waiting.
         /// </summary>
-        public float TimeWithoutWaiting { get; private set; }
+        public float TimeWithoutTransit { get; private set; }
 
         /// <summary>
         /// Holds the transfer count up until now.
@@ -85,13 +85,13 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         {
             var other = (obj as ModalWeight);
             if (this.Transfers != other.Transfers &&
-                System.Math.Abs(this.Time - other.Time) < 5 * 60)
+                System.Math.Abs(this.Time - other.Time) < 1 * 60)
             { // transfers differ, when time is small only compare transfers.
                 return this.Transfers.CompareTo(other.Transfers);
             }
             if(this.Time == other.Time)
             { // the time is exactly the same, just check the waiting time.
-                return this.TimeWithoutWaiting.CompareTo(other.TimeWithoutWaiting);
+                return this.TimeWithoutTransit.CompareTo(other.TimeWithoutTransit);
             }
             return this.Time.CompareTo(other.Time);
         }

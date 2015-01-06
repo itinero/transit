@@ -531,6 +531,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                     sourcePath = sourcePath.From;
                 }
             }
+
             // loop over all targets
             for (int idx = 0; idx < targets.Length; idx++)
             { // check for each target if there are paths to the source.

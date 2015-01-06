@@ -113,9 +113,9 @@ namespace OsmSharp.Routing.Transit.Graphs
             if (obj is VertexTimeAndTrip)
             {
                 var other = (VertexTimeAndTrip)obj;
-                return other.Seconds == this.Seconds &&
-                    other.Vertex == this.Vertex &&
-                    other.Trip.Equals(this.Trip);
+                return other.Vertex == this.Vertex && 
+                    other.Seconds == this.Seconds &&
+                    other.Trip == this.Trip;
             }
             return false;
         }

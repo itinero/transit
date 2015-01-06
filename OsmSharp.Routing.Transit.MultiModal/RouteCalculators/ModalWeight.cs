@@ -72,9 +72,37 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         public float TimeWithoutTransit { get; private set; }
 
         /// <summary>
+        /// Gets the time without transit.
+        /// </summary>
+        public float TimeTransit
+        {
+            get
+            {
+                return this.Time - this.TimeWithoutTransit;
+            }
+        }
+
+        /// <summary>
         /// Holds the transfer count up until now.
         /// </summary>
         public uint Transfers { get; private set; }
+
+        /// <summary>
+        /// Gets the calculated weight.
+        /// </summary>
+        public float Weight
+        {
+            get
+            {
+                var timeTransit = this.TimeTransit;
+                var weightWithoutTransit = this.TimeWithoutTransit;
+                //if (weightWithoutTransit > 1 * 60)
+                //{ // only penalize the without transit time above a certain level.
+                //    weightWithoutTransit = weightWithoutTransit * (weightWithoutTransit / (1 * 60));
+                //}
+                return timeTransit + weightWithoutTransit;
+            }
+        }
 
         /// <summary>
         /// Compares this modal weight to another.
@@ -85,15 +113,11 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         {
             var other = (obj as ModalWeight);
             if (this.Transfers != other.Transfers &&
-                System.Math.Abs(this.Time - other.Time) < 1 * 60)
+                System.Math.Abs(this.Weight - other.Weight) < 1 * 60)
             { // transfers differ, when time is small only compare transfers.
                 return this.Transfers.CompareTo(other.Transfers);
             }
-            if(this.Time == other.Time)
-            { // the time is exactly the same, just check the waiting time.
-                return this.TimeWithoutTransit.CompareTo(other.TimeWithoutTransit);
-            }
-            return this.Time.CompareTo(other.Time);
+            return this.Weight.CompareTo(other.Weight);
         }
     }
 }

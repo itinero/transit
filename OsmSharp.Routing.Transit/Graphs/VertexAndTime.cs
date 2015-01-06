@@ -28,7 +28,7 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// </summary>
         /// <param name="vertex"></param>
         public VertexTimeAndTrip(long vertex)
-            : this(vertex, 0)
+            : this(vertex, 0, -1)
         {
             
         }
@@ -38,11 +38,13 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// </summary>
         /// <param name="vertex"></param>
         /// <param name="secondsMode"></param>
-        public VertexTimeAndTrip(long vertex, uint secondsMode)
+        /// <param name="previousTrip"></param>
+        public VertexTimeAndTrip(long vertex, uint secondsMode, long previousTrip)
             : this()
         {
             this.Vertex = vertex;
-            this.Trip = 0;
+            this.Trip = -1;
+            this.PreviousTrip = previousTrip;
             this.Seconds = 0;
             this.SecondsMode = secondsMode;
         }
@@ -53,12 +55,14 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// <param name="vertex"></param>
         /// <param name="seconds"></param>
         /// <param name="trip"></param>
-        public VertexTimeAndTrip(long vertex, uint seconds, uint trip)
+        /// <param name="previousTrip"></param>
+        public VertexTimeAndTrip(long vertex, uint seconds, long trip, long previousTrip)
             : this()
         {
             this.Vertex = vertex;
             this.Seconds = seconds;
             this.Trip = trip;
+            this.PreviousTrip = previousTrip;
             this.SecondsMode = 0;
         }
 
@@ -80,7 +84,12 @@ namespace OsmSharp.Routing.Transit.Graphs
         /// <summary>
         /// Gets or sets the trip.
         /// </summary>
-        public uint Trip { get; set; }
+        public long Trip { get; set; }
+
+        /// <summary>
+        /// Gets or sets the previous trip.
+        /// </summary>
+        public long PreviousTrip { get; set; }
 
         /// <summary>
         /// Returns a representation of this vertex in text.
@@ -100,6 +109,7 @@ namespace OsmSharp.Routing.Transit.Graphs
         {
             return this.Vertex.GetHashCode() ^
                 this.Seconds.GetHashCode() ^
+                // this.SecondsMode.GetHashCode() ^
                 this.Trip.GetHashCode();
         }
 
@@ -115,6 +125,7 @@ namespace OsmSharp.Routing.Transit.Graphs
                 var other = (VertexTimeAndTrip)obj;
                 return other.Vertex == this.Vertex && 
                     other.Seconds == this.Seconds &&
+                    // other.SecondsMode == this.SecondsMode &&
                     other.Trip == this.Trip;
             }
             return false;

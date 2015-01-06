@@ -98,7 +98,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
                 var weightWithoutTransit = this.TimeWithoutTransit;
                 //if (weightWithoutTransit > 1 * 60)
                 //{ // only penalize the without transit time above a certain level.
-                //    weightWithoutTransit = weightWithoutTransit * (weightWithoutTransit / (1 * 60));
+                //    weightWithoutTransit = weightWithoutTransit * weightWithoutTransit;
                 //}
                 return timeTransit + weightWithoutTransit;
             }
@@ -113,7 +113,7 @@ namespace OsmSharp.Routing.Transit.MultiModal.RouteCalculators
         {
             var other = (obj as ModalWeight);
             if (this.Transfers != other.Transfers &&
-                System.Math.Abs(this.Weight - other.Weight) < 1 * 60)
+                System.Math.Abs(this.Time - other.Time) < 1 * 60)
             { // transfers differ, when time is small only compare transfers.
                 return this.Transfers.CompareTo(other.Transfers);
             }

@@ -79,7 +79,7 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                     var seconds = (uint)entry.DepartsIn(ticksDate);
                     if (isTripPossible.Invoke(entry.Trip, startTime.AddSeconds(seconds)))
                     { //ok trip is possible.
-                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(from, seconds, entry.Trip));
+                        var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(from, seconds, entry.Trip, 0));
                         heap.Push(path, seconds);
                     }
                 }
@@ -120,7 +120,7 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                             uint secondsNeighbour = (uint)(seconds + current.VertexId.Seconds + entry.Value.Duration);
                             if (secondsNeighbour < MAX_SEARCH_TIME)
                             { // still not over the search threshold.
-                                var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(arc.Neighbour, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current);
+                                var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(arc.Neighbour, secondsNeighbour, entry.Value.Trip, current.VertexId.Trip), secondsNeighbour, current);
                                 heap.Push(path, secondsNeighbour);
                             }
                         }
@@ -152,7 +152,7 @@ namespace OsmSharp.Routing.Transit.RouteCalculators
                                 }
                                 if (isTripPossibleResult)
                                 { // ok trip is possible.
-                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.VertexId.Vertex, secondsNeighbour, entry.Value.Trip), secondsNeighbour, current);
+                                    var path = new PathSegment<VertexTimeAndTrip>(new VertexTimeAndTrip(current.VertexId.Vertex, secondsNeighbour, entry.Value.Trip, current.VertexId.Trip), secondsNeighbour, current);
                                     heap.Push(path, secondsNeighbour + TRANSFER_PENALTY);
                                 }
                             }

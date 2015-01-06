@@ -43,7 +43,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the trip ids.
         /// </summary>
-        private Dictionary<uint, string> _tripIds;
+        private Dictionary<long, string> _tripIds;
 
         /// <summary>
         /// Holds the stop for each vertex.
@@ -83,7 +83,7 @@ namespace OsmSharp.Routing.Transit
                 _verticesStops[pair.Value] = pair.Key;
             }
 
-            _tripIds = new Dictionary<uint, string>();
+            _tripIds = new Dictionary<long, string>();
             uint tripIdx = 0;
             foreach (var trip in feed.GetTrips())
             {

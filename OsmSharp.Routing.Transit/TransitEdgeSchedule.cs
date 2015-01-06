@@ -124,7 +124,7 @@ namespace OsmSharp.Routing.Transit
         /// </summary>
         /// <param name="trip"></param>
         /// <returns></returns>
-        public TransitEdgeScheduleEntry? GetForTrip(uint trip)
+        public TransitEdgeScheduleEntry? GetForTrip(long trip)
         {
             return _entries.Find(x => { return x.Trip == trip; });
         }
@@ -135,7 +135,7 @@ namespace OsmSharp.Routing.Transit
         /// <param name="trip"></param>
         /// <param name="start"></param>
         /// <returns></returns>
-        public TransitEdgeScheduleEntry? GetForTrip(uint trip, DateTime start)
+        public TransitEdgeScheduleEntry? GetForTrip(long trip, DateTime start)
         {
             int startIdx = this.FindEntryRightOnOrBefore((uint)start.TimeOfDay.TotalSeconds);
             for (int idx = startIdx; idx < _entries.Count; idx++)
@@ -154,7 +154,7 @@ namespace OsmSharp.Routing.Transit
         /// <param name="dateTime"></param>
         /// <param name="trip"></param>
         /// <returns></returns>
-        public TransitEdgeScheduleEntry? GetNext(DateTime dateTime, uint trip)
+        public TransitEdgeScheduleEntry? GetNext(DateTime dateTime, long trip)
         {
             var earliestDeparture = dateTime.TimeOfDay.TotalSeconds;
             TransitEdgeScheduleEntry? earliest = null;

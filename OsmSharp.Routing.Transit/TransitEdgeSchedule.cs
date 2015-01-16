@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2014 Abelshausen Ben
+// Copyright (C) 2015 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -266,7 +266,7 @@ namespace OsmSharp.Routing.Transit
         {
             get
             {
-                if (this.ArrivalTime > this.DepartureTime)
+                if (this.ArrivalTime >= this.DepartureTime)
                 { // no midnight in between!
                     return this.ArrivalTime - this.DepartureTime;
                 }
@@ -286,7 +286,7 @@ namespace OsmSharp.Routing.Transit
             { // no midnight in between!
                 return (int)(this.DepartureTime - earliestDeparture);
             }
-            return (int)(earliestDeparture + ((24 * 60 * 60) - this.DepartureTime));
+            return (24 * 60 * 60) - (int)(earliestDeparture - this.DepartureTime);
         }
 
         /// <summary>

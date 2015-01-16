@@ -109,6 +109,7 @@
     <Compile Include="RealisticFeed.cs" />
     <Compile Include="TestNetworkFeed.cs" />
     <Compile Include="SampleFeed.cs" />
+    <Compile Include="TransitEdgeScheduleEntryTests.cs" />
     <Compile Include="TransitEdgeTests.cs" />
     <Compile Include="TransitRouterTests.cs" />
   </ItemGroup>

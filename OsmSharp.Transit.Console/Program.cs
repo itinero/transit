@@ -37,12 +37,11 @@ namespace OsmSharp.Transit.Console
             System.Console.WriteLine("Done!");
 
             // probleem mechelen:
-            // 50.835324,3.246117&loc=50.884301,3.363533
-            // loc=50.883001,3.364048&loc=50.839769,3.137627
-            var point1 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.883001, 3.364048));
-            var point2 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.839769, 3.137627));
+            // 50.7911&fLon=3.2932&tLat=50.8249&tLon=3.2632
+            var point1 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.79110, 3.2932));
+            var point2 = router.Resolve(Vehicle.Pedestrian, new GeoCoordinate(50.82490, 3.2632));
             var route = router.CalculateTransit(new DateTime(2014, 09, 29, 08, 00, 0), Vehicle.Pedestrian, Vehicle.Pedestrian, Vehicle.Pedestrian, point1, point2);
-            WriteGeoJSON(router, route, @"c:\temp\mechelen.result.geojson");
+            WriteGeoJSON(router, route, @"c:\temp\kortrijk.result.geojson");
 
             //// read the nmbs feed.
             //var reader = new GTFSReader<GTFSFeed>(false);

@@ -92,6 +92,11 @@
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Algorithms\RoutingAlgorithmBase.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDb.cs" />
+    <Compile Include="Data\Stop.cs" />
+    <Compile Include="Data\StopsListView.cs" />
+    <Compile Include="Data\StopsView.cs" />
+    <Compile Include="Multimodal\Data\MultimodalConnectionsDb.cs" />
+    <Compile Include="Multimodal\Data\MultimodalConnectionsDbBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TransitRoute.cs" />
     <Compile Include="TransitRouteEntry.cs" />
@@ -101,7 +106,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Multimodal\Algorithms\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

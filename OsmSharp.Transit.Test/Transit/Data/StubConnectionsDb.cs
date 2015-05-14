@@ -35,6 +35,21 @@ namespace OsmSharp.Transit.Test.Transit.Data
             this.IsTripPossibleSettable = (trip, date) => { return true; };
             this.DepartureTimeConnections = new List<Connection>();
             this.ArrivalTimeConnections = new List<Connection>();
+            this.Stops = new List<Stop>();
+        }
+
+        /// <summary>
+        /// Gets or sets the stops list.
+        /// </summary>
+        public List<Stop> Stops { get; set; }
+
+        /// <summary>
+        /// Gets the departure time view.
+        /// </summary>
+        /// <returns></returns>
+        public override StopsView GetStops()
+        {
+            return new StopsListView(this.Stops);
         }
 
         /// <summary>

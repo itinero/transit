@@ -16,36 +16,46 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// A database containing all transit-connections.
+    /// A view to access stops that enables iteration over them in a particular order. Allows random access to the stops in the order this view represents them.
     /// </summary>
-    public abstract class ConnectionsDb
+    public abstract class StopsView : IEnumerable<Stop>
     {
         /// <summary>
-        /// Gets a view on the stops.
+        /// Returns an enumerator that iterates through the stops in the order represented by this view.
         /// </summary>
         /// <returns></returns>
-        public abstract StopsView GetStops();
+        public abstract IEnumerator<Stop> GetEnumerator();
 
         /// <summary>
-        /// Gets a view on the connections sorted by departure time.
+        /// Returns an enumerator that iterates through the stops in the order represented by this view.
         /// </summary>
         /// <returns></returns>
-        public abstract ConnectionsView GetDepartureTimeView();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
 
         /// <summary>
-        /// Gets a view on the connections sorted by arrival time.
+        /// Returns the number of stops in this view.
         /// </summary>
+        public abstract int Count
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Returns the stop at the given index.
+        /// </summary>
+        /// <param name="idx"></param>
         /// <returns></returns>
-        public abstract ConnectionsView GetArrivalTimeView();
-
-        /// <summary>
-        /// Gets the function to determine if a trip is possible on a given day.
-        /// </summary>
-        public abstract Func<int, DateTime, bool> IsTripPossible { get; }
+        public abstract Stop this[int idx]
+        {
+            get;
+        }
     }
 }

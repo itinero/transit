@@ -16,36 +16,54 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// A database containing all transit-connections.
+    /// A stops view based on a list.
     /// </summary>
-    public abstract class ConnectionsDb
+    public class StopsListView : StopsView
     {
         /// <summary>
-        /// Gets a view on the stops.
+        /// Holds the list of stops.
         /// </summary>
-        /// <returns></returns>
-        public abstract StopsView GetStops();
+        private readonly List<Stop> _stops;
 
         /// <summary>
-        /// Gets a view on the connections sorted by departure time.
+        /// Creates a new stops list view.
         /// </summary>
-        /// <returns></returns>
-        public abstract ConnectionsView GetDepartureTimeView();
+        /// <param name="stops"></param>
+        public StopsListView(List<Stop> stops)
+        {
+            _stops = stops;
+        }
 
         /// <summary>
-        /// Gets a view on the connections sorted by arrival time.
+        /// Returns an enumerator that iterates through the stops in the order represented by this view.
         /// </summary>
         /// <returns></returns>
-        public abstract ConnectionsView GetArrivalTimeView();
+        public override IEnumerator<Stop> GetEnumerator()
+        {
+            return _stops.GetEnumerator();
+        }
 
         /// <summary>
-        /// Gets the function to determine if a trip is possible on a given day.
+        /// Returns the number of stops in this view.
         /// </summary>
-        public abstract Func<int, DateTime, bool> IsTripPossible { get; }
+        public override int Count
+        {
+            get { return _stops.Count; }
+        }
+
+        /// <summary>
+        /// Returns the stop at the given index.
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <returns></returns>
+        public override Stop this[int idx]
+        {
+            get { return _stops[idx]; }
+        }
     }
 }

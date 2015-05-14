@@ -45,6 +45,15 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
         }
 
         /// <summary>
+        /// Gets a view on the stops.
+        /// </summary>
+        /// <returns></returns>
+        public override StopsView GetStops()
+        {
+            return _stopsView;
+        }
+
+        /// <summary>
         /// Gets a view on the connections sorted by departure time.
         /// </summary>
         /// <returns></returns>
@@ -100,6 +109,11 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
         private ConnectionsView _arrivalTimeView;
 
         /// <summary>
+        /// Holds the stops view.
+        /// </summary>
+        private StopsListView _stopsView;
+
+        /// <summary>
         /// Builds all views.
         /// </summary>
         private void BuildViews()
@@ -111,6 +125,33 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
 
             this.BuildDepartureTimeView(connections);
             this.BuildArrivalTimeView(new List<Connection>(connections));
+            this.BuildStopsView();
+        }
+
+        /// <summary>
+        /// Builds the stops view.
+        /// </summary>
+        private void BuildStopsView()
+        {
+            var count = 0;
+            foreach(var feed in _feeds)
+            {
+                count = count + _feeds.Count;
+            }
+
+            var stopsList = new List<Stop>(count);
+            for (var idx = 0; idx < _feeds.Count; idx++)
+            {
+                foreach (var stop in _feeds[idx].GetStops())
+                {
+                    stopsList.Add(new Stop()
+                    {
+                        Latitude = (float)stop.Latitude,
+                        Longitude = (float)stop.Longitude
+                    });
+                }
+            }
+            _stopsView = new StopsListView(stopsList);
         }
 
         /// <summary>

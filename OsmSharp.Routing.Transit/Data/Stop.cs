@@ -16,36 +16,21 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// A database containing all transit-connections.
+    /// Represents a stop.
     /// </summary>
-    public abstract class ConnectionsDb
+    public struct Stop
     {
         /// <summary>
-        /// Gets a view on the stops.
+        /// Gets or sets the latitude.
         /// </summary>
-        /// <returns></returns>
-        public abstract StopsView GetStops();
+        public float Latitude { get; set; }
 
         /// <summary>
-        /// Gets a view on the connections sorted by departure time.
+        /// Gets or sets the longitude.
         /// </summary>
-        /// <returns></returns>
-        public abstract ConnectionsView GetDepartureTimeView();
-
-        /// <summary>
-        /// Gets a view on the connections sorted by arrival time.
-        /// </summary>
-        /// <returns></returns>
-        public abstract ConnectionsView GetArrivalTimeView();
-
-        /// <summary>
-        /// Gets the function to determine if a trip is possible on a given day.
-        /// </summary>
-        public abstract Func<int, DateTime, bool> IsTripPossible { get; }
+        public float Longitude { get; set; }
     }
 }

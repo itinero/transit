@@ -16,59 +16,54 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using GTFS.Entities;
-using OsmSharp.Routing.Transit.GTFS.Db;
 using System.Collections.Generic;
 
-namespace OsmSharp.Routing.Transit.RouteCalculators.CSA
+namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// Holds all relevant data for the CSA to work.
+    /// A connections view based on a list.
     /// </summary>
-    public class CSADb
+    public class ConnectionsListView : ConnectionsView
     {
         /// <summary>
-        /// Creates a new CSA connections collection.
+        /// Holds the list of connections.
+        /// </summary>
+        private readonly List<Connection> _connections;
+
+        /// <summary>
+        /// Creates a new connections list view.
         /// </summary>
         /// <param name="connections"></param>
-        public CSADb()
+        public ConnectionsListView(List<Connection> connections)
         {
-            _multiFeedDb = new MultiFeedDb();
-            _connections = new List<CSAConnection>();
+            _connections = connections;
         }
 
         /// <summary>
-        /// Holds the multi feed db.
+        /// Returns an enumerator that iterates through the connections in the order represented by this view.
         /// </summary>
-        private IMultiFeedDb _multiFeedDb;
-
-        /// <summary>
-        /// Holds the multi feed db.
-        /// </summary>
-        public IMultiFeedDb FeedDb
+        /// <returns></returns>
+        public override IEnumerator<Connection> GetEnumerator()
         {
-            get
-            {
-                return _multiFeedDb;
-            }
+            return _connections.GetEnumerator();
         }
 
         /// <summary>
-        /// Holds all connections.
+        /// Returns the number of connections in this view.
         /// </summary>
-        private List<CSAConnection> _connections;
-
-        /// <summary>
-        /// Gets all connections.
-        /// </summary>
-        public List<CSAConnection> Connections
+        public override int Count
         {
-            get
-            {
-                return _connections;
-            }
+            get { return _connections.Count; }
         }
 
-
+        /// <summary>
+        /// Returns the connection at the given index.
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <returns></returns>
+        public override Connection this[int idx]
+        {
+            get { return _connections[idx]; }
+        }
     }
 }

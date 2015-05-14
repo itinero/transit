@@ -116,6 +116,8 @@
     <Compile Include="TransitEdgeScheduleEntryTests.cs" />
     <Compile Include="TransitEdgeTests.cs" />
     <Compile Include="TransitRouterTests.cs" />
+    <Compile Include="Transit\Algorithms\OneToOne\EarliestArrivalTests.cs" />
+    <Compile Include="Transit\Data\StubConnectionsDb.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -185,10 +187,6 @@
     <EmbeddedResource Include="test_network_feed\stops.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OsmSharp.Routing.Transit.MultiModal\OsmSharp.Routing.Transit.MultiModal.csproj">
-      <Project>{e5a465fc-2513-4af3-b367-35fcee34f49b}</Project>
-      <Name>OsmSharp.Routing.Transit.MultiModal</Name>
-    </ProjectReference>
     <ProjectReference Include="..\OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj">
       <Project>{293d8019-9e89-4bcb-a857-24b92f48c22c}</Project>
       <Name>OsmSharp.Routing.Transit</Name>

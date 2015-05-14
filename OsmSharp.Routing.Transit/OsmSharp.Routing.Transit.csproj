@@ -83,20 +83,16 @@
     <Compile Include="..\SharedAssemblyVersion.cs">
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="GTFS\Db\IMultiFeedDb.cs" />
-    <Compile Include="GTFS\Db\MultiFeedDb.cs" />
-    <Compile Include="GTFS\GTFSCSAReader.cs" />
-    <Compile Include="GTFS\GTFSGraphReader.cs" />
-    <Compile Include="RouteCalculators\CSA\CSACalculator.cs" />
-    <Compile Include="RouteCalculators\CSA\Domain\CSAConnection.cs" />
-    <Compile Include="RouteCalculators\CSA\CSADb.cs" />
-    <Compile Include="RouteCalculators\IRouteCalculator.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrival.cs" />
+    <Compile Include="Algorithms\OneToOne\OneToOneRoutingAlgorithmBase.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Data\Connection.cs" />
+    <Compile Include="Data\ConnectionsListView.cs" />
+    <Compile Include="Data\ConnectionsView.cs" />
+    <Compile Include="Data\ConnectionsDb.cs" />
+    <Compile Include="Algorithms\RoutingAlgorithmBase.cs" />
+    <Compile Include="Data\GTFS\GTFSConnectionsDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RouteCalculators\ReferenceCalculator.cs" />
-    <Compile Include="Graphs\VertexAndTime.cs" />
-    <Compile Include="TransitEdge.cs" />
-    <Compile Include="TransitEdgeSchedule.cs" />
-    <Compile Include="TransitEdgeSchedulePair.cs" />
     <Compile Include="TransitRoute.cs" />
     <Compile Include="TransitRouteEntry.cs" />
     <Compile Include="TransitRouter.cs" />

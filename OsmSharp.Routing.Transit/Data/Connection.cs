@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2014 Abelshausen Ben
+// Copyright (C) 2015 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -16,27 +16,36 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using OsmSharp.Routing.Graph;
-using OsmSharp.Routing.Graph.Router;
-using OsmSharp.Routing.Transit.Graphs;
-using System;
-
-namespace OsmSharp.Routing.Transit.RouteCalculators
+namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// Abstract representation of a transit route calculator.
+    /// Represents a transit-connection between two adjacent stops. A 1-hop connection.
     /// </summary>
-    public interface IRouteCalculator
+    public struct Connection
     {
         /// <summary>
-        /// Calculates a transit route between the two given vertices.
+        /// The departure stop.
         /// </summary>
-        /// <param name="graph"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="startTime"></param>
-        /// <param name="isTripPossible"></param>
-        /// <returns></returns>
-        PathSegment<VertexTimeAndTrip> Calculate(IGraphReadOnly<TransitEdge> graph, uint from, uint to, DateTime startTime, Func<uint, DateTime, bool> isTripPossible);
+        public int DepartureStop { get; set; }
+
+        /// <summary>
+        /// The departure time.
+        /// </summary>
+        public int DepartureTime { get; set; }
+
+        /// <summary>
+        /// The arrival stop.
+        /// </summary>
+        public int ArrivalStop { get; set; }
+
+        /// <summary>
+        /// The arrival time.
+        /// </summary>
+        public int ArrivalTime { get; set; }
+
+        /// <summary>
+        /// The trip.
+        /// </summary>
+        public int TripId { get; set; }
     }
 }

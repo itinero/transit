@@ -16,27 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using GTFS;
-
-namespace OsmSharp.Routing.Transit.GTFS.Db
+namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 {
     /// <summary>
-    /// Holds the multi feed db.
+    /// Abstract representation of a one-to-one routing algorithm.
     /// </summary>
-    public interface IMultiFeedDb
+    public abstract class OneToOneRoutingAlgorithmBase : RoutingAlgorithmBase
     {
-        /// <summary>
-        /// Adds a new feed to this multifeed db and returns the id.
-        /// </summary>
-        /// <param name="feed">The feed to add.</param>
-        /// <returns></returns>
-        int AddFeed(IGTFSFeed feed);
 
-        /// <summary>
-        /// Returns a feed for the given id.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        IGTFSFeed GetFeed(int id);
     }
 }

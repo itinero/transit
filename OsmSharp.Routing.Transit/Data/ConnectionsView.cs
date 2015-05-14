@@ -16,41 +16,46 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using GTFS;
 using System.Collections.Generic;
 
-namespace OsmSharp.Routing.Transit.GTFS.Db
+namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// An implementation of the IMultiFeedDb.
+    /// A view to access connections that enables iteration over them in a particular order. Allows random access to the connections in the order this view represents them.
     /// </summary>
-    public class MultiFeedDb : IMultiFeedDb
+    public abstract class ConnectionsView : IEnumerable<Connection>
     {
         /// <summary>
-        /// Holds all feeds.
+        /// Returns an enumerator that iterates through the connections in the order represented by this view.
         /// </summary>
-        private List<IGTFSFeed> _feeds;
+        /// <returns></returns>
+        public abstract IEnumerator<Connection> GetEnumerator();
 
         /// <summary>
-        /// Adds a new feed to this multifeed db and returns the id.
+        /// Returns an enumerator that iterates through the connections in the order represented by this view.
         /// </summary>
-        /// <param name="feed">The feed to add.</param>
         /// <returns></returns>
-        public int AddFeed(IGTFSFeed feed)
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            int id = _feeds.Count;
-            _feeds.Add(feed);
-            return id;
+            return this.GetEnumerator();
         }
 
         /// <summary>
-        /// Returns a feed for the given id.
+        /// Returns the number of connections in this view.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IGTFSFeed GetFeed(int id)
+        public abstract int Count
         {
-            return _feeds[id];
+            get;
+        }
+
+        /// <summary>
+        /// Returns the connection at the given index.
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <returns></returns>
+        public abstract Connection this[int idx]
+        {
+            get;
         }
     }
 }

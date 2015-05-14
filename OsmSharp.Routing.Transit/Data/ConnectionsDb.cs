@@ -16,41 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-namespace OsmSharp.Routing.Transit.RouteCalculators.CSA
+using System;
+
+namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// Represents a transit-connection.
+    /// A database containing all transit-connections.
     /// </summary>
-    public struct CSAConnection
+    public abstract class ConnectionsDb
     {
         /// <summary>
-        /// The GTFS feed id.
+        /// Gets a view on the connections sorted by departure time.
         /// </summary>
-        public int FeedId { get; set; }
+        /// <returns></returns>
+        public abstract ConnectionsView GetDepartureTimeView();
 
         /// <summary>
-        /// The departure stop.
+        /// Gets a view on the connections sorted by arrival time.
         /// </summary>
-        public int DepartureStop { get; set; }
+        /// <returns></returns>
+        public abstract ConnectionsView GetArrivalTimeView();
 
         /// <summary>
-        /// The departure time.
+        /// Gets the function to determine if a trip is possible on a given day.
         /// </summary>
-        public int DepartureTime { get; set; }
-        
-        /// <summary>
-        /// The arrival stop.
-        /// </summary>
-        public int ArrivalStop { get; set; }
-
-        /// <summary>
-        /// The arrival time.
-        /// </summary>
-        public int ArrivalTime { get; set; }
-
-        /// <summary>
-        /// The trip.
-        /// </summary>
-        public int TripId { get; set; }
+        public abstract Func<int, DateTime, bool> IsTripPossible { get; }
     }
 }

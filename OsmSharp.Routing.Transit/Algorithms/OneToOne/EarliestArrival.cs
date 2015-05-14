@@ -67,7 +67,11 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         private readonly Func<StopStatus, StopStatus, int> _compareStatuses = (status1, status2) =>
         {
-            return (status1.Transfers * 3 * 60 + status1.Seconds).CompareTo(status2.Transfers * 3 * 60 + status2.Seconds);
+            if(status1.Seconds == status2.Seconds)
+            {
+                return status1.Transfers.CompareTo(status2.Transfers);
+            }
+            return status1.Seconds.CompareTo(status2.Seconds);
         };
 
         /// <summary>
@@ -85,6 +89,31 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             _departureTime = departureTime;
 
             _isTripPossible = connections.IsTripPossible;
+        }
+
+        /// <summary>
+        /// Creates a new instance of earliest arrival algorithm.
+        /// </summary>
+        /// <param name="connections">The connections db.</param>
+        /// <param name="sourceStop">The stop to start at.</param>
+        /// <param name="targetStop">The stop to end at.</param>
+        /// <param name="departureTime">The departure time.</param>
+        /// <param name="minimumTransferTime">The minimum transfer time (default: 3 * 60s).</param>
+        /// <param name="maxmumSearchTime">The maximum search time (default: one day in seconds).</param>
+        /// <param name="isTripPossible">The function to check if a trip is possible (default: connections.IsTripPossible).</param>
+        /// <param name="compareStatuses">The function to compare a status at a stop of two distinct statuses are found at one stop (default: the lowest seconds, than the lowest transfer count).</param>
+        public EarliestArrival(ConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime, 
+            int minimumTransferTime, int maxmumSearchTime, Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
+        {
+            _connections = connections.GetDepartureTimeView();
+            _sourceStop = sourceStop;
+            _targetStop = targetStop;
+            _departureTime = departureTime;
+
+            _isTripPossible = isTripPossible;
+            _minimumTransferTime = minimumTransferTime;
+            _maximumSearchTime = maxmumSearchTime;
+            _compareStatuses = compareStatuses;
         }
 
         /// <summary>
@@ -117,7 +146,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 Seconds = startTime,
                 Transfers = 0
             });
-            StopStatus? toStatus = null;
+            StopStatus? targetStatus = null;
 
             for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
@@ -131,7 +160,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (toStatus.HasValue && departureTime >= toStatus.Value.Seconds)
+                if (targetStatus.HasValue && departureTime >= targetStatus.Value.Seconds)
                 { // the current status at 'to' is the best status it's ever going to get.
                     break;
                 }
@@ -160,7 +189,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         if (tripPossible)
                         { // trip is possible.
                             // calculate status at the target stop if this trip is taken.
-                            var targetStatus = new StopStatus()
+                            var arrivalStatus = new StopStatus()
                             {
                                 TripId = connection.TripId,
                                 ConnectionId = connectionId,
@@ -171,20 +200,20 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             StopStatus existingStatus;
                             if (_stopStatuses.TryGetValue(connection.ArrivalStop, out existingStatus))
                             { // compare statuses if already a status there.
-                                if (_compareStatuses(existingStatus, targetStatus) > 0)
+                                if (_compareStatuses(existingStatus, arrivalStatus) > 0)
                                 { // existingStatus > targetStatus here, replace existing status.
-                                    _stopStatuses[connection.ArrivalStop] = targetStatus;
+                                    _stopStatuses[connection.ArrivalStop] = arrivalStatus;
                                 }
                             }
                             else
                             { // no status yet, just set it.
-                                _stopStatuses.Add(connection.ArrivalStop, targetStatus);
+                                _stopStatuses.Add(connection.ArrivalStop, arrivalStatus);
                             }
 
                             // check target.
                             if (connection.ArrivalStop == _targetStop)
                             { // update toStatus.
-                                toStatus = _stopStatuses[connection.ArrivalStop];
+                                targetStatus = _stopStatuses[connection.ArrivalStop];
                                 this.HasSucceeded = true;
                             }
                         }

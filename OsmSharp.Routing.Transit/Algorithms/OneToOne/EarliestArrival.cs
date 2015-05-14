@@ -27,11 +27,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// </summary>
     public class EarliestArrival : OneToOneRoutingAlgorithmBase
     {
-
         /// <summary>
-        /// Holds the connections db.
+        /// Holds the connections view.
         /// </summary>
-        private readonly ConnectionsDb _connections;
+        private readonly ConnectionsView _connections;
 
         /// <summary>
         /// Holds the source stop.
@@ -80,7 +79,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <param name="departureTime">The departure time.</param>
         public EarliestArrival(ConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
         {
-            _connections = connections;
+            _connections = connections.GetDepartureTimeView();
             _sourceStop = sourceStop;
             _targetStop = targetStop;
             _departureTime = departureTime;
@@ -120,10 +119,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             });
             StopStatus? toStatus = null;
 
-            var connections = _connections.GetDepartureTimeView();
-            for (int connectionId = 0; connectionId < connections.Count; connectionId++)
+            for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
-                var connection = connections[connectionId];
+                var connection = _connections[connectionId];
                 var departureTime = connection.DepartureTime + (day * Constants.OneDayInSeconds);
 
                 // check max search time.
@@ -135,7 +133,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 // check if target has been reached and if departure time exceeds target arrival time.
                 if (toStatus.HasValue && departureTime >= toStatus.Value.Seconds)
                 { // the current status at 'to' is the best status it's ever going to get.
-
+                    break;
                 }
 
                 StopStatus status;
@@ -195,7 +193,6 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             }
         }
 
-
         /// <summary>
         /// Gets the calculated arrival time.
         /// </summary>
@@ -219,30 +216,63 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
-        /// Represents a stop status. 
+        /// Gets the status for the given stop.
         /// </summary>
-        /// <remarks>A stop status represents information about how the current stop was reached.</remarks>
-        private struct StopStatus
+        /// <param name="stopId"></param>
+        /// <returns></returns>
+        public StopStatus GetStopStatus(int stopId)
         {
-            /// <summary>
-            /// Gets or sets the last trip id.
-            /// </summary>
-            public int TripId { get; set; }
+            this.CheckHasRunAndHasSucceeded();
 
-            /// <summary>
-            /// Gets or sets the connection id of the connection used.
-            /// </summary>
-            public long ConnectionId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the # of transfers.
-            /// </summary>
-            public short Transfers { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of seconds from source.
-            /// </summary>
-            public int Seconds { get; set; }
+            StopStatus status;
+            if(!_stopStatuses.TryGetValue(stopId, out status))
+            { // status not found.
+                return new StopStatus()
+                {
+                    ConnectionId = -1,
+                    Seconds = -1,
+                    Transfers = -1,
+                    TripId = -1
+                };
+            }
+            return status;
         }
+
+        /// <summary>
+        /// Gets the connection with the given id.
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
+        public Connection GetConnection(int connectionId)
+        {
+            return _connections[connectionId];
+        }
+    }
+
+    /// <summary>
+    /// Represents a stop status. 
+    /// </summary>
+    /// <remarks>A stop status represents information about how the current stop was reached.</remarks>
+    public struct StopStatus
+    {
+        /// <summary>
+        /// Gets or sets the last trip id.
+        /// </summary>
+        public int TripId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection id of the connection used.
+        /// </summary>
+        public int ConnectionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the # of transfers.
+        /// </summary>
+        public short Transfers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of seconds from source.
+        /// </summary>
+        public int Seconds { get; set; }
     }
 }

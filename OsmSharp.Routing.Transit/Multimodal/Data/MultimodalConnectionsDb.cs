@@ -21,8 +21,8 @@ using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Transit.Data;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Data
 {
@@ -84,30 +84,30 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                     // link this station to the road network for the current vehicle.
                     foreach (var arc in arcs)
                     {
-                        bool isRoutable = arc.Value.Value.Tags != 0;
+                        bool isRoutable = arc.EdgeData.Tags != 0;
                         if (isRoutable)
                         { // the arc is already a road.
-                            if (graph.TagsIndex.Contains(arc.Value.Value.Tags))
+                            if (graph.TagsIndex.Contains(arc.EdgeData.Tags))
                             { // there is a tags collection.
-                                var tags = graph.TagsIndex.Get(arc.Value.Value.Tags);
+                                var tags = graph.TagsIndex.Get(arc.EdgeData.Tags);
                                 isRoutable = interpreter.EdgeInterpreter.CanBeTraversedBy(tags, vehicle);
                             }
                         }
                         if (isRoutable)
                         { // this arc is a road to keep it.
-                            if (arc.Key != stopVertex &&
-                                graph.GetVertex(arc.Key, out latitude, out longitude))
+                            if (arc.Vertex1 != stopVertex &&
+                                graph.GetVertex(arc.Vertex1, out latitude, out longitude))
                             { // check distance.
                                 var keyDistance = stopLocation.DistanceEstimate(
                                     new GeoCoordinate(latitude, longitude)).Value;
-                                closestVertices[arc.Key] = keyDistance;
+                                closestVertices[arc.Vertex1] = keyDistance;
                             }
-                            if (arc.Value.Key != stopVertex &&
-                                graph.GetVertex(arc.Value.Key, out latitude, out longitude))
+                            if (arc.Vertex2 != stopVertex &&
+                                graph.GetVertex(arc.Vertex2, out latitude, out longitude))
                             { // check distance.
                                 double keyDistance = stopLocation.DistanceEstimate(
                                     new GeoCoordinate(latitude, longitude)).Value;
-                                closestVertices[arc.Value.Key] = keyDistance;
+                                closestVertices[arc.Vertex2] = keyDistance;
                             }
                         }
                     }
@@ -122,11 +122,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                             if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE)
                             { // only attach stations that are relatively close.
                                 var closest = sorted.Current.Key;
-                                if (!graph.ContainsEdge(stopVertex, closest))
+                                if (!graph.ContainsEdge(stopVertex, closest, new LiveEdge()))
                                 {
                                     graph.AddEdge(stopVertex, closest, new LiveEdge(), null);
                                 }
-                                if (!graph.ContainsEdge(closest, stopVertex))
+                                if (!graph.ContainsEdge(closest, stopVertex, new LiveEdge()))
                                 {
                                     graph.AddEdge(closest, stopVertex, new LiveEdge(), null);
                                 }

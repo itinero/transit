@@ -31,7 +31,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <summary>
         /// Holds the connections-only db.
         /// </summary>
-        private ConnectionsDb _connectionsDb;
+        protected ConnectionsDb _connectionsDb;
 
         /// <summary>
         /// Holds the road network graph.

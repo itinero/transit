@@ -20,7 +20,7 @@ using OsmSharp.Routing.Transit.Data;
 using System;
 using System.Collections.Generic;
 
-namespace OsmSharp.Transit.Test.Transit.Data
+namespace OsmSharp.Transit.Test.Data
 {
     /// <summary>
     /// A stub connections db.

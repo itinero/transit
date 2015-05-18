@@ -19,10 +19,10 @@
 using NUnit.Framework;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Transit.Test.Transit.Data;
+using OsmSharp.Transit.Test.Data;
 using System;
 
-namespace OsmSharp.Transit.Test.Transit.Algorithms.OneToOne
+namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 {
     /// <summary>
     /// A test fixture for the earliest arrival algorithm.

@@ -213,10 +213,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         }
 
         /// <summary>
-        /// Tests a successful two-hop, one transfer versus a one-how connection without transfers with a three-connection db.
+        /// Tests a successful two-hop, one transfer versus a one-hop connection without transfers with a three-connection db.
         /// </summary>
         [Test]
-        public void TestTwoHopsOneTransferVersusOneHowSuccessful()
+        public void TestTwoHopsOneTransferVersusOneHopSuccessful()
         {
             // build stub db.
             var connectionsDb = new StubConnectionsDb();

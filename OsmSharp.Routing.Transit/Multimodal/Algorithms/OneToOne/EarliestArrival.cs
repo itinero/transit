@@ -195,6 +195,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private Dictionary<int, StopStatus> _backwardStopStatuses;
 
         /// <summary>
+        /// Holds the best stop to target.
+        /// </summary>
+        private StopStatus? _bestStopToTarget;
+
+        /// <summary>
         /// Executes the algorithm.
         /// </summary>
         protected override void DoRun()
@@ -224,7 +229,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
-            StopStatus? bestStopToTarget = null;
+            _bestStopToTarget = null;
 
             // initialize stops status.
             for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
@@ -239,7 +244,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (bestStopToTarget.HasValue && departureTime >= bestStopToTarget.Value.Seconds)
+                if (_bestStopToTarget.HasValue && departureTime >= _bestStopToTarget.Value.Seconds)
                 { // the current time to target is never going to be better.
                     break;
                 }
@@ -295,10 +300,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                             { // this stop has been reached by the backward search, figure out if it represents a better connection.
                                 var arrivalStopStatus = _forwardStopStatuses[connection.ArrivalStop];
                                 var timeToTarget = backwardStatus.Seconds + arrivalStopStatus.Seconds;
-                                if (!bestStopToTarget.HasValue || 
-                                    bestStopToTarget.Value.Seconds > timeToTarget)
+                                if (!_bestStopToTarget.HasValue || 
+                                    _bestStopToTarget.Value.Seconds > timeToTarget)
                                 { // this current route is a better one.
-                                    bestStopToTarget = new StopStatus()
+                                    _bestStopToTarget = new StopStatus()
                                     {
                                         ConnectionId = arrivalStopStatus.ConnectionId,
                                         Seconds = timeToTarget,
@@ -383,6 +388,61 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             /// Gets or sets the number of seconds from source.
             /// </summary>
             public int Seconds { get; set; }
+        }
+
+        /// <summary>
+        /// Gets the calculated arrival time.
+        /// </summary>
+        /// <returns></returns>
+        public DateTime ArrivalTime()
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return _departureTime.Date.AddSeconds(_bestStopToTarget.Value.Seconds);
+        }
+
+        /// <summary>
+        /// Gets the duration is seconds.
+        /// </summary>
+        /// <returns></returns>
+        public int Duration()
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return _bestStopToTarget.Value.Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+        }
+
+        /// <summary>
+        /// Gets the status for the given stop.
+        /// </summary>
+        /// <param name="stopId"></param>
+        /// <returns></returns>
+        public StopStatus GetStopStatus(int stopId)
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            StopStatus status;
+            if (!_forwardStopStatuses.TryGetValue(stopId, out status))
+            { // status not found.
+                return new StopStatus()
+                {
+                    ConnectionId = -1,
+                    Seconds = -1,
+                    Transfers = -1,
+                    TripId = -1
+                };
+            }
+            return status;
+        }
+
+        /// <summary>
+        /// Gets the connection with the given id.
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
+        public Connection GetConnection(int connectionId)
+        {
+            return _connections[connectionId];
         }
     }
 }

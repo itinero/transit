@@ -371,5 +371,78 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, status.Transfers);
             Assert.AreEqual(-1, status.TripId);
         }
+
+        /// <summary>
+        /// Tests a sucessful one-hop with a one-connection db and with before- and after road segments that competes with a 15km stretch of road.
+        /// </summary>
+        [Test]
+        public void TestOneHopWithBeforeAndAfterVersus15kmRoad()
+        {
+            // build stub db.
+            var connectionsDb = new StubMultimodalConnectionsDb();
+            connectionsDb.StubConnectionsDb.DepartureTimeConnections.Add(new Connection()
+            {
+                DepartureStop = 0,
+                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
+                ArrivalStop = 1,
+                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
+                TripId = 0
+            });
+            var tagsIndex = (TagsTableCollectionIndex)connectionsDb.Graph.TagsIndex;
+            var tagsId = tagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
+            var vertex1 = connectionsDb.Graph.AddVertex(0.000000f, 0f);
+            var vertex2 = connectionsDb.Graph.AddVertex(0.004484f, 0f);
+            var vertex3 = connectionsDb.Graph.AddVertex(0.139560f, 0f);
+            var vertex4 = connectionsDb.Graph.AddVertex(0.144045f, 0f);
+            connectionsDb.Graph.AddEdge(vertex1, vertex2, new LiveEdge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+            connectionsDb.Graph.AddEdge(vertex2, vertex3, new LiveEdge()
+            {
+                Distance = 15000,
+                Forward = true,
+                Tags = tagsId
+            });
+            connectionsDb.Graph.AddEdge(vertex3, vertex4, new LiveEdge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+            connectionsDb.Stops.Add(vertex2, 0);
+            connectionsDb.Stops.Add(vertex3, 1);
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new EarliestArrival(connectionsDb, new OsmRoutingInterpreter(),
+                Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000,
+                Vehicle.Pedestrian, new PathSegmentVisitList(vertex4), 1000,
+                departureTime);
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            var duration500m = (int)(500 / ((OsmSharp.Units.Speed.MeterPerSecond)Vehicle.Pedestrian.ProbableSpeed(tagsIndex.Get(tagsId))).Value);
+            var duration = 40 * 60 + duration500m;
+            Assert.AreEqual(duration, algorithm.Duration());
+            Assert.AreEqual(new DateTime(2017, 05, 10, 07, 30, 00).AddSeconds(duration), algorithm.ArrivalTime());
+
+            var status = algorithm.GetStopStatus(1);
+            Assert.AreEqual(0, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, status.Seconds);
+            Assert.AreEqual(1, status.Transfers);
+            Assert.AreEqual(0, status.TripId);
+            var connection = algorithm.GetConnection(status.ConnectionId);
+            Assert.AreEqual(0, connection.DepartureStop);
+            status = algorithm.GetStopStatus(0);
+            Assert.AreEqual(-1, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + duration500m, status.Seconds);
+            Assert.AreEqual(0, status.Transfers);
+            Assert.AreEqual(-1, status.TripId);
+        }
     }
 }

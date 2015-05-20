@@ -35,7 +35,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <summary>
         /// Holds a function that is called when a vertex was found.
         /// </summary>
-        private Func<long, float, bool> _wasFound;
+        private readonly Func<long, float, bool> _wasFound;
 
         /// <summary>
         /// Holds the routing graph.
@@ -205,6 +205,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if the given vertex was visited and sets the visit output parameters with the actual visit data.
+        /// </summary>
+        /// <param name="vertex">The vertex that was visited.</param>
+        /// <param name="visit">The visit data.</param>
+        /// <returns></returns>
+        public bool TryGetVisit(long vertex, out DykstraVisit visit)
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return _visits.TryGetValue(vertex, out visit);
         }
 
         /// <summary>

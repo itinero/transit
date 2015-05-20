@@ -104,14 +104,6 @@
     <Compile Include="Multimodal\Algorithms\OneToMany\EarliestArrivalTests.cs" />
     <Compile Include="Multimodal\Data\StubMultimodalConnectionsDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Routing\GTFSReaderTests.cs" />
-    <Compile Include="Routing\MultiModal\GTFSReaderTests.cs" />
-    <Compile Include="Routing\MultiModal\RouteCalculators\ReferenceCalculatorRegressionTests.cs" />
-    <Compile Include="Routing\MultiModal\RouteCalculators\ReferenceCalculatorTests.cs" />
-    <Compile Include="Routing\MultiModal\RouteCalculators\Snail.cs" />
-    <Compile Include="Routing\MultiModal\RouteCalculators\TinyTransitTests.cs" />
-    <Compile Include="Routing\MultiModal\Routes\TypedRouterMultiModalTests.cs" />
-    <Compile Include="Routing\RouteCalculators\ReferenceCalculatorTests.cs" />
     <Compile Include="RealisticFeed.cs" />
     <Compile Include="TestNetworkFeed.cs" />
     <Compile Include="SampleFeed.cs" />

@@ -197,7 +197,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Holds the best stop to target.
         /// </summary>
-        private StopStatus? _bestStopToTarget;
+        private int _bestTargetStop = -1;
 
         /// <summary>
         /// Executes the algorithm.
@@ -229,7 +229,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
-            _bestStopToTarget = null;
+            _bestTargetStop = -1;
 
             // initialize stops status.
             for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
@@ -244,9 +244,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (_bestStopToTarget.HasValue && departureTime >= _bestStopToTarget.Value.Seconds)
-                { // the current time to target is never going to be better.
-                    break;
+                var currentBestTime = 0;
+                if (_bestTargetStop > 0)
+                { // there was already a best time.
+                    currentBestTime = _backwardStopStatuses[_bestTargetStop].Seconds +
+                        _forwardStopStatuses[_bestTargetStop].Seconds;
+                    if (departureTime >= currentBestTime)
+                    { // the current time to target is never going to be better.
+                        break;
+                    }
                 }
 
                 StopStatus status;
@@ -300,16 +306,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                             { // this stop has been reached by the backward search, figure out if it represents a better connection.
                                 var arrivalStopStatus = _forwardStopStatuses[connection.ArrivalStop];
                                 var timeToTarget = backwardStatus.Seconds + arrivalStopStatus.Seconds;
-                                if (!_bestStopToTarget.HasValue || 
-                                    _bestStopToTarget.Value.Seconds > timeToTarget)
+                                if (_bestTargetStop < 0 ||
+                                    currentBestTime > timeToTarget)
                                 { // this current route is a better one.
-                                    _bestStopToTarget = new StopStatus()
-                                    {
-                                        ConnectionId = arrivalStopStatus.ConnectionId,
-                                        Seconds = timeToTarget,
-                                        Transfers = arrivalStopStatus.Transfers,
-                                        TripId = arrivalStopStatus.TripId
-                                    };
+                                    _bestTargetStop = connection.ArrivalStop;
                                     this.HasSucceeded = true;
                                 }
                             }
@@ -398,7 +398,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _departureTime.Date.AddSeconds(_bestStopToTarget.Value.Seconds);
+            return _departureTime.Date.AddSeconds(
+                _forwardStopStatuses[_bestTargetStop].Seconds + _backwardStopStatuses[_bestTargetStop].Seconds);
         }
 
         /// <summary>
@@ -409,7 +410,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _bestStopToTarget.Value.Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+            return _forwardStopStatuses[_bestTargetStop].Seconds + _backwardStopStatuses[_bestTargetStop].Seconds 
+                - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 
         /// <summary>

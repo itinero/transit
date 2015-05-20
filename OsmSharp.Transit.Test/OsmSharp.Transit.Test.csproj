@@ -101,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToMany\EarliestArrivalTests.cs" />
     <Compile Include="Multimodal\Data\StubMultimodalConnectionsDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -36,6 +36,17 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
         /// <summary>
         /// Creates a new GTFS connections db based on the given feeds.
         /// </summary>
+        /// <param name="feed"></param>
+        public GTFSConnectionsDb(IGTFSFeed feed)
+        {
+            _feeds = new List<IGTFSFeed>(new IGTFSFeed[] { feed });
+
+            this.BuildViews();
+        }
+
+        /// <summary>
+        /// Creates a new GTFS connections db based on the given feeds.
+        /// </summary>
         /// <param name="feeds"></param>
         public GTFSConnectionsDb(IEnumerable<IGTFSFeed> feeds)
         {

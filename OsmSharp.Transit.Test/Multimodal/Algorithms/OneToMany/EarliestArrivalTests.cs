@@ -306,7 +306,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
         }
 
         /// <summary>
-        /// Tests a sucessful one-hop with a one-connection db and with before- and after road segments.
+        /// Tests a successful one-hop with a one-connection db and with before- and after road segments.
         /// </summary>
         [Test]
         public void TestOneHopWithBeforeAndAfter()
@@ -373,7 +373,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
         }
 
         /// <summary>
-        /// Tests a sucessful one-hop with a one-connection db and with before- and after road segments that competes with a 15km stretch of road.
+        /// Tests a successful one-hop with a one-connection db and with before- and after road segments that competes with a 15km stretch of road.
         /// </summary>
         [Test]
         public void TestOneHopWithBeforeAndAfterVersus15kmRoad()

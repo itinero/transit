@@ -36,13 +36,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -84,7 +84,9 @@
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="Algorithms\OneToOne\EarliestArrival.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilder.cs" />
     <Compile Include="Algorithms\OneToOne\OneToOneRoutingAlgorithmBase.cs" />
+    <Compile Include="Algorithms\OneToOne\OneToOneRoutingAlgorithmRouteBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\Connection.cs" />
     <Compile Include="Data\ConnectionsListView.cs" />
@@ -92,6 +94,8 @@
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Algorithms\RoutingAlgorithmBase.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDb.cs" />
+    <Compile Include="Data\GTFS\GTFSExtensions.cs" />
+    <Compile Include="Data\GTFS\GTFSUniqueCollectionView.cs" />
     <Compile Include="Data\Stop.cs" />
     <Compile Include="Data\StopsListView.cs" />
     <Compile Include="Data\StopsView.cs" />

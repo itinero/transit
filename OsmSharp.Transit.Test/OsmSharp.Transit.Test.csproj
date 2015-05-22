@@ -40,13 +40,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\GeoAPI.1.7.3.1\lib\net45\GeoAPI.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.3.71, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.3.71-beta\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="NetTopologySuite, Version=1.13.3.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToMany\EarliestArrivalTests.cs" />
     <Compile Include="Multimodal\Data\StubMultimodalConnectionsDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

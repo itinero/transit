@@ -29,28 +29,18 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
     public class GTFSConnectionsDb : ConnectionsDb
     {
         /// <summary>
-        /// Holds all feeds.
+        /// Holds the feed.
         /// </summary>
-        private readonly List<IGTFSFeed> _feeds;
+        private readonly IGTFSFeed _feed;
 
         /// <summary>
-        /// Creates a new GTFS connections db based on the given feeds.
+        /// Creates a new GTFS connections db based on the given feed.
         /// </summary>
         /// <param name="feed"></param>
+        /// <remarks>The use multiple feeds they need to be merged into one feed first.</remarks>
         public GTFSConnectionsDb(IGTFSFeed feed)
         {
-            _feeds = new List<IGTFSFeed>(new IGTFSFeed[] { feed });
-
-            this.BuildViews();
-        }
-
-        /// <summary>
-        /// Creates a new GTFS connections db based on the given feeds.
-        /// </summary>
-        /// <param name="feeds"></param>
-        public GTFSConnectionsDb(IEnumerable<IGTFSFeed> feeds)
-        {
-            _feeds = new List<IGTFSFeed>(feeds);
+            _feed = feed;
 
             this.BuildViews();
         }
@@ -107,6 +97,37 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
             return true;
         }
 
+        /// <summary>
+        /// Gets the feed.
+        /// </summary>
+        public IGTFSFeed Feed
+        {
+            get
+            {
+                return _feed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the GTFS stop for the given stop id.
+        /// </summary>
+        /// <param name="stopId"></param>
+        /// <returns></returns>
+        public global::GTFS.Entities.Stop GetGTFSStop(int stopId)
+        {
+            return _feed.Stops.Get(stopId);
+        }
+
+        /// <summary>
+        /// Gets the GTFS trip the given trip id.
+        /// </summary>
+        /// <param name="tripId"></param>
+        /// <returns></returns>
+        public global::GTFS.Entities.Trip GetGTFSTrip(int tripId)
+        {
+            return _feed.Trips.Get(tripId);
+        }
+ 
         #region Connection Management
 
         /// <summary>
@@ -122,13 +143,15 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
         /// <summary>
         /// Holds the stops view.
         /// </summary>
-        private StopsListView _stopsView;
+        private StopsView _stopsView;
 
         /// <summary>
         /// Builds all views.
         /// </summary>
         private void BuildViews()
         {
+            _stopsView = new GTFSStopsView(_feed.Stops);
+
             var stopIds = this.BuildStopIds();
             var tripIds = this.BuildTripIds();
 
@@ -136,75 +159,38 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
 
             this.BuildDepartureTimeView(connections);
             this.BuildArrivalTimeView(new List<Connection>(connections));
-            this.BuildStopsView();
-        }
-
-        /// <summary>
-        /// Builds the stops view.
-        /// </summary>
-        private void BuildStopsView()
-        {
-            var count = 0;
-            foreach(var feed in _feeds)
-            {
-                count = count + _feeds.Count;
-            }
-
-            var stopsList = new List<Stop>(count);
-            for (var idx = 0; idx < _feeds.Count; idx++)
-            {
-                foreach (var stop in _feeds[idx].GetStops())
-                {
-                    stopsList.Add(new Stop()
-                    {
-                        Latitude = (float)stop.Latitude,
-                        Longitude = (float)stop.Longitude
-                    });
-                }
-            }
-            _stopsView = new StopsListView(stopsList);
         }
 
         /// <summary>
         /// Builds all the stop ids.
         /// </summary>
         /// <returns></returns>
-        private List<Dictionary<string, int>> BuildStopIds()
+        private Dictionary<string, int> BuildStopIds()
         {
-            var result = new List<Dictionary<string, int>>(_feeds.Count);
+            var stops = new Dictionary<string, int>();
             var stopId = 0;
-            for(var idx = 0; idx < _feeds.Count; idx++)
+            foreach (var stop in _feed.Stops)
             {
-                var stops = new Dictionary<string, int>();
-                foreach(var stop in _feeds[idx].GetStops())
-                {
-                    stops.Add(stop.Id, stopId);
-                    stopId++;
-                }
-                result.Add(stops);
+                stops.Add(stop.Id, stopId);
+                stopId++;
             }
-            return result;
+            return stops;
         }
 
         /// <summary>
         /// Builds all the trip ids.
         /// </summary>
         /// <returns></returns>
-        private List<Dictionary<string, int>> BuildTripIds()
+        private Dictionary<string, int> BuildTripIds()
         {
-            var result = new List<Dictionary<string, int>>(_feeds.Count);
-            var id = 0;
-            for (var idx = 0; idx < _feeds.Count; idx++)
+            var trips = new Dictionary<string, int>();
+            var tripId = 0;
+            foreach (var trip in _feed.Trips)
             {
-                var trips = new Dictionary<string, int>();
-                foreach (var trip in _feeds[idx].GetTrips())
-                {
-                    trips.Add(trip.Id, id);
-                    id++;
-                }
-                result.Add(trips);
+                trips.Add(trip.Id, tripId);
+                tripId++;
             }
-            return result;
+            return trips;
         }
 
         /// <summary>
@@ -213,44 +199,37 @@ namespace OsmSharp.Routing.Transit.Data.GTFS
         /// <param name="stopIds">The stop id's per feed.</param>
         /// <param name="tripIds">The trip id's per feed.</param>
         /// <returns></returns>
-        private List<Connection> BuildConnectionList(List<Dictionary<string, int>> stopIds, List<Dictionary<string, int>> tripIds)
+        private List<Connection> BuildConnectionList(Dictionary<string, int> stopIds, Dictionary<string, int> tripIds)
         {
             var connections = new List<Connection>();
-            for (var idx = 0; idx < _feeds.Count; idx++)
+            StopTime previousStopTime = null;
+            foreach (var stopTime in _feed.StopTimes)
             {
-                var feed = _feeds[idx];
-                var stops = stopIds[idx];
-                var trips = tripIds[idx];
+                // check if two stop times belong to the same trip.
+                if (previousStopTime != null &&
+                    previousStopTime.TripId == stopTime.TripId)
+                { // we have two stops in the same trip
+                    // parse arrival/departure.
+                    var arrival = stopTime.ArrivalTime.TotalSeconds;
+                    var departure = previousStopTime.DepartureTime.TotalSeconds;
 
-                StopTime previousStopTime = null;
-                foreach(var stopTime in feed.GetStopTimes())
-                {
-                    // check if two stop times belong to the same trip.
-                    if (previousStopTime != null && 
-                        previousStopTime.TripId == stopTime.TripId)
-                    { // we have two stops in the same trip
-                        // parse arrival/departure.
-                        var arrival = stopTime.ArrivalTime.TotalSeconds;
-                        var departure = previousStopTime.DepartureTime.TotalSeconds;
+                    // get start/end stopids.
+                    var departureStop = stopIds[previousStopTime.StopId];
+                    var arrivalStop = stopIds[stopTime.StopId];
 
-                        // get start/end stopids.
-                        var departureStop = stops[previousStopTime.StopId];
-                        var arrivalStop = stops[stopTime.StopId];
+                    // get trip id.
+                    var trip = tripIds[previousStopTime.TripId];
 
-                        // get trip id.
-                        var trip = trips[previousStopTime.TripId];
-
-                        connections.Add(new Connection()
-                        {
-                            ArrivalStop = arrivalStop,
-                            ArrivalTime = arrival,
-                            DepartureStop = departureStop,
-                            DepartureTime = departure,
-                            TripId = trip
-                        });
-                    }
-                    previousStopTime = stopTime;
+                    connections.Add(new Connection()
+                    {
+                        ArrivalStop = arrivalStop,
+                        ArrivalTime = arrival,
+                        DepartureStop = departureStop,
+                        DepartureTime = departure,
+                        TripId = trip
+                    });
                 }
+                previousStopTime = stopTime;
             }
             return connections;
         }

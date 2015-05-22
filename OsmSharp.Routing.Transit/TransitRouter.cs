@@ -35,10 +35,10 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Creates a new transit router.
         /// </summary>
-        /// <param name="feeds">The GTFS feeds.</param>
-        internal TransitRouter(IEnumerable<IGTFSFeed> feeds)
+        /// <param name="feed">The GTFS feed.</param>
+        internal TransitRouter(IGTFSFeed feed)
         {
-            _db = new GTFSConnectionsDb(feeds);
+            _db = new GTFSConnectionsDb(feed);
         }
 
         ///// <summary>

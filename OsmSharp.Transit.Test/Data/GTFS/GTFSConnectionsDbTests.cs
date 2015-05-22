@@ -38,7 +38,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestOneStop()
         {
             var feed = new GTFSFeed();
-            feed.AddStop(new global::GTFS.Entities.Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
                 {
                     Id = "0",
                     Code = "STOP_0",
@@ -70,7 +70,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestOneConnection()
         {
             var feed = new GTFSFeed();
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -86,7 +86,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -102,7 +102,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddRoute(new Route()
+            feed.Routes.Add(new Route()
             {
                 AgencyId = "0",
                 Color = null,
@@ -115,7 +115,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Type = RouteType.Bus,
                 Url = null
             });
-            feed.AddTrip(new Trip()
+            feed.Trips.Add(new Trip()
             {
                 AccessibilityType = null,
                 BlockId = "0",
@@ -128,7 +128,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Trip 0",
                 Tag = null
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -151,7 +151,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -175,7 +175,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 TripId = "0"
             });
 
-            var stopTimesInFeed = new List<StopTime>(feed.GetStopTimes());
+            var stopTimesInFeed = new List<StopTime>(feed.StopTimes);
 
             var db = new GTFSConnectionsDb(feed);
             var stops = db.GetStops();
@@ -212,7 +212,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestTwoConnections()
         {
             var feed = new GTFSFeed();
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -228,7 +228,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -244,7 +244,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "2",
                 Code = "STOP_2",
@@ -260,7 +260,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddRoute(new Route()
+            feed.Routes.Add(new Route()
             {
                 AgencyId = "0",
                 Color = null,
@@ -273,7 +273,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Type = RouteType.Bus,
                 Url = null
             });
-            feed.AddTrip(new Trip()
+            feed.Trips.Add(new Trip()
             {
                 AccessibilityType = null,
                 BlockId = "0",
@@ -286,7 +286,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Trip 0",
                 Tag = null
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -309,7 +309,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -332,7 +332,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -356,7 +356,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 TripId = "0"
             });
 
-            var stopTimesInFeed = new List<StopTime>(feed.GetStopTimes());
+            var stopTimesInFeed = new List<StopTime>(feed.StopTimes);
 
             var db = new GTFSConnectionsDb(feed);
             var stops = db.GetStops();
@@ -405,7 +405,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestTwoTrips()
         {
             var feed = new GTFSFeed();
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -421,7 +421,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -437,7 +437,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddStop(new Stop()
+            feed.Stops.Add(new Stop()
             {
                 Id = "2",
                 Code = "STOP_2",
@@ -453,7 +453,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.AddRoute(new Route()
+            feed.Routes.Add(new Route()
             {
                 AgencyId = "0",
                 Color = null,
@@ -466,7 +466,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Type = RouteType.Bus,
                 Url = null
             });
-            feed.AddRoute(new Route()
+            feed.Routes.Add(new Route()
             {
                 AgencyId = "0",
                 Color = null,
@@ -479,7 +479,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Type = RouteType.Bus,
                 Url = null
             });
-            feed.AddTrip(new Trip()
+            feed.Trips.Add(new Trip()
             {
                 AccessibilityType = null,
                 BlockId = "0",
@@ -492,7 +492,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Trip 0",
                 Tag = null
             });
-            feed.AddTrip(new Trip()
+            feed.Trips.Add(new Trip()
             {
                 AccessibilityType = null,
                 BlockId = "0",
@@ -505,7 +505,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Trip 1",
                 Tag = null
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -528,7 +528,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -551,7 +551,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -574,7 +574,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "0"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -597,7 +597,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Tag = null,
                 TripId = "1"
             });
-            feed.AddStopTime(new StopTime()
+            feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = new TimeOfDay()
                 {
@@ -621,7 +621,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 TripId = "1"
             });
 
-            var stopTimesInFeed = new List<StopTime>(feed.GetStopTimes());
+            var stopTimesInFeed = new List<StopTime>(feed.StopTimes);
 
             var db = new GTFSConnectionsDb(feed);
             var stops = db.GetStops();

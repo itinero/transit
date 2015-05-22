@@ -117,6 +117,28 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Gets the source stop.
+        /// </summary>
+        public int SourceStop
+        {
+            get
+            {
+                return _sourceStop;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target stop.
+        /// </summary>
+        public int TargetStop
+        {
+            get
+            {
+                return _targetStop;
+            }
+        }
+
+        /// <summary>
         /// Holds all the statuses of all stops that have been touched.
         /// </summary>
         private Dictionary<int, StopStatus> _stopStatuses;

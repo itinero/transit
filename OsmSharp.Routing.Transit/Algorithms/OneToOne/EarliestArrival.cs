@@ -200,7 +200,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         transfer = 0;
                     }
 
-                    if (status.Seconds < departureTime - transferTime)
+                    if (status.Seconds <= departureTime - transferTime)
                     { // a departure here is possible if the trip is possible.
                         if (!tripPossibilities.TryGetValue(connection.TripId, out tripPossible))
                         { // trip was not checked yet.

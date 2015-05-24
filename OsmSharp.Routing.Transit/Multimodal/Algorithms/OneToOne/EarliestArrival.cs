@@ -19,11 +19,11 @@
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
 using OsmSharp.Routing.Interpreter;
-using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
+using OsmSharp.Routing.Vehicles;
 using System;
 using System.Collections.Generic;
 
@@ -37,7 +37,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Holds the multimodal connections db.
         /// </summary>
-        private readonly MultimodalConnectionsDbBase<LiveEdge> _db;
+        private readonly MultimodalConnectionsDbBase<Edge> _db;
 
         /// <summary>
         /// Holds the connections view.
@@ -47,7 +47,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Holds the routing graph.
         /// </summary>
-        private readonly DynamicGraphRouterDataSource<LiveEdge> _graph;
+        private readonly RouterDataSource<Edge> _graph;
 
         /// <summary>
         /// Hold the routing intepreter.
@@ -128,7 +128,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <param name="target">The target location.</param>
         /// <param name="targetMax">The maximum seconds for the target vehicle to travel.</param>
         /// <param name="departureTime">The departure time.</param>
-        public EarliestArrival(MultimodalConnectionsDbBase<LiveEdge> db, IRoutingInterpreter interpreter, Vehicle sourceVehicle, PathSegmentVisitList source, int sourceMax,
+        public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, IRoutingInterpreter interpreter, Vehicle sourceVehicle, PathSegmentVisitList source, int sourceMax,
             Vehicle targetVehicle, PathSegmentVisitList target, int targetMax, DateTime departureTime)
         {
             _db = db;

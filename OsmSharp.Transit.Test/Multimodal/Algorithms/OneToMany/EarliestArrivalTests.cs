@@ -20,11 +20,12 @@ using NUnit.Framework;
 using OsmSharp.Collections.Tags;
 using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Routing;
+using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
-using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Osm.Interpreter;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne;
+using OsmSharp.Routing.Vehicles;
 using OsmSharp.Transit.Test.Multimodal.Data;
 using System;
 
@@ -321,19 +322,19 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
                 ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
                 TripId = 0
             });
-            var tagsIndex = (TagsTableCollectionIndex)connectionsDb.Graph.TagsIndex;
+            var tagsIndex = (TagsIndex)connectionsDb.Graph.TagsIndex;
             var tagsId = tagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
             var vertex1 = connectionsDb.Graph.AddVertex(0.000000f, 0f);
             var vertex2 = connectionsDb.Graph.AddVertex(0.004484f, 0f);
             var vertex3 = connectionsDb.Graph.AddVertex(0.010514f, 0f);
             var vertex4 = connectionsDb.Graph.AddVertex(0.014998f, 0f);
-            connectionsDb.Graph.AddEdge(vertex1, vertex2, new LiveEdge() 
+            connectionsDb.Graph.AddEdge(vertex1, vertex2, new Edge() 
             {
                 Distance = 500,
                 Forward = true,
                 Tags = tagsId
             });
-            connectionsDb.Graph.AddEdge(vertex3, vertex4, new LiveEdge() 
+            connectionsDb.Graph.AddEdge(vertex3, vertex4, new Edge() 
             {
                 Distance = 500,
                 Forward = true,
@@ -388,25 +389,25 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
                 ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
                 TripId = 0
             });
-            var tagsIndex = (TagsTableCollectionIndex)connectionsDb.Graph.TagsIndex;
+            var tagsIndex = (TagsIndex)connectionsDb.Graph.TagsIndex;
             var tagsId = tagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
             var vertex1 = connectionsDb.Graph.AddVertex(0.000000f, 0f);
             var vertex2 = connectionsDb.Graph.AddVertex(0.004484f, 0f);
             var vertex3 = connectionsDb.Graph.AddVertex(0.139560f, 0f);
             var vertex4 = connectionsDb.Graph.AddVertex(0.144045f, 0f);
-            connectionsDb.Graph.AddEdge(vertex1, vertex2, new LiveEdge()
+            connectionsDb.Graph.AddEdge(vertex1, vertex2, new Edge()
             {
                 Distance = 500,
                 Forward = true,
                 Tags = tagsId
             });
-            connectionsDb.Graph.AddEdge(vertex2, vertex3, new LiveEdge()
+            connectionsDb.Graph.AddEdge(vertex2, vertex3, new Edge()
             {
                 Distance = 15000,
                 Forward = true,
                 Tags = tagsId
             });
-            connectionsDb.Graph.AddEdge(vertex3, vertex4, new LiveEdge()
+            connectionsDb.Graph.AddEdge(vertex3, vertex4, new Edge()
             {
                 Distance = 500,
                 Forward = true,

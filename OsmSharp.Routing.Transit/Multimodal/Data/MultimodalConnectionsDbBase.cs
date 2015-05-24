@@ -19,6 +19,7 @@
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Vehicles;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Data
 {
@@ -26,7 +27,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
     /// A database containing all transit-connections and an associated road network.
     /// </summary>
     public abstract class MultimodalConnectionsDbBase<TEdgeData> : ConnectionsDb
-        where TEdgeData : IGraphEdgeData
+        where TEdgeData : struct, IGraphEdgeData
     {
         /// <summary>
         /// Holds the connections-only db.
@@ -36,7 +37,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <summary>
         /// Holds the road network graph.
         /// </summary>
-        private DynamicGraphRouterDataSource<TEdgeData> _graph;
+        private RouterDataSource<TEdgeData> _graph;
 
         /// <summary>
         /// Creates a new multimodal connections database.
@@ -45,7 +46,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <param name="connectionsDb">The connections db.</param>
         /// <param name="interpreter">The routing interpreter.</param>
         /// <param name="vehicles">The vehicle profiles to support.</param>
-        public MultimodalConnectionsDbBase(DynamicGraphRouterDataSource<TEdgeData> graph, ConnectionsDb connectionsDb, 
+        public MultimodalConnectionsDbBase(RouterDataSource<TEdgeData> graph, ConnectionsDb connectionsDb, 
             IRoutingInterpreter interpreter, params Vehicle[] vehicles)
         {
             _graph = graph;
@@ -72,7 +73,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <summary>
         /// Gets the routing graph.
         /// </summary>
-        public DynamicGraphRouterDataSource<TEdgeData> Graph
+        public RouterDataSource<TEdgeData> Graph
         {
             get
             {

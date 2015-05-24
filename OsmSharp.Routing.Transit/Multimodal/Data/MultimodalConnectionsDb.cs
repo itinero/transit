@@ -19,8 +19,8 @@
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
-using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Vehicles;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,7 +29,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
     /// <summary>
     /// A database containing all transit-connections and an associated road network in the form of an unoptimized graph.
     /// </summary>
-    public class MultimodalConnectionsDb : MultimodalConnectionsDbBase<LiveEdge>
+    public class MultimodalConnectionsDb : MultimodalConnectionsDbBase<Edge>
     {
         /// <summary>
         /// Holds the maximum distance a station access point can be from the actual station node.
@@ -43,7 +43,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <param name="connectionsDb">The connections db.</param>
         /// <param name="interpreter">The routing interpreter.</param>
         /// <param name="vehicles">The vehicle profiles to support.</param>
-        public MultimodalConnectionsDb(DynamicGraphRouterDataSource<LiveEdge> graph, ConnectionsDb connectionsDb,
+        public MultimodalConnectionsDb(RouterDataSource<Edge> graph, ConnectionsDb connectionsDb,
             IRoutingInterpreter interpreter, params Vehicle[] vehicles)
             :base(graph, connectionsDb, interpreter, vehicles)
         {
@@ -87,11 +87,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                         bool isRoutable = arc.EdgeData.Tags != 0;
                         if (isRoutable)
                         { // the arc is already a road.
-                            if (graph.TagsIndex.Contains(arc.EdgeData.Tags))
-                            { // there is a tags collection.
+                            //if (graph.TagsIndex.Contains(arc.EdgeData.Tags))
+                            //{ // there is a tags collection.
                                 var tags = graph.TagsIndex.Get(arc.EdgeData.Tags);
                                 isRoutable = interpreter.EdgeInterpreter.CanBeTraversedBy(tags, vehicle);
-                            }
+                            //}
                         }
                         if (isRoutable)
                         { // this arc is a road to keep it.
@@ -122,13 +122,13 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                             if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE)
                             { // only attach stations that are relatively close.
                                 var closest = sorted.Current.Key;
-                                if (!graph.ContainsEdge(stopVertex, closest, new LiveEdge()))
+                                if (!graph.ContainsEdge(stopVertex, closest, new Edge()))
                                 {
-                                    graph.AddEdge(stopVertex, closest, new LiveEdge(), null);
+                                    graph.AddEdge(stopVertex, closest, new Edge(), null);
                                 }
-                                if (!graph.ContainsEdge(closest, stopVertex, new LiveEdge()))
+                                if (!graph.ContainsEdge(closest, stopVertex, new Edge()))
                                 {
-                                    graph.AddEdge(closest, stopVertex, new LiveEdge(), null);
+                                    graph.AddEdge(closest, stopVertex, new Edge(), null);
                                 }
                             }
                         }

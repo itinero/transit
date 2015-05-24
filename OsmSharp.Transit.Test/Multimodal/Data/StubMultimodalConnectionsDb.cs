@@ -20,9 +20,9 @@ using OsmSharp.Collections.Tags.Index;
 using OsmSharp.Routing;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
-using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Osm.Interpreter;
 using OsmSharp.Routing.Transit.Multimodal.Data;
+using OsmSharp.Routing.Vehicles;
 using OsmSharp.Transit.Test.Data;
 using System.Collections.Generic;
 
@@ -31,13 +31,13 @@ namespace OsmSharp.Transit.Test.Multimodal.Data
     /// <summary>
     /// A stub connections db.
     /// </summary>
-    public class StubMultimodalConnectionsDb : MultimodalConnectionsDbBase<LiveEdge>
+    public class StubMultimodalConnectionsDb : MultimodalConnectionsDbBase<Edge>
     {
         /// <summary>
         /// Creates a new multimodal connections db.
         /// </summary>
         public StubMultimodalConnectionsDb()
-            : base(new DynamicGraphRouterDataSource<LiveEdge>(new TagsTableCollectionIndex()), new StubConnectionsDb(),
+            : base(new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex()), new StubConnectionsDb(),
                 new OsmRoutingInterpreter(), Vehicle.Pedestrian)
         {
             this.Stops = new Dictionary<uint, int>();

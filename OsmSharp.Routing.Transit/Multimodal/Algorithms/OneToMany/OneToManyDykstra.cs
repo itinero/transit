@@ -20,8 +20,8 @@ using OsmSharp.Collections.PriorityQueues;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
 using OsmSharp.Routing.Interpreter;
-using OsmSharp.Routing.Osm.Graphs;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
+using OsmSharp.Routing.Vehicles;
 using System;
 using System.Collections.Generic;
 
@@ -40,7 +40,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <summary>
         /// Holds the routing graph.
         /// </summary>
-        private readonly DynamicGraphRouterDataSource<LiveEdge> _graph;
+        private readonly RouterDataSource<Edge> _graph;
 
         /// <summary>
         /// Hold the routing intepreter.
@@ -77,7 +77,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <param name="sourceMax">The maximum seconds for the source vehicle to travel.</param>
         /// <param name="backward">The backward flag, search is backwards when true.</param>
         /// <param name="wasFound">The function called when a vertex has been reached.</param>
-        public OneToManyDykstra(DynamicGraphRouterDataSource<LiveEdge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
+        public OneToManyDykstra(RouterDataSource<Edge> graph, IRoutingInterpreter interpreter, Vehicle vehicle,
             PathSegmentVisitList source, int sourceMax, bool backward, Func<long, float, bool> wasFound)
         {
             _graph = graph;

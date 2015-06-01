@@ -25,7 +25,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two stops, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class EarliestArrival : OneToOneRoutingAlgorithmBase
+    public class EarliestArrival : RoutingAlgorithmBase
     {
         /// <summary>
         /// Holds the connections view.
@@ -81,7 +81,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <param name="sourceStop">The stop to start at.</param>
         /// <param name="targetStop">The stop to end at.</param>
         /// <param name="departureTime">The departure time.</param>
-        public EarliestArrival(ConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
+        public EarliestArrival(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
         {
             _connections = connections.GetDepartureTimeView();
             _sourceStop = sourceStop;
@@ -102,7 +102,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <param name="maxmumSearchTime">The maximum search time (default: one day in seconds).</param>
         /// <param name="isTripPossible">The function to check if a trip is possible (default: connections.IsTripPossible).</param>
         /// <param name="compareStatuses">The function to compare a status at a stop of two distinct statuses are found at one stop (default: the lowest seconds, than the lowest transfer count).</param>
-        public EarliestArrival(ConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime, 
+        public EarliestArrival(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime, 
             int minimumTransferTime, int maxmumSearchTime, Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
         {
             _connections = connections.GetDepartureTimeView();

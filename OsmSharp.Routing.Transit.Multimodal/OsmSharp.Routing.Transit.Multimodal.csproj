@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{293D8019-9E89-4BCB-A857-24B92F48C22C}</ProjectGuid>
+    <ProjectGuid>{6501AA4E-A536-4C97-9312-170FB4641AD0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OsmSharp.Routing.Transit</RootNamespace>
-    <AssemblyName>OsmSharp.Routing.Transit</AssemblyName>
+    <RootNamespace>OsmSharp.Routing.Transit.Multimodal</RootNamespace>
+    <AssemblyName>OsmSharp.Routing.Transit.Multimodal</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,56 +16,50 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Output\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Output\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="GTFS, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="GTFS.IO, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.IO.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OsmSharp">
       <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.Osm, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OsmSharp.Osm">
       <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Osm.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.Routing, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OsmSharp.Routing">
       <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Routing.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.UI, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OsmSharp.UI">
       <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.UI.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.WinForms.UI, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OsmSharp.WinForms.UI">
       <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.WinForms.UI.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net">
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -75,34 +69,34 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Zlib.Portable, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Zlib.Portable.1.10.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyVersion.cs">
-      <Link>Properties\SharedAssemblyVersion.cs</Link>
-    </Compile>
+    <Compile Include="Algorithms\DykstraVisit.cs" />
+    <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
+    <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
+    <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrival.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilder.cs" />
-    <Compile Include="IRoutingAlgorithm.cs" />
-    <Compile Include="OneToOneRouteBuilder.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Data\Connection.cs" />
-    <Compile Include="Data\ConnectionsListView.cs" />
-    <Compile Include="Data\ConnectionsView.cs" />
-    <Compile Include="Data\GTFSConnectionsDb.cs" />
-    <Compile Include="RoutingAlgorithmBase.cs" />
-    <Compile Include="Data\GTFSExtensions.cs" />
-    <Compile Include="Data\GTFSStopsView.cs" />
-    <Compile Include="Data\Stop.cs" />
+    <Compile Include="Algorithms\Resolving\IResolver.cs" />
+    <Compile Include="Algorithms\Resolving\PathSegmentVisitListResolver.cs" />
+    <Compile Include="Data\MultimodalConnectionsDb.cs" />
+    <Compile Include="Data\MultimodalConnectionsDbBase.cs" />
+    <Compile Include="EarliestArrivalRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouterBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj">
+      <Project>{293d8019-9e89-4bcb-a857-24b92f48c22c}</Project>
+      <Name>OsmSharp.Routing.Transit</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

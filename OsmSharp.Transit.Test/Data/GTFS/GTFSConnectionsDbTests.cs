@@ -20,7 +20,7 @@ using GTFS;
 using GTFS.Entities;
 using GTFS.Entities.Enumerations;
 using NUnit.Framework;
-using OsmSharp.Routing.Transit.Data.GTFS;
+using OsmSharp.Routing.Transit.Data;
 using System.Collections.Generic;
 
 namespace OsmSharp.Transit.Test.Data.GTFS
@@ -70,7 +70,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestOneConnection()
         {
             var feed = new GTFSFeed();
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -86,7 +86,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -212,7 +212,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestTwoConnections()
         {
             var feed = new GTFSFeed();
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -228,7 +228,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -244,7 +244,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "2",
                 Code = "STOP_2",
@@ -405,7 +405,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public void TestTwoTrips()
         {
             var feed = new GTFSFeed();
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "0",
                 Code = "STOP_0",
@@ -421,7 +421,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "1",
                 Code = "STOP_1",
@@ -437,7 +437,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Zone = null,
                 LocationType = LocationType.Stop
             });
-            feed.Stops.Add(new Stop()
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
             {
                 Id = "2",
                 Code = "STOP_2",

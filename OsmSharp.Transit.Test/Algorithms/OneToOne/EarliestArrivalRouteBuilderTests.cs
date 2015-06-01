@@ -23,8 +23,6 @@ using NUnit.Framework;
 using OsmSharp.Routing;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Routing.Transit.Data.GTFS;
-using OsmSharp.Transit.Test.Data;
 using System;
 
 namespace OsmSharp.Transit.Test.Algorithms.OneToMany

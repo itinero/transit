@@ -101,19 +101,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\GTFS\GTFSConnectionsDbBuilder.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToMany\EarliestArrivalTests.cs" />
-    <Compile Include="Multimodal\Data\StubMultimodalConnectionsDb.cs" />
+    <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyDykstraRouteBuilderTests.cs" />
+    <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
+    <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealisticFeed.cs" />
+    <Compile Include="RouterBaseTests.cs" />
+    <Compile Include="RouterMock.cs" />
+    <Compile Include="RoutingAlgorithmBaseTests.cs" />
+    <Compile Include="RoutingAlgorithmMock.cs" />
     <Compile Include="TestNetworkFeed.cs" />
     <Compile Include="SampleFeed.cs" />
-    <Compile Include="TransitEdgeScheduleEntryTests.cs" />
-    <Compile Include="TransitEdgeTests.cs" />
-    <Compile Include="TransitRouterTests.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalTests.cs" />
-    <Compile Include="Data\StubConnectionsDb.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -183,6 +185,10 @@
     <EmbeddedResource Include="test_network_feed\stops.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OsmSharp.Routing.Transit.Multimodal\OsmSharp.Routing.Transit.Multimodal.csproj">
+      <Project>{6501aa4e-a536-4c97-9312-170fb4641ad0}</Project>
+      <Name>OsmSharp.Routing.Transit.Multimodal</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj">
       <Project>{293d8019-9e89-4bcb-a857-24b92f48c22c}</Project>
       <Name>OsmSharp.Routing.Transit</Name>

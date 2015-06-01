@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using GTFS.Entities;
 using NUnit.Framework;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
@@ -36,16 +37,17 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         [Test]
         public void TestOneHop()
         {
-            // build stub db.
-            var connectionsDb = new StubConnectionsDb();
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
-                ArrivalStop = 1,
-                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
-                TripId = 0
-            });
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.OneConnection(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                }));
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -78,16 +80,17 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         [Test]
         public void TestOneHopUnsuccessful()
         {
-            // build stub db.
-            var connectionsDb = new StubConnectionsDb();
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
-                ArrivalStop = 1,
-                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
-                TripId = 0
-            });
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.OneConnection(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                }));
 
             // run algorithm.
             var algorithm = new EarliestArrival(connectionsDb, 0, 1, new DateTime(2017, 05, 10, 08, 30, 00));
@@ -104,24 +107,27 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         [Test]
         public void TestTwoHopsSuccessful()
         {
-            // build stub db.
-            var connectionsDb = new StubConnectionsDb();
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
-                ArrivalStop = 1,
-                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
-                TripId = 0
-            });
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 1,
-                DepartureTime = 11 * 60 + 3600 * 8, // departure at 08:11
-                ArrivalStop = 2,
-                ArrivalTime = 20 * 60 + 3600 * 8, // arrival at 08:20
-                TripId = 0
-            });
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.TwoConnectionsOneTrip(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 11
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 20
+                }));
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -161,24 +167,27 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         [Test]
         public void TestTwoHopsOneTransferSuccessful()
         {
-            // build stub db.
-            var connectionsDb = new StubConnectionsDb();
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
-                ArrivalStop = 1,
-                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
-                TripId = 0
-            });
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 1,
-                DepartureTime = 15 * 60 + 3600 * 8, // departure at 08:15
-                ArrivalStop = 2,
-                ArrivalTime = 25 * 60 + 3600 * 8, // arrival at 08:25
-                TripId = 1
-            });
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.TwoConnectionsTwoTrips(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                }));
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -218,32 +227,37 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         [Test]
         public void TestTwoHopsOneTransferVersusOneHopSuccessful()
         {
-            // build stub db.
-            var connectionsDb = new StubConnectionsDb();
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 0 * 60 + 3600 * 8, // departure at 08:00
-                ArrivalStop = 1,
-                ArrivalTime = 10 * 60 + 3600 * 8, // arrival at 08:10
-                TripId = 0
-            });
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 0,
-                DepartureTime = 10 * 60 + 3600 * 8, // departure at 08:10
-                ArrivalStop = 2,
-                ArrivalTime = 25 * 60 + 3600 * 8, // arrival at 08:25
-                TripId = 2
-            });
-            connectionsDb.DepartureTimeConnections.Add(new Connection()
-            {
-                DepartureStop = 1,
-                DepartureTime = 15 * 60 + 3600 * 8, // departure at 08:15
-                ArrivalStop = 2,
-                ArrivalTime = 25 * 60 + 3600 * 8, // arrival at 08:25
-                TripId = 1
-            });
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.ThreeConnectionsThreeTripsTransferVSNoTranfer(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                }));
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);

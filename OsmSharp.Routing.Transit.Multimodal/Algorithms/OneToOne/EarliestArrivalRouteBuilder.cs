@@ -215,7 +215,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             { // vertex not found.
                 throw new Exception("No vertex found for sourcestop.");
             }
-            var sourceRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.SourceSearch, sourceStopVertex, false);
+            var sourceRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.SourceSearch, sourceStopVertex);
             var sourceRoute = sourceRouteBuilder.Build();
 
             // build route from targetstop back to target location.
@@ -224,7 +224,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             { // vertex not found.
                 throw new Exception("No vertex found for sourcestop.");
             }
-            var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.TargetSearch, targetStopVertex, true);
+            var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.TargetSearch, targetStopVertex);
             var targetRoute = targetRouteBuilder.Build();
 
             // TODO: update this in OsmSharp, concatenated routes with different profiles should result in a route with vehicle set to null.

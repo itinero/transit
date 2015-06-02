@@ -19,6 +19,7 @@
 using NUnit.Framework;
 using OsmSharp.Collections.Tags;
 using OsmSharp.Collections.Tags.Index;
+using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Osm.Interpreter;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
@@ -40,18 +41,11 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
         {
             // build a tiny test graph.
             var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
-            var tagsId = graph.TagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
             var vertex1 = graph.AddVertex(0.000000f, 0f);
             var vertex2 = graph.AddVertex(0.004484f, 0f);
-            var vertex3 = graph.AddVertex(0.010514f, 0f);
-            var vertex4 = graph.AddVertex(0.014998f, 0f);
             graph.AddEdge(vertex1, vertex2, new Edge()
-            {
-                Distance = 500,
-                Forward = true,
-                Tags = tagsId
-            });
-            graph.AddEdge(vertex3, vertex4, new Edge()
             {
                 Distance = 500,
                 Forward = true,
@@ -59,12 +53,12 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             });
 
             // execute routing algorithm.
-            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(), 
-                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(1), 1000, false);
+            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(),
+                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(vertex1), 1000, false);
             algorithm.Run();
 
             // build path.
-            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, 2);
+            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
             var path = routebuilder.BuildPath();
             Assert.IsNotNull(path);
             Assert.AreEqual(2, path.VertexId);
@@ -73,37 +67,218 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.IsNull(path.From.From);
 
             // build route.
-            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, 2);
+            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
             var route = routebuilder.Build();
-            //Assert.IsNotNull(path);
-            //Assert.AreEqual(2, path.VertexId);
-            //Assert.IsNotNull(path.From);
-            //Assert.AreEqual(1, path.From.VertexId);
-            //Assert.IsNull(path.From.From);
+            Assert.IsNotNull(route);
+            Assert.AreEqual(2, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(500, route.Segments[1].Distance);
+            Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
         }
 
-        //public void TestTwoHops()
-        //{
+        /// <summary>
+        /// Tests a two hop route.
+        /// </summary>
+        [Test]
+        public void TestTwoHops()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            var vertex3 = graph.AddVertex(0.010514f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+            graph.AddEdge(vertex2, vertex3, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
 
-        //    // build a tiny test graph.
-        //    var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
-        //    var tagsId = graph.TagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
-        //    var vertex1 = graph.AddVertex(0.000000f, 0f);
-        //    var vertex2 = graph.AddVertex(0.004484f, 0f);
-        //    var vertex3 = graph.AddVertex(0.010514f, 0f);
-        //    var vertex4 = graph.AddVertex(0.014998f, 0f);
-        //    graph.AddEdge(vertex1, vertex2, new Edge()
-        //    {
-        //        Distance = 500,
-        //        Forward = true,
-        //        Tags = tagsId
-        //    });
-        //    graph.AddEdge(vertex3, vertex4, new Edge()
-        //    {
-        //        Distance = 500,
-        //        Forward = true,
-        //        Tags = tagsId
-        //    });
-        //}
+            // execute routing algorithm.
+            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(),
+                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(vertex1), 1000, false);
+            algorithm.Run();
+
+            // build path.
+            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex3);
+            var path = routebuilder.BuildPath();
+            Assert.IsNotNull(path);
+            Assert.AreEqual(vertex3, path.VertexId);
+            Assert.IsNotNull(path.From);
+            Assert.AreEqual(vertex2, path.From.VertexId);
+            Assert.IsNotNull(path.From.From);
+            Assert.AreEqual(vertex1, path.From.From.VertexId);
+            Assert.IsNull(path.From.From.From);
+
+            // build route.
+            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex3);
+            var route = routebuilder.Build();
+            Assert.IsNotNull(route);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(500, route.Segments[1].Distance);
+            Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.AreEqual(1000, route.Segments[2].Distance);
+            Assert.AreEqual(1000 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+        }
+
+        /// <summary>
+        /// Tests a two hop route.
+        /// </summary>
+        [Test]
+        public void TestTwoHopsBackward()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            var vertex3 = graph.AddVertex(0.010514f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+            graph.AddEdge(vertex2, vertex3, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+
+            // execute routing algorithm.
+            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(),
+                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(vertex1), 1000, true);
+            algorithm.Run();
+
+            // build path.
+            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex3);
+            var path = routebuilder.BuildPath();
+            Assert.IsNotNull(path);
+            Assert.AreEqual(vertex1, path.VertexId);
+            Assert.IsNotNull(path.From);
+            Assert.AreEqual(vertex2, path.From.VertexId);
+            Assert.IsNotNull(path.From.From);
+            Assert.AreEqual(vertex3, path.From.From.VertexId);
+            Assert.IsNull(path.From.From.From);
+
+            // build route.
+            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex3);
+            var route = routebuilder.Build();
+            Assert.IsNotNull(route);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(500, route.Segments[1].Distance);
+            Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.AreEqual(1000, route.Segments[2].Distance);
+            Assert.AreEqual(1000 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+        }
+
+        /// <summary>
+        /// Tests a one hop with shape route.
+        /// </summary>
+        [Test]
+        public void TestOneHopWithShape()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            }, new Collections.Coordinates.Collections.CoordinateArrayCollection<GeoCoordinate>(
+                new GeoCoordinate[] { new GeoCoordinate(0.002242f, 0f) }));
+
+            // execute routing algorithm.
+            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(),
+                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(vertex1), 1000, false);
+            algorithm.Run();
+
+            // build path.
+            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
+            var path = routebuilder.BuildPath();
+            Assert.IsNotNull(path);
+            Assert.AreEqual(2, path.VertexId);
+            Assert.IsNotNull(path.From);
+            Assert.AreEqual(1, path.From.VertexId);
+            Assert.IsNull(path.From.From);
+
+            // build route.
+            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
+            var route = routebuilder.Build();
+            Assert.IsNotNull(route);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(250, route.Segments[1].Distance, 1);
+            Assert.AreEqual(250 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time, 1);
+            Assert.AreEqual(500, route.Segments[2].Distance);
+            Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+        }
+
+        /// <summary>
+        /// Tests a one hop with shape route.
+        /// </summary>
+        [Test]
+        public void TestOneHopWithShapeBackward()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            }, new Collections.Coordinates.Collections.CoordinateArrayCollection<GeoCoordinate>(
+                new GeoCoordinate[] { new GeoCoordinate(0.002242f, 0f) }));
+
+            // execute routing algorithm.
+            var algorithm = new OneToManyDykstra(graph, new OsmRoutingInterpreter(),
+                Vehicle.Car, new Routing.Graph.Routing.PathSegmentVisitList(vertex1), 1000, true);
+            algorithm.Run();
+
+            // build path.
+            var routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
+            var path = routebuilder.BuildPath();
+            Assert.IsNotNull(path);
+            Assert.AreEqual(1, path.VertexId);
+            Assert.IsNotNull(path.From);
+            Assert.AreEqual(2, path.From.VertexId);
+            Assert.IsNull(path.From.From);
+
+            // build route.
+            routebuilder = new OneToManyDykstraRouteBuilder(graph, algorithm, vertex2);
+            var route = routebuilder.Build();
+            Assert.IsNotNull(route);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(250, route.Segments[1].Distance, 1);
+            Assert.AreEqual(250 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time, 1);
+            Assert.AreEqual(500, route.Segments[2].Distance);
+            Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+        }
     }
 }

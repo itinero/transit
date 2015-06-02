@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Collections.Tags;
+using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
 using OsmSharp.Units.Speed;
@@ -32,26 +33,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
     {
         private readonly uint _target;
         private readonly RouterDataSource<Edge> _graph;
-        private readonly bool _backward;
 
         /// <summary>
         /// Creates a new one-to-many dykstra routing algorithm.
         /// </summary>
         public OneToManyDykstraRouteBuilder(RouterDataSource<Edge> graph, IDykstraAlgorithm algorithm, uint target)
-            : this(graph, algorithm, target, false)
-        {
-
-        }
-
-        /// <summary>
-        /// Creates a new one-to-many dykstra routing algorithm.
-        /// </summary>
-        public OneToManyDykstraRouteBuilder(RouterDataSource<Edge> graph, IDykstraAlgorithm algorithm, uint target, bool backward)
             : base(algorithm)
         {
             _graph = graph;
             _target = target;
-            _backward = backward;
         }
 
         /// <summary>
@@ -72,60 +62,119 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
             }
 
             var vehicle = this.Algorithm.Vehicle;
+            float previousLatitude = 0, previousLongitude = 0;
             var time = 0.0;
             var distance = 0.0;
+            TagsCollectionBase tags = null;
             var route = new Route();
             route.Vehicle = vehicle.UniqueName;
-            route.Segments = new RouteSegment[path.Count];
-            if (!_backward)
+            var segments = new List<RouteSegment>();
+            if (!this.Algorithm.Backward)
             { // build forward route.
                 for (var i = 0; i < path.Count; i++)
                 {
                     visit = path[i].Item2;
                     if (visit != null && visit.From != 0)
                     { // visit is there.
-                        var tags = _graph.TagsIndex.Get(visit.Edge.Tags);
-                        time = time + (visit.Edge.Distance / ((MeterPerSecond)vehicle.ProbableSpeed(tags)).Value);
+                        tags = _graph.TagsIndex.Get(visit.Edge.Tags);
+                        var edgeTime = (visit.Edge.Distance / ((MeterPerSecond)vehicle.ProbableSpeed(tags)).Value);
+                        var localDistance = 0.0;
+                        var localTime = 0.0;
+                        if (visit.Coordinates != null && visit.Coordinates.Count > 0)
+                        { // insert segment for each shape point.
+                            foreach (var coordinate in visit.Coordinates)
+                            {
+                                var localLatitude = coordinate.Latitude;
+                                var localLongitude = coordinate.Longitude;
+                                localDistance = localDistance + GeoCoordinate.DistanceEstimateInMeter(
+                                    localLatitude, localLongitude, previousLatitude, previousLongitude);
+                                localTime = localTime + (localDistance / visit.Edge.Distance) * edgeTime;
+
+                                segments.Add(new RouteSegment()
+                                {
+                                    Latitude = localLatitude,
+                                    Longitude = localLongitude,
+                                    Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
+                                    Time = localTime,
+                                    Distance = localDistance
+                                });
+
+                                previousLongitude = localLongitude;
+                                previousLatitude = localLatitude;
+                            }
+                        }
+                        time = time + edgeTime;
                         distance = distance + visit.Edge.Distance;
                     }
                     float latitude, longitude;
                     _graph.GetVertex(path[i].Item1, out latitude, out longitude);
-                    route.Segments[i] = new RouteSegment()
+                    segments.Add(new RouteSegment()
                     {
                         Latitude = latitude,
                         Longitude = longitude,
-                        Type = i > 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
+                        Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                         Time = time,
                         Distance = distance
-                    };
+                    });
+
+                    previousLatitude = latitude;
+                    previousLongitude = longitude;
                 }
             }
             else
             { // build backward route.
                 visit = default(DykstraVisit);
+                time = 0;
+                distance = 0;
                 for(var i = path.Count - 1; i >= 0; i--)
                 {
-                    TagsCollectionBase tags = null;
-                    if (visit != null)
-                    { // visit is there.
-                        tags = _graph.TagsIndex.Get(visit.Edge.Tags);
-                        time = time + (visit.Edge.Distance / ((MeterPerSecond)vehicle.ProbableSpeed(tags)).Value);
-                        distance = distance + visit.Edge.Distance;
-                    }
+                    visit = path[i].Item2;
                     float latitude, longitude;
                     _graph.GetVertex(path[i].Item1, out latitude, out longitude);
-                    route.Segments[path.Count - 1 - i] = new RouteSegment()
+                    segments.Add(new RouteSegment()
                     {
                         Latitude = latitude,
                         Longitude = longitude,
-                        Type = i > 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
+                        Type = i == path.Count - 1 ? RouteSegmentType.Start : RouteSegmentType.Along,
                         Time = time,
                         Distance = distance,
                         Tags = tags != null ? tags.ConvertFrom() : null
-                    };
-                    visit = path[i].Item2;
+                    });
+                    if (visit != null)
+                    { // visit is there.
+                        tags = _graph.TagsIndex.Get(visit.Edge.Tags);
+                        var edgeTime = (visit.Edge.Distance / ((MeterPerSecond)vehicle.ProbableSpeed(tags)).Value);
+                        var localDistance = 0.0;
+                        var localTime = 0.0;
+                        if (visit.Coordinates != null)
+                        {
+                            foreach (var coordinate in visit.Coordinates.Reverse())
+                            {
+                                var localLatitude = coordinate.Latitude;
+                                var localLongitude = coordinate.Longitude;
+                                localDistance = localDistance + GeoCoordinate.DistanceEstimateInMeter(
+                                    localLatitude, localLongitude, previousLatitude, previousLongitude);
+                                localTime = localTime + (localDistance / visit.Edge.Distance) * edgeTime;
+
+                                segments.Add(new RouteSegment()
+                                {
+                                    Latitude = localLatitude,
+                                    Longitude = localLongitude,
+                                    Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
+                                    Time = localTime,
+                                    Distance = localDistance
+                                });
+
+                                previousLongitude = localLongitude;
+                                previousLatitude = localLatitude;
+                            }
+                        }
+                        time = time + edgeTime;
+                        distance = distance + visit.Edge.Distance;
+                    }
                 }
             }
+            route.Segments = segments.ToArray();
             
             if (route.Segments.Length > 0)
             {
@@ -160,7 +209,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 currentPath = currentPath.From;
             }
 
-            if(_backward)
+            if(this.Algorithm.Backward)
             {
                 path = path.Reverse();
             }

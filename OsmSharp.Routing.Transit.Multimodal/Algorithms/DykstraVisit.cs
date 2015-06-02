@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Collections.Coordinates.Collections;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
 using System;
@@ -60,12 +61,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
         /// <param name="from">The from vertex id.</param>
         /// <param name="weight">The weight.</param>
         /// <param name="edge">The edge.</param>
-        public DykstraVisit(long vertex, long from, float weight, Edge edge)
+        /// <param name="coordinates">The coordinates</param>
+        public DykstraVisit(long vertex, long from, float weight, Edge edge, ICoordinateCollection coordinates)
         {
             this.Vertex = vertex;
             this.From = from;
             this.Weight = weight;
             this.Edge = edge;
+            this.Coordinates = coordinates;
         }
 
         /// <summary>
@@ -87,5 +90,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
         /// The edge.
         /// </summary>
         public Edge Edge;
+
+        /// <summary>
+        /// The coordinates.
+        /// </summary>
+        public ICoordinateCollection Coordinates;
     }
 }

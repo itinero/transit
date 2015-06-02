@@ -33,6 +33,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
         }
 
         /// <summary>
+        /// Gets the backward flag.
+        /// </summary>
+        bool Backward
+        {
+            get;
+        }
+
+        /// <summary>
         /// Returns true if the given vertex was visited and sets the visit output parameters with the actual visit data.
         /// </summary>
         /// <param name="vertex">The vertex that was visited.</param>

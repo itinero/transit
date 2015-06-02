@@ -181,7 +181,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
 
                             if (totalWeight < _sourceMax)
                             { // update the visit list.
-                                var neighbourVisit = new DykstraVisit(neighbour, current.Vertex, (float)totalWeight, edge.EdgeData);
+                                var neighbourVisit = new DykstraVisit(neighbour, current.Vertex, (float)totalWeight, edge.EdgeData, edge.Intermediates);
                                 heap.Push(neighbourVisit, neighbourVisit.Weight);
                             }
                         }
@@ -221,6 +221,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Gets the backward flag.
+        /// </summary>
+        public bool Backward
+        {
+            get
+            {
+                return _backward;
+            }
         }
 
         /// <summary>

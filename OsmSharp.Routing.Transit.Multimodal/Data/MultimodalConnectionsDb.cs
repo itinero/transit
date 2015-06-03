@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
@@ -34,7 +35,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <summary>
         /// Holds the maximum distance a station access point can be from the actual station node.
         /// </summary>
-        private static int MAX_ACCESS_POINT_DISTANCE = 100;
+        private static int MAX_ACCESS_POINT_DISTANCE = 200;
 
         /// <summary>
         /// Creates a new multimodal connnections db.
@@ -70,11 +71,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
             _stopVertices = new Dictionary<uint, int>();
             _verticesStop = new List<uint>();
 
+            var graph = this.Graph;
+
             // get all stops.
             var stops = this.ConnectionsDb.GetStops();
+            var transferTagsId = graph.TagsIndex.Add(
+                new TagsCollection(new Tag() { Key = "type", Value = "transfer" }, new Tag() { Key = "highway", Value = "residential" }));
 
             // create vertices for each of the stops.
-            var graph = this.Graph;
             var nonTransitVertexCount = graph.VertexCount;
             for(int stopId = 0; stopId < stops.Count; stopId++)
             {
@@ -120,7 +124,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                             if (arc.Vertex2 != stopVertex &&
                                 graph.GetVertex(arc.Vertex2, out latitude, out longitude))
                             { // check distance.
-                                double keyDistance = stopLocation.DistanceEstimate(
+                                var keyDistance = stopLocation.DistanceEstimate(
                                     new GeoCoordinate(latitude, longitude)).Value;
                                 closestVertices[arc.Vertex2] = keyDistance;
                             }
@@ -137,13 +141,13 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                             if (sorted.Current.Value < MAX_ACCESS_POINT_DISTANCE)
                             { // only attach stations that are relatively close.
                                 var closest = sorted.Current.Key;
-                                if (!graph.ContainsEdge(stopVertex, closest, new Edge()))
+                                if (!graph.ContainsEdge(stopVertex, closest, new Edge() { Tags = transferTagsId, Distance = (float)sorted.Current.Value, Forward = true }))
                                 {
-                                    graph.AddEdge(stopVertex, closest, new Edge(), null);
+                                    graph.AddEdge(stopVertex, closest, new Edge() { Tags = transferTagsId, Distance = (float)sorted.Current.Value, Forward = true }, null);
                                 }
-                                if (!graph.ContainsEdge(closest, stopVertex, new Edge()))
+                                if (!graph.ContainsEdge(closest, stopVertex, new Edge() { Tags = transferTagsId, Distance = (float)sorted.Current.Value, Forward = true }))
                                 {
-                                    graph.AddEdge(closest, stopVertex, new Edge(), null);
+                                    graph.AddEdge(closest, stopVertex, new Edge() { Tags = transferTagsId, Distance = (float)sorted.Current.Value, Forward = true }, null);
                                 }
                             }
                         }

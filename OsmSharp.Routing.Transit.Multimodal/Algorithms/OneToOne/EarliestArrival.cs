@@ -61,6 +61,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private readonly Func<int, DateTime, bool> _isTripPossible;
 
         /// <summary>
+        /// Holds the lazyness function.
+        /// </summary>
+        private readonly Func<float, float> _lazyness;
+
+        /// <summary>
         /// Holds the source search function.
         /// </summary>
         private readonly OneToManyDykstra _sourceSearch;
@@ -79,29 +84,31 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             {
                 return status1.Transfers.CompareTo(status2.Transfers);
             }
-            return status1.Seconds.CompareTo(status2.Seconds);
+            return (status1.Seconds + status1.Lazyness).CompareTo(status2.Seconds + status2.Lazyness);
         };
 
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        /// <param name="db">The connections db.</param>
-        /// <param name="interpreter">The routing interpreter.</param>
-        /// <param name="sourceVehicle">The vehicle at the source.</param>
-        /// <param name="source">The source location.</param>
-        /// <param name="sourceMax">The maximum seconds for the source vehicle to travel.</param>
-        /// <param name="targetVehicle">The vehicle at the target.</param>
-        /// <param name="target">The target location.</param>
-        /// <param name="targetMax">The maximum seconds for the target vehicle to travel.</param>
-        /// <param name="departureTime">The departure time.</param>
         public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
             OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
+            : this(db, departureTime, sourceSearch, targetSearch, (t) => { return 0; })
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of the earliest arrival algorithm.
+        /// </summary>
+        public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness)
         {
             _db = db;
             _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
             _targetSearch = targetSearch;
+            _lazyness = lazyness;
 
             _isTripPossible = db.ConnectionsDb.IsTripPossible;
         }
@@ -109,21 +116,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        /// <param name="db">The connections db.</param>
-        /// <param name="interpreter">The routing interpreter.</param>
-        /// <param name="sourceVehicle">The vehicle at the source.</param>
-        /// <param name="source">The source location.</param>
-        /// <param name="sourceMax">The maximum seconds for the source vehicle to travel.</param>
-        /// <param name="targetVehicle">The vehicle at the target.</param>
-        /// <param name="target">The target location.</param>
-        /// <param name="targetMax">The maximum seconds for the target vehicle to travel.</param>
-        /// <param name="departureTime">The departure time.</param>
-        /// <param name="minimumTransferTime">The minimum transfer time (default: 3 * 60s).</param>
-        /// <param name="maxmumSearchTime">The maximum search time (default: one day in seconds).</param>
-        /// <param name="isTripPossible">The function to check if a trip is possible (default: connections.IsTripPossible).</param>
-        /// <param name="compareStatuses">The function to compare a status at a stop of two distinct statuses are found at one stop (default: the lowest seconds, than the lowest transfer count).</param>
         public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, 
+            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness, 
             Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
         {
             _db = db;
@@ -131,6 +125,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
             _targetSearch = targetSearch;
+            _lazyness = lazyness;
 
             _isTripPossible = isTripPossible;
             _compareStatuses = compareStatuses;
@@ -182,9 +177,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
             _bestTargetStop = -1;
+            var bestWeight = double.MaxValue;
 
             // initialize stops status.
-            for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
+            for (var connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
                 var connection = _connections[connectionId];
                 var departureTime = connection.DepartureTime + (day * OsmSharp.Routing.Transit.Constants.OneDayInSeconds);
@@ -196,13 +192,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                var currentBestTime = 0;
                 if (_bestTargetStop > 0)
                 { // there was already a best time.
-                    currentBestTime = _backwardStopStatuses[_bestTargetStop].Seconds +
-                        _forwardStopStatuses[_bestTargetStop].Seconds;
-                    if (departureTime >= currentBestTime)
-                    { // the current time to target is never going to be better.
+                    if (departureTime >= bestWeight)
+                    { // the current time to target is never going to be better, even with lazyness.
                         break;
                     }
                 }
@@ -236,7 +229,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                                 TripId = connection.TripId,
                                 ConnectionId = connectionId,
                                 Transfers = (short)(status.Transfers + transfer),
-                                Seconds = connection.ArrivalTime
+                                Seconds = connection.ArrivalTime,
+                                Lazyness = status.Lazyness
                             };
 
                             StopStatus existingStatus;
@@ -257,10 +251,12 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                             if (_backwardStopStatuses.TryGetValue(connection.ArrivalStop, out backwardStatus))
                             { // this stop has been reached by the backward search, figure out if it represents a better connection.
                                 var arrivalStopStatus = _forwardStopStatuses[connection.ArrivalStop];
-                                var timeToTarget = backwardStatus.Seconds + arrivalStopStatus.Seconds;
+                                var weight = backwardStatus.Seconds + arrivalStopStatus.Seconds +
+                                    backwardStatus.Lazyness + arrivalStopStatus.Lazyness;
                                 if (_bestTargetStop < 0 ||
-                                    currentBestTime > timeToTarget)
+                                    bestWeight > weight)
                                 { // this current route is a better one.
+                                    bestWeight = weight;
                                     _bestTargetStop = connection.ArrivalStop;
                                     this.HasSucceeded = true;
                                 }
@@ -286,6 +282,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 {
                     ConnectionId = -1,
                     Seconds = (int)time + (int)(_departureTime - _departureTime.Date).TotalSeconds,
+                    Lazyness = (int)_lazyness(time),
                     Transfers = 0,
                     TripId = -1
                 });
@@ -308,6 +305,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 {
                     ConnectionId = -1,
                     Seconds = (int)time,
+                    Lazyness = (int)_lazyness(time),
                     Transfers = 0,
                     TripId = -1
                 });
@@ -340,6 +338,12 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             /// Gets or sets the number of seconds from source.
             /// </summary>
             public int Seconds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the lazyness factor penalty.
+            /// </summary>
+            /// <remarks>Use to force lazy pedestrians onto transit.</remarks>
+            public int Lazyness { get; set; }
         }
 
         /// <summary>

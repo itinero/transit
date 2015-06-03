@@ -40,6 +40,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
         private readonly Vehicle _targetVehicle;
         private readonly IRoutingInterpreter _routingInterpreter;
         private readonly DateTime _departureTime;
+        private readonly Func<float, float> _lazyness;
 
         /// <summary>
         /// Creates a new earliest arrival router.
@@ -54,6 +55,23 @@ namespace OsmSharp.Routing.Transit.Multimodal
             _sourceLocation = source;
             _targetVehicle = targetVehicle;
             _targetLocation = target;
+            _lazyness = null;
+        }
+
+        /// <summary>
+        /// Creates a new earliest arrival router.
+        /// </summary>
+        public EarliestArrivalRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
+            Vehicle sourceVehicle, GeoCoordinate source, Vehicle targetVehicle, GeoCoordinate target, Func<float, float> lazyness)
+        {
+            _db = db;
+            _routingInterpreter = routingInterpreter;
+            _departureTime = departureTime;
+            _sourceVehicle = sourceVehicle;
+            _sourceLocation = source;
+            _targetVehicle = targetVehicle;
+            _targetLocation = target;
+            _lazyness = lazyness;
         }
 
         private EarliestArrival _algorithm;
@@ -79,8 +97,17 @@ namespace OsmSharp.Routing.Transit.Multimodal
                 _db.Graph, _routingInterpreter, _sourceVehicle, target, 1000, true);
 
             // instantiate earliest arrival search and run.
-            _algorithm = new EarliestArrival(_db, _departureTime,
-                sourceSearch, targetSearch);
+            if (_lazyness == null)
+            {
+                _algorithm = new EarliestArrival(_db, _departureTime,
+                    sourceSearch, targetSearch);
+            }
+            else
+            {
+                _algorithm = new EarliestArrival(_db, _departureTime,
+                    sourceSearch, targetSearch, _lazyness);
+            }
+
             _algorithm.Run();
             if(_algorithm.HasSucceeded)
             { 

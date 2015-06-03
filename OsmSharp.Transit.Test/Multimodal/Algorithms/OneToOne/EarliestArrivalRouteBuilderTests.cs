@@ -161,8 +161,8 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
             var algorithm = new EarliestArrival(connectionsDb, departureTime,
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000, true),
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex4), 1000, false));
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000, false),
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex4), 1000, true));
             algorithm.Run();
 
             // run routebuilder.
@@ -221,8 +221,8 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
             var algorithm = new EarliestArrival(connectionsDb, departureTime,
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000, true),
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex4), 1000, false));
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000, false),
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex4), 1000, true));
             algorithm.Run();
 
             // run routebuilder.

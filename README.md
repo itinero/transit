@@ -3,7 +3,7 @@ OsmSharp.Transit
 
 **WARNING: This is not even remotely stable!**
 
-This projects enables applications based on OsmSharp to add multimodal routing capabilities for Public Transit related applications. It brings togehter the GTFS module and the OsmSharp routing core.
+This projects enables applications based on OsmSharp to add multimodal routing capabilities for Public Transit related applications. It brings together the GTFS module and the OsmSharp routing core.
 
 ![dependencies](doc/dependencies.png)
 

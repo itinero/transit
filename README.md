@@ -1,23 +1,11 @@
 OsmSharp.Transit
 ================
 
-This projects enables applications based on OsmSharp to add multimodal routing capabilities for Public Transit related applications. It brings togehter the GTFS module and the OsmSharp core.
+This projects enables applications based on OsmSharp to add multimodal routing capabilities for Public Transit related applications. It brings togehter the GTFS module and the OsmSharp routing core.
 
 ![dependencies](doc/dependencies.png)
 
-### A small sample
-
-```csharp
-// create a routing instance from an OSM PBF file.
-var router = MultiModalRouter.CreateFromPBF(@"path\to\somefile.osm.pbf.routing", new OsmRoutingInterpreter());
-
-// read a GTFS file.
-var reader = new GTFSReader<GTFSFeed>(false);
-var feed = reader.Read(new GTFSDirectorySource(new DirectoryInfo("path/to/feed/directory"))); 
-
-// add feed information to router.
-
-```
+**This is not even remotely stable!**
 
 ### Install
 

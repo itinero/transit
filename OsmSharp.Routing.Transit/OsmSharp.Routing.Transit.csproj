@@ -36,33 +36,28 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTFS.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.IO.dll</HintPath>
+      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.dll</HintPath>
+    <Reference Include="OsmSharp">
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.Osm, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Osm.dll</HintPath>
+    <Reference Include="OsmSharp.Osm">
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.Osm.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.Routing, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Routing.dll</HintPath>
+    <Reference Include="OsmSharp.Routing">
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.Routing.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.UI, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.UI.dll</HintPath>
+    <Reference Include="OsmSharp.UI">
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.UI.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.WinForms.UI, Version=4.3.0.1004, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.WinForms.UI.dll</HintPath>
+    <Reference Include="OsmSharp.WinForms.UI">
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.WinForms.UI.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>

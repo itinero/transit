@@ -34,28 +34,28 @@
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="GTFS, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GTFS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=0.0.4.81, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.0.0.4.81-beta\lib\GTFS.IO.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GTFS.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.IO.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp">
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.dll</HintPath>
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.Osm">
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Osm.dll</HintPath>
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.Osm.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.Routing">
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.Routing.dll</HintPath>
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.Routing.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.UI">
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.UI.dll</HintPath>
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.UI.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.WinForms.UI">
-      <HintPath>..\..\OsmSharp\Output\Debug\Any CPU\OsmSharp.WinForms.UI.dll</HintPath>
+      <HintPath>..\packages\OsmSharp.4.4.0.1031-beta\lib\net45\OsmSharp.WinForms.UI.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>

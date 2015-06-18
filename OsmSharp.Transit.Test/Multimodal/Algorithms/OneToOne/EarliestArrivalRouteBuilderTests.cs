@@ -70,6 +70,13 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run routebuilder.
             var routeBuilder = new EarliestArrivalRouteBuilder(algorithm, connectionsDb);
             var route = routeBuilder.Build();
+
+            Assert.IsNotNull(route);
+            Assert.IsNull(route.Vehicle);
+            Assert.AreEqual(3, route.Segments.Length);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
+            Assert.AreEqual("Transit.Wait", route.Segments[1].Vehicle);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Vehicle);
         }
 
         /// <summary>
@@ -114,6 +121,13 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             var routeBuilder = new EarliestArrivalRouteBuilder(algorithm, connectionsDb);
             var route = routeBuilder.Build();
 
+            Assert.IsNotNull(route);
+            Assert.IsNull(route.Vehicle);
+            Assert.AreEqual(4, route.Segments.Length);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
+            Assert.AreEqual("Transit.Wait", route.Segments[1].Vehicle);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Vehicle);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
         }
 
         /// <summary>
@@ -143,8 +157,6 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             var vertex2 = (uint)1;
             var vertex3 = (uint)2;
             var vertex4 = connectionsDb.Graph.AddVertex(0.014998f, 0f);
-            //connectionsDb.Graph.SetVertex(0, 0.004484f, 0f);
-            //connectionsDb.Graph.SetVertex(1, 0.010514f, 0f);
             connectionsDb.Graph.AddEdge(vertex1, vertex2, new Edge()
             {
                 Distance = 500,
@@ -168,6 +180,15 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run routebuilder.
             var routeBuilder = new EarliestArrivalRouteBuilder(algorithm, connectionsDb);
             var route = routeBuilder.Build();
+
+            Assert.IsNotNull(route);
+            Assert.IsNull(route.Vehicle);
+            Assert.AreEqual(5, route.Segments.Length);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[1].Vehicle);
+            Assert.AreEqual("Transit.Wait", route.Segments[2].Vehicle);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[4].Vehicle);
         }
 
         /// <summary>
@@ -228,6 +249,15 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run routebuilder.
             var routeBuilder = new EarliestArrivalRouteBuilder(algorithm, connectionsDb);
             var route = routeBuilder.Build();
+
+            Assert.IsNotNull(route);
+            Assert.IsNull(route.Vehicle);
+            Assert.AreEqual(5, route.Segments.Length);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[1].Vehicle);
+            Assert.AreEqual("Transit.Wait", route.Segments[2].Vehicle);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[4].Vehicle);
         }
     }
 }

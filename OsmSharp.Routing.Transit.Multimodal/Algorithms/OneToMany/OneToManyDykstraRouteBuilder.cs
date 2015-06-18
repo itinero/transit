@@ -97,7 +97,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                                     Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                                     Time = localTime,
                                     Distance = localDistance,
-                                    Tags = tags != null ? tags.ConvertFrom() : null
+                                    Tags = tags != null ? tags.ConvertFrom() : null,
+                                    Vehicle = vehicle.UniqueName
                                 });
 
                                 previousLongitude = localLongitude;
@@ -116,7 +117,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                         Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                         Time = time,
                         Distance = distance,
-                        Tags = tags != null ? tags.ConvertFrom() : null
+                        Tags = tags != null ? tags.ConvertFrom() : null,
+                        Vehicle = vehicle.UniqueName
                     });
 
                     previousLatitude = latitude;
@@ -140,7 +142,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                         Type = i == path.Count - 1 ? RouteSegmentType.Start : RouteSegmentType.Along,
                         Time = time,
                         Distance = distance,
-                        Tags = tags != null ? tags.ConvertFrom() : null
+                        Tags = tags != null ? tags.ConvertFrom() : null,
+                        Vehicle = vehicle.UniqueName
                     });
                     if (visit != null)
                     { // visit is there.
@@ -165,7 +168,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                                     Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                                     Time = localTime,
                                     Distance = localDistance,
-                                    Tags = tags != null ? tags.ConvertFrom() : null
+                                    Tags = tags != null ? tags.ConvertFrom() : null,
+                                    Vehicle = vehicle.UniqueName
                                 });
 
                                 previousLongitude = localLongitude;

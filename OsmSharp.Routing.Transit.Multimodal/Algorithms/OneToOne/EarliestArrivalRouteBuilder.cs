@@ -227,15 +227,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.TargetSearch, targetStopVertex);
             var targetRoute = targetRouteBuilder.Build();
 
-            // TODO: update this in OsmSharp, concatenated routes with different profiles should result in a route with vehicle set to null.
-            sourceRoute.Vehicle = null;
-            targetRoute.Vehicle = null;
-
             // concatenate routes.
             var route = transitRoute;
             if(sourceRoute.Segments.Length > 1)
             { // route is more than just the source-stop.
                 route = Route.Concatenate(sourceRoute, transitRoute);
+            }
+            else if(sourceRoute.Segments.Length == 1)
+            { // make sure the vehicle profile is set at the start point.
+                route.Segments[0].Vehicle = sourceRoute.Segments[0].Vehicle;
             }
             if(targetRoute.Segments.Length > 1)
             { // route is more than just the target-stop.

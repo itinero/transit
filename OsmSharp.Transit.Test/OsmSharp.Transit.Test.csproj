@@ -107,6 +107,7 @@
     <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyDykstraRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalTests.cs" />
+    <Compile Include="Multimodal\Instructions\Modal\ModalAggregatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealisticFeed.cs" />
     <Compile Include="RouterBaseTests.cs" />

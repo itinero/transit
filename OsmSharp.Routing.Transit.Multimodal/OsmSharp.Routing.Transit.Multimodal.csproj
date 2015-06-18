@@ -85,6 +85,7 @@
     <Compile Include="Data\MultimodalConnectionsDb.cs" />
     <Compile Include="Data\MultimodalConnectionsDbBase.cs" />
     <Compile Include="EarliestArrivalRouter.cs" />
+    <Compile Include="Instructions\Modal\ModalAggregator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouterBase.cs" />
   </ItemGroup>

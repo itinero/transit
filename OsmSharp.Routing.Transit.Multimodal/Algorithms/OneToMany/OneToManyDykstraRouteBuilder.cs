@@ -96,7 +96,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                                     Longitude = localLongitude,
                                     Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                                     Time = localTime,
-                                    Distance = localDistance
+                                    Distance = localDistance,
+                                    Tags = tags != null ? tags.ConvertFrom() : null
                                 });
 
                                 previousLongitude = localLongitude;
@@ -114,7 +115,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                         Longitude = longitude,
                         Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                         Time = time,
-                        Distance = distance
+                        Distance = distance,
+                        Tags = tags != null ? tags.ConvertFrom() : null
                     });
 
                     previousLatitude = latitude;
@@ -126,7 +128,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 visit = default(DykstraVisit);
                 time = 0;
                 distance = 0;
-                for(var i = path.Count - 1; i >= 0; i--)
+                for (var i = path.Count - 1; i >= 0; i--)
                 {
                     visit = path[i].Item2;
                     float latitude, longitude;
@@ -162,7 +164,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                                     Longitude = localLongitude,
                                     Type = segments.Count == 0 ? RouteSegmentType.Start : RouteSegmentType.Along,
                                     Time = localTime,
-                                    Distance = localDistance
+                                    Distance = localDistance,
+                                    Tags = tags != null ? tags.ConvertFrom() : null
                                 });
 
                                 previousLongitude = localLongitude;
@@ -175,7 +178,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 }
             }
             route.Segments = segments.ToArray();
-            
+
             if (route.Segments.Length > 0)
             {
                 route.Segments[0].Type = RouteSegmentType.Start;
@@ -209,7 +212,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 currentPath = currentPath.From;
             }
 
-            if(this.Algorithm.Backward)
+            if (this.Algorithm.Backward)
             {
                 path = path.Reverse();
             }

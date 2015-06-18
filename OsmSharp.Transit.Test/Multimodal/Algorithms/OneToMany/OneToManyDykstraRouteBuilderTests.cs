@@ -75,6 +75,10 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, route.Segments[0].Time);
             Assert.AreEqual(500, route.Segments[1].Distance);
             Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
         }
 
         /// <summary>
@@ -128,8 +132,16 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, route.Segments[0].Time);
             Assert.AreEqual(500, route.Segments[1].Distance);
             Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
             Assert.AreEqual(1000, route.Segments[2].Distance);
             Assert.AreEqual(1000 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+            Assert.IsNotNull(route.Segments[2].Tags);
+            Assert.AreEqual(1, route.Segments[2].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[2].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[2].Tags[0].Value);
         }
 
         /// <summary>
@@ -183,8 +195,16 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, route.Segments[0].Time);
             Assert.AreEqual(500, route.Segments[1].Distance);
             Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
             Assert.AreEqual(1000, route.Segments[2].Distance);
             Assert.AreEqual(1000 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+            Assert.IsNotNull(route.Segments[2].Tags);
+            Assert.AreEqual(1, route.Segments[2].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[2].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[2].Tags[0].Value);
         }
 
         /// <summary>
@@ -230,8 +250,16 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, route.Segments[0].Time);
             Assert.AreEqual(250, route.Segments[1].Distance, 1);
             Assert.AreEqual(250 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time, 1);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
             Assert.AreEqual(500, route.Segments[2].Distance);
             Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+            Assert.IsNotNull(route.Segments[2].Tags);
+            Assert.AreEqual(1, route.Segments[2].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[2].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[2].Tags[0].Value);
         }
 
         /// <summary>
@@ -277,8 +305,16 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToMany
             Assert.AreEqual(0, route.Segments[0].Time);
             Assert.AreEqual(250, route.Segments[1].Distance, 1);
             Assert.AreEqual(250 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time, 1);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
             Assert.AreEqual(500, route.Segments[2].Distance);
             Assert.AreEqual(500 / Vehicle.Car.ProbableSpeed(tags).Value * 3.6, route.Segments[2].Time);
+            Assert.IsNotNull(route.Segments[2].Tags);
+            Assert.AreEqual(1, route.Segments[2].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[2].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[2].Tags[0].Value);
         }
     }
 }

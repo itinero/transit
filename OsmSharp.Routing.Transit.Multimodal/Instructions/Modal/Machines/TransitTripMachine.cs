@@ -20,6 +20,7 @@ using OsmSharp.Math.Automata;
 using OsmSharp.Math.StateMachines;
 using OsmSharp.Routing.Instructions.ArcAggregation.Output;
 using OsmSharp.Routing.Instructions.MicroPlanning;
+using System;
 using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
@@ -59,7 +60,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             states[2].Final = true;
             // 0: NoTrip
 
-            // Any (Point)
+            // NextTripDetected (Point)
             FiniteStateMachineTransition<MicroPlannerMessage>.Generate(states, 0, 1, typeof(MicroPlannerMessagePoint),
                 new FiniteStateMachineTransitionCondition<MicroPlannerMessage>.FiniteStateMachineTransitionConditionDelegate(NextTripDetected),
                 new FiniteStateMachineTransition<MicroPlannerMessage>.TransitionFinishedDelegate(this.OnTripDetected));
@@ -176,7 +177,20 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             if (test is MicroPlannerMessagePoint)
             { // and arc.
                 var nextArc = (test as MicroPlannerMessagePoint).Point.Next;
-                return TransitTripMachine.TripDetected(this, nextArc);
+                if(string.IsNullOrWhiteSpace(_tripId))
+                {
+                    throw new Exception("Cannot check for same trip without a previously detected trip.");
+                }
+                if (nextArc != null &&
+                    nextArc.Tags != null)
+                { // this arc is a transit tag.
+                    string trip_id;
+                    if (nextArc.Tags.TryGetValue("transit.trip.id", out trip_id))
+                    { // trips are equal.
+                        return trip_id != null && trip_id.Equals(_tripId);
+                    }
+                }
+                return false;
             }
             return false;
         }

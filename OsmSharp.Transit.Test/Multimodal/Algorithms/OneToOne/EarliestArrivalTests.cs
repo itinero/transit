@@ -141,7 +141,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
                     new TimeOfDay()
                     {
                         Hours = 8,
-                        Minutes = 11
+                        Minutes = 10
                     },
                     new TimeOfDay()
                     {

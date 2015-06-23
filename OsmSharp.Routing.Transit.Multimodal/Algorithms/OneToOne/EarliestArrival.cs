@@ -213,9 +213,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                         transfer = 0;
                     }
 
-                    if (status.Seconds < departureTime - transferTime)
+                    if (status.Seconds <= departureTime - transferTime)
                     { // a departure here is possible if the trip is possible.
-                        if (!tripPossibilities.TryGetValue(connection.TripId, out tripPossible))
+                        if (!tripPossible && !tripPossibilities.TryGetValue(connection.TripId, out tripPossible))
                         { // trip was not checked yet.
                             tripPossible = _isTripPossible.Invoke(connection.TripId, date);
                             tripPossibilities.Add(connection.TripId, tripPossible);

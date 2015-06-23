@@ -124,6 +124,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 // get the next ...->connection->stop->... pair.
                 var connection = connections[idx - 1];
+                if(connection.HasValue && 
+                    connection.Value.TripId == Constants.PseudoConnectionTripId)
+                { // ignore this connection.
+                    connection = null;
+                }
                 feedStop = _db.ConnectionsDb.GetGTFSStop(stops[idx].Item1);
                 var stopLocation = new GeoCoordinate(feedStop.Latitude, feedStop.Longitude);
                 distance = distance + previousStopLocation.DistanceReal(stopLocation).Value;

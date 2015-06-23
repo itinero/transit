@@ -91,10 +91,10 @@ namespace OsmSharp.Routing.Transit.Multimodal
 
             // instantiate source search.
             var sourceSearch = new OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra(
-                _db.Graph, _routingInterpreter, _sourceVehicle, source, 1000, false);
+                _db.Graph, _routingInterpreter, _sourceVehicle, source, 3600, false);
             // instantiate target search.
             var targetSearch = new OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra(
-                _db.Graph, _routingInterpreter, _sourceVehicle, target, 1000, true);
+                _db.Graph, _routingInterpreter, _sourceVehicle, target, 3600, true);
 
             // instantiate earliest arrival search and run.
             if (_lazyness == null)

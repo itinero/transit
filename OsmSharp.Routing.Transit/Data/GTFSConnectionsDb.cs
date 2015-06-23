@@ -30,7 +30,7 @@ namespace OsmSharp.Routing.Transit.Data
     public class GTFSConnectionsDb
     {
         private readonly IGTFSFeed _feed; // the source GTFS-feed.
-        private readonly int MAX_TRANSFER_DISTANCE = 100; // maximum transfer distance in meter.
+        private readonly int MAX_TRANSFER_DISTANCE = 50; // maximum transfer distance in meter.
         private readonly int MIN_TRANSFER_TIME = 3 * 60; // maximum transfer time in seconds.
 
         /// <summary>

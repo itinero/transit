@@ -30,49 +30,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// </summary>
     public class EarliestArrival : RoutingAlgorithmBase
     {
-        /// <summary>
-        /// Holds the multimodal connections db.
-        /// </summary>
         private readonly MultimodalConnectionsDbBase<Edge> _db;
-
-        /// <summary>
-        /// Holds the connections view.
-        /// </summary>
         private readonly ConnectionsView _connections;
-
-        /// <summary>
-        /// Holds the departure time.
-        /// </summary>
         private readonly DateTime _departureTime;
-
-        /// <summary>
-        /// Holds the maximum time in seconds to search from the given departure time before failing.
-        /// </summary>
         private readonly int _maximumSearchTime = OsmSharp.Routing.Transit.Constants.OneDayInSeconds;
-
-        /// <summary>
-        /// Holds the minimum time it takes to tranfer from one trip to another at the same stop.
-        /// </summary>
         private readonly int _minimumTransferTime = 3 * 60;
-
-        /// <summary>
-        /// Holds the function to determine if a trip is possible or not on a given date.
-        /// </summary>
         private readonly Func<int, DateTime, bool> _isTripPossible;
-
-        /// <summary>
-        /// Holds the lazyness function.
-        /// </summary>
         private readonly Func<float, float> _lazyness;
-
-        /// <summary>
-        /// Holds the source search function.
-        /// </summary>
         private readonly OneToManyDykstra _sourceSearch;
-
-        /// <summary>
-        /// Holds the target search function.
-        /// </summary>
         private readonly OneToManyDykstra _targetSearch;
 
         /// <summary>

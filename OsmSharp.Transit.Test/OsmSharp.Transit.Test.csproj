@@ -124,6 +124,8 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="test_network.osm" />
     <EmbeddedResource Include="regression_test_1_network.osm" />
+    <None Include="test_data\routes\regression1.md" />
+    <EmbeddedResource Include="test_data\routes\regression1.route" />
     <None Include="test_network_rail.osm" />
     <EmbeddedResource Include="test_network_realistic.osm" />
   </ItemGroup>

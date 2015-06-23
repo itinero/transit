@@ -108,7 +108,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             if (arc != null &&
                 arc.Tags != null)
             { // there are tags.
-                return arc.Tags.ContainsKeyValue("type", "intermodal");
+                return arc.Vehicle == "Transit.Wait";
             }
             return false;
         }

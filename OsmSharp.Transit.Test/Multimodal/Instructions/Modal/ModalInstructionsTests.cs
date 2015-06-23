@@ -22,6 +22,8 @@ using OsmSharp.Routing.Instructions;
 using OsmSharp.Routing.Osm.Interpreter;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Instructions.Modal;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace OsmSharp.Transit.Test.Multimodal.Instructions.Modal
 {
@@ -537,6 +539,27 @@ namespace OsmSharp.Transit.Test.Multimodal.Instructions.Modal
                 (double)instructions[2].MetaData["osmsharp.instruction.total_distance"] == 600);
             Assert.IsTrue(instructions[2].MetaData.ContainsKey("osmsharp.instruction.vehicle") &&
                 instructions[2].MetaData["osmsharp.instruction.vehicle"].Equals("Car"));
+        }
+
+        /// <summary>
+        /// Tests a route that used make the micro planner crash.
+        /// </summary>
+        [Test]
+        public void Test6Regression1()
+        {
+            var xmlSerializer = new XmlSerializer(typeof(Route));
+            var route = xmlSerializer.Deserialize(
+                Assembly.GetExecutingAssembly().GetManifestResourceStream("OsmSharp.Transit.Test.test_data.routes.regression1.route")) as Route;
+
+            // generate instructions
+            var aggregator = new ModalAggregator(new OsmRoutingInterpreter());
+            var microPlanner = new ModalMicroPlanner(new ModalLanguageGenerator(), new OsmRoutingInterpreter());
+            var aggregated = aggregator.Aggregate(route);
+            var instructions = InstructionGenerator.Generate(microPlanner, route, aggregated);
+
+            // it's enough this works without exceptions, just check for a result.
+            Assert.IsNotNull(instructions);
+            Assert.IsTrue(instructions.Count > 0);
         }
     }
 }

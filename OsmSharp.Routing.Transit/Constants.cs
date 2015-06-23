@@ -27,5 +27,20 @@ namespace OsmSharp.Routing.Transit
         /// Holds the amount of seconds in a day.
         /// </summary>
         public const int OneDayInSeconds = 24 * 60 * 60;
+
+        /// <summary>
+        /// Holds the trip id a connection gets when it's just a pseudo-connection.
+        /// </summary>
+        public const int PseudoConnectionTripId = -1;
+
+        /// <summary>
+        /// Holds the trip id in case there is no information available.
+        /// </summary>
+        public const int NoTripId = -2;
+
+        /// <summary>
+        /// Holds the connection id to set if there is no information available.
+        /// </summary>
+        public const int NoConnectionId = -1;
     }
 }

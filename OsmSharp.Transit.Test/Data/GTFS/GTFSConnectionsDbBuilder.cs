@@ -49,11 +49,15 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "0"
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "1"
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
             });
             feed.StopTimes.Add(new StopTime()
             {
@@ -96,15 +100,21 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "0"
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "1"
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "2"
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
             });
             feed.StopTimes.Add(new StopTime()
             {
@@ -164,15 +174,21 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "0"
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "1"
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "2"
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
             });
             feed.StopTimes.Add(new StopTime()
             {
@@ -201,6 +217,200 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 StopId = "2",
                 TripId = "1",
                 DepartureTime = arrivalTime2
+            });
+            return feed;
+        }
+
+        /// <summary>
+        /// Builds a GTFS feed with two connections on two different trips, sharing no transfer stop but stops are close together geographically.
+        /// </summary>
+        /// <returns></returns>
+        public static IGTFSFeed TwoConnectionsTwoTripsCloseStops(TimeOfDay departureTime1, TimeOfDay arrivalTime1,
+            TimeOfDay departureTime2, TimeOfDay arrivalTime2)
+        {
+            var feed = new GTFSFeed();
+            feed.Agencies.Add(new Agency()
+            {
+                Id = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "0",
+                AgencyId = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "1",
+                AgencyId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "0",
+                RouteId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "1",
+                RouteId = "1"
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "10",
+                Longitude = 1.0001,
+                Latitude = 1.0001 // approx 15m.
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime1,
+                StopId = "0",
+                TripId = "0",
+                DepartureTime = departureTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime1,
+                StopId = "1",
+                TripId = "0",
+                DepartureTime = arrivalTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime2,
+                StopId = "10",
+                TripId = "1",
+                DepartureTime = departureTime2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime2,
+                StopId = "2",
+                TripId = "1",
+                DepartureTime = arrivalTime2
+            });
+            return feed;
+        }
+
+        /// <summary>
+        /// Builds a GTFS feed with two connections on two different trips, sharing no transfer stop but stops are close together geographically. 
+        /// The 'middle' stop has two outgoing connections with one 5 minutes later.
+        /// </summary>
+        /// <returns></returns>
+        public static IGTFSFeed ThreeConnectionsThreeTripsCloseStops(TimeOfDay departureTime1, TimeOfDay arrivalTime1,
+            TimeOfDay departureTime2, TimeOfDay arrivalTime2)
+        {
+            var feed = new GTFSFeed();
+            feed.Agencies.Add(new Agency()
+            {
+                Id = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "0",
+                AgencyId = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "1",
+                AgencyId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "0",
+                RouteId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "1",
+                RouteId = "1"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "2",
+                RouteId = "2"
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "10",
+                Longitude = 1.0001,
+                Latitude = 1.0001 // approx 15m.
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime1,
+                StopId = "0",
+                TripId = "0",
+                DepartureTime = departureTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime1,
+                StopId = "1",
+                TripId = "0",
+                DepartureTime = arrivalTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime2,
+                StopId = "10",
+                TripId = "1",
+                DepartureTime = departureTime2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime2,
+                StopId = "2",
+                TripId = "1",
+                DepartureTime = arrivalTime2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = TimeOfDay.FromTotalSeconds(departureTime2.TotalSeconds + 60 * 5),
+                StopId = "10",
+                TripId = "2",
+                DepartureTime = TimeOfDay.FromTotalSeconds(departureTime2.TotalSeconds + 60 * 5)
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = TimeOfDay.FromTotalSeconds(arrivalTime2.TotalSeconds + 60 * 5),
+                StopId = "2",
+                TripId = "2",
+                DepartureTime = TimeOfDay.FromTotalSeconds(arrivalTime2.TotalSeconds + 60 * 5)
             });
             return feed;
         }
@@ -249,15 +459,21 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "0"
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "1"
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
             });
             feed.Stops.Add(new Stop()
             {
-                Id = "2"
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
             });
             feed.StopTimes.Add(new StopTime()
             {

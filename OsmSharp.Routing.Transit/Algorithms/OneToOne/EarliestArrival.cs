@@ -163,8 +163,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             _stopStatuses = new Dictionary<int, StopStatus>();
             _stopStatuses.Add(_sourceStop, new StopStatus()
             {
-                TripId = -1,
-                ConnectionId = -1,
+                TripId = Constants.NoTripId,
+                ConnectionId = Constants.NoConnectionId,
                 Seconds = startTime,
                 Transfers = 0
             });
@@ -193,11 +193,17 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                     var transferTime = _minimumTransferTime;
                     var tripPossible = false;
                     var transfer = 1;
-                    if (status.TripId == connection.TripId)
+                    if (status.TripId == connection.TripId || 
+                        (status.TripId != Constants.PseudoConnectionTripId && connection.TripId == Constants.PseudoConnectionTripId) ||
+                        (status.TripId == Constants.PseudoConnectionTripId && connection.TripId != Constants.PseudoConnectionTripId))
                     { // the same trip.
                         transferTime = 0;
                         tripPossible = true; // trip is possible because it is already used.
                         transfer = 0;
+                        if(connection.TripId == Constants.PseudoConnectionTripId)
+                        { // consider this a transfer because the connection itself is a transfer.
+                            transfer = 1;
+                        }
                     }
 
                     if (status.Seconds <= departureTime - transferTime)

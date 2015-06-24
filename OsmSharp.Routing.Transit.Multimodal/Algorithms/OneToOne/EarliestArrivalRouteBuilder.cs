@@ -69,7 +69,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     // insert the stop first with the departuretime of this connection.
                     var statusWithTrip = new EarliestArrival.StopStatus()
                     {
-                        ConnectionId = -1,
+                        ConnectionId = Constants.NoConnectionId,
                         Seconds = connection.DepartureTime,
                         Transfers = 1,
                         TripId = connection.TripId

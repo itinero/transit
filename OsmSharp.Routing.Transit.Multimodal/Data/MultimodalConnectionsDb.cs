@@ -35,7 +35,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <summary>
         /// Holds the maximum distance a station access point can be from the actual station node.
         /// </summary>
-        private static int MAX_ACCESS_POINT_DISTANCE = 200;
+        private static int MAX_ACCESS_POINT_DISTANCE = 50;
 
         /// <summary>
         /// Creates a new multimodal connnections db.
@@ -132,7 +132,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                     }
 
                     // sort vertices.
-                    int max = 2;
+                    var max = 2;
                     var sorted = closestVertices.OrderBy(x => x.Value).GetEnumerator();
                     for (int idx = 0; idx < max; idx++)
                     {
@@ -179,7 +179,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <returns></returns>
         public override bool TryGetVertex(int stopId, out uint vertex)
         {
-            if(stopId < _verticesStop.Count)
+            if(stopId >= 0 && stopId < _verticesStop.Count)
             {
                 vertex =  _verticesStop[stopId];
                 return true;

@@ -205,6 +205,7 @@ namespace OsmSharp.Routing.Transit.Data
             StopTime previousStopTime = null;
             var arrivalTimes = new Dictionary<int, List<int>>();
             var departureTimes = new Dictionary<int, List<int>>();
+            var tripIdx = 0;
             foreach (var stopTime in _feed.StopTimes)
             {
                 // get target stop id and arrival time.
@@ -246,8 +247,14 @@ namespace OsmSharp.Routing.Transit.Data
                         ArrivalTime = arrival,
                         DepartureStop = departureStop,
                         DepartureTime = departure,
-                        TripId = trip
+                        TripId = trip,
+                        TripIdx = tripIdx
                     });
+                    tripIdx++;
+                }
+                else
+                { // reset trip idx.
+                    tripIdx = 0;
                 }
                 previousStopTime = stopTime;
             }
@@ -255,7 +262,7 @@ namespace OsmSharp.Routing.Transit.Data
             // build transfers db.
             foreach(var sourceKeyValue in stopIds)
             {
-                var sourceStop = _feed.Stops.Get(sourceKeyValue.Key);
+                var sourceStop = _feed.Stops.Get(sourceKeyValue.Value);
                 var sourceLocation = new GeoCoordinate(sourceStop.Latitude, sourceStop.Longitude);
                 foreach(var targetKeyValue in stopIds)
                 {
@@ -264,7 +271,7 @@ namespace OsmSharp.Routing.Transit.Data
                         continue;
                     }
 
-                    var targetStop = _feed.Stops.Get(targetKeyValue.Key);
+                    var targetStop = _feed.Stops.Get(targetKeyValue.Value);
                     var targetLocation = new GeoCoordinate(targetStop.Latitude, targetStop.Longitude);
                     if(targetLocation.DistanceEstimate(sourceLocation).Value < MAX_TRANSFER_DISTANCE)
                     { // ok, between these two stops we should create transfers.
@@ -321,6 +328,11 @@ namespace OsmSharp.Routing.Transit.Data
             // sort connections.
             connections.Sort((connection1, connection2) => 
                 {
+                    if(connection1.DepartureTime == connection2.DepartureTime && 
+                        connection1.TripId == connection2.TripId)
+                    {
+                        return connection1.TripIdx.CompareTo(connection2.TripIdx);
+                    }
                     return connection1.DepartureTime.CompareTo(connection2.DepartureTime);
                 });
             _departureTimeView = new ConnectionsListView(connections);

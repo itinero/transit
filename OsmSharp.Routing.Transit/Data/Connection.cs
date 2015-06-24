@@ -47,5 +47,21 @@ namespace OsmSharp.Routing.Transit.Data
         /// The trip.
         /// </summary>
         public int TripId { get; set; }
+
+        /// <summary>
+        /// The trip index, to sort connections with an identical arrival/departure time. 
+        /// </summary>
+        public int TripIdx { get; set; }
+
+        /// <summary>
+        /// Returns a string representing this connection.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Format("{0}@{1} -> {2}@{3} on {4}",
+                this.DepartureStop, this.DepartureTime,
+                this.ArrivalStop, this.ArrivalTime, this.TripId);
+        }
     }
 }

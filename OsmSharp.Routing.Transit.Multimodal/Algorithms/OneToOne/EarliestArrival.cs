@@ -49,7 +49,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             {
                 return status1.Transfers.CompareTo(status2.Transfers);
             }
-            return (status1.Seconds + status1.Lazyness).CompareTo(status2.Seconds + status2.Lazyness);
+            return (status1.Seconds + status1.Lazyness).CompareTo(
+                status2.Seconds + status2.Lazyness);
         };
 
         /// <summary>
@@ -171,11 +172,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     var transferTime = _minimumTransferTime;
                     var tripPossible = false;
                     var transfer = 1;
-                    if (status.TripId == connection.TripId)
+                    if (status.TripId == connection.TripId ||
+                        (status.TripId != Constants.PseudoConnectionTripId && connection.TripId == Constants.PseudoConnectionTripId) ||
+                        (status.TripId == Constants.PseudoConnectionTripId && connection.TripId != Constants.PseudoConnectionTripId))
                     { // the same trip.
                         transferTime = 0;
                         tripPossible = true; // trip is possible because it is already used.
                         transfer = 0;
+                        if (connection.TripId == Constants.PseudoConnectionTripId)
+                        { // consider this a transfer because the connection itself is a transfer.
+                            transfer = 1;
+                        }
                     }
 
                     if (status.Seconds <= departureTime - transferTime)
@@ -245,11 +252,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             { // the vertex is a stop, mark it as reached.
                 _forwardStopStatuses.Add(stopId, new StopStatus()
                 {
-                    ConnectionId = -1,
+                    ConnectionId = Constants.NoConnectionId,
                     Seconds = (int)time + (int)(_departureTime - _departureTime.Date).TotalSeconds,
                     Lazyness = (int)_lazyness(time),
                     Transfers = 0,
-                    TripId = -1
+                    TripId = Constants.NoTripId
                 });
             }
             return true;
@@ -268,11 +275,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             { // the vertex is a stop, mark it as reached.
                 _backwardStopStatuses.Add(stopId, new StopStatus()
                 {
-                    ConnectionId = -1,
+                    ConnectionId = Constants.NoConnectionId,
                     Seconds = (int)time,
                     Lazyness = (int)_lazyness(time),
                     Transfers = 0,
-                    TripId = -1
+                    TripId = Constants.NoTripId
                 });
             }
             return true;
@@ -309,6 +316,16 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             /// </summary>
             /// <remarks>Use to force lazy pedestrians onto transit.</remarks>
             public int Lazyness { get; set; }
+
+            /// <summary>
+            /// Returns a description of this status.
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return string.Format("{4} -> {0}s@{1} #{2} ({3})", this.Seconds, this.TripId, this.Transfers, this.Lazyness,
+                    this.ConnectionId);
+            }
         }
 
         /// <summary>
@@ -393,10 +410,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             { // status not found.
                 return new StopStatus()
                 {
-                    ConnectionId = -1,
+                    ConnectionId = Constants.NoConnectionId,
                     Seconds = -1,
                     Transfers = -1,
-                    TripId = -1
+                    TripId = Constants.NoTripId
                 };
             }
             return status;

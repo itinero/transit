@@ -244,6 +244,28 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
                 vehicle = route.Segments[lastPoint.SegmentIdx].Vehicle;
             }
 
+            // get time-of-day for first and last segment.
+            int? startTimeOfDay = null;
+            if(route.Segments[firstPoint.SegmentIdx].Tags != null)
+            { // there are tags, search them for the time of day.
+                var timeOfDayTag = route.Segments[firstPoint.SegmentIdx].Tags.GetValueFirst("transit.timeofday");
+                int parsedInt;
+                if(int.TryParse(timeOfDayTag, out parsedInt))
+                { // parse time of day worked
+                    startTimeOfDay = parsedInt;
+                }
+            }
+            int? endTimeOfDay = null;
+            if (route.Segments[lastPoint.SegmentIdx].Tags != null)
+            { // there are tags, search them for the time of day.
+                var timeOfDayTag = route.Segments[lastPoint.SegmentIdx].Tags.GetValueFirst("transit.timeofday");
+                int parsedInt;
+                if (int.TryParse(timeOfDayTag, out parsedInt))
+                { // parse time of day worked
+                    endTimeOfDay = parsedInt;
+                }
+            }
+
             // generate one instruction for the entire trip.
             var metaData = this.GetConstantTagsForCurrentMessages().ToStringObjectDictionary();
             metaData["osmsharp.instruction.transit"] = "yes";
@@ -253,6 +275,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             metaData["osmsharp.instruction.time"] = route.Segments[lastPoint.SegmentIdx].Time;
             metaData["osmsharp.instruction.total_distance"] = route.Segments[lastPoint.SegmentIdx].Distance;
             metaData["osmsharp.instruction.vehicle"] = vehicle;
+            if(startTimeOfDay.HasValue)
+            {
+                metaData["osmsharp.instruction.starttimeofday"] = startTimeOfDay.Value;
+            }
+            if(endTimeOfDay.HasValue)
+            {
+                metaData["osmsharp.instruction.endtimeofday"] = endTimeOfDay.Value;
+            }
             this.Planner.SentencePlanner.GenerateInstruction(metaData, firstPoint.SegmentIdx, lastPoint.SegmentIdx, this.GetBoxForCurrentMessages(), pois);
 
         }

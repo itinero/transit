@@ -328,10 +328,13 @@ namespace OsmSharp.Routing.Transit.Data
             // sort connections.
             connections.Sort((connection1, connection2) => 
                 {
-                    if(connection1.DepartureTime == connection2.DepartureTime && 
-                        connection1.TripId == connection2.TripId)
+                    if(connection1.DepartureTime == connection2.DepartureTime)
                     {
-                        return connection1.TripIdx.CompareTo(connection2.TripIdx);
+                        if (connection1.TripId == connection2.TripId)
+                        {
+                            return connection1.TripIdx.CompareTo(connection2.TripIdx);
+                        }
+                        return connection1.TripId.CompareTo(connection2.TripId);
                     }
                     return connection1.DepartureTime.CompareTo(connection2.DepartureTime);
                 });
@@ -345,9 +348,14 @@ namespace OsmSharp.Routing.Transit.Data
         private void BuildArrivalTimeView(List<Connection> connections)
         {
             // sort connections.
-            connections.Sort((connection1, connection2) => 
+            connections.Sort((connection1, connection2) =>
+            {
+                if (connection1.ArrivalTime == connection2.ArrivalTime &&
+                    connection1.TripId == connection2.TripId)
                 {
-                    return connection1.ArrivalTime.CompareTo(connection2.DepartureTime);
+                    return connection1.TripIdx.CompareTo(connection2.TripIdx);
+                }
+                return connection1.ArrivalTime.CompareTo(connection2.ArrivalTime);
                 });
             _arrivalTimeView = new ConnectionsListView(connections);
         }

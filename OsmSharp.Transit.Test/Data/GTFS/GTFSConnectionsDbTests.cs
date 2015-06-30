@@ -399,6 +399,200 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         }
 
         /// <summary>
+        /// Tests the db with two connections but with identical departure times.
+        /// </summary>
+        /// <remarks>Some feeds have accuracy of only one minute, meaning that some departure are not sorted correctly.</remarks>
+        [Test]
+        public void TestTwoConnectionsIdenticalDepartureTime()
+        {
+            var feed = new GTFSFeed();
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
+            {
+                Id = "0",
+                Code = "STOP_0",
+                Description = "Stop 0",
+                Latitude = 0,
+                Longitude = 1,
+                Name = "The one of three stops in this feed.",
+                ParentStation = string.Empty,
+                Tag = null,
+                Timezone = null,
+                Url = null,
+                WheelchairBoarding = null,
+                Zone = null,
+                LocationType = LocationType.Stop
+            });
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
+            {
+                Id = "1",
+                Code = "STOP_1",
+                Description = "Stop 1",
+                Latitude = 1,
+                Longitude = 0,
+                Name = "The one of three stops in this feed.",
+                ParentStation = string.Empty,
+                Tag = null,
+                Timezone = null,
+                Url = null,
+                WheelchairBoarding = null,
+                Zone = null,
+                LocationType = LocationType.Stop
+            });
+            feed.Stops.Add(new global::GTFS.Entities.Stop()
+            {
+                Id = "2",
+                Code = "STOP_2",
+                Description = "Stop 2",
+                Latitude = 2,
+                Longitude = 0,
+                Name = "The one of two three in this feed.",
+                ParentStation = string.Empty,
+                Tag = null,
+                Timezone = null,
+                Url = null,
+                WheelchairBoarding = null,
+                Zone = null,
+                LocationType = LocationType.Stop
+            });
+            feed.Routes.Add(new Route()
+            {
+                AgencyId = "0",
+                Color = null,
+                Description = "The one and only route in this feed.",
+                Id = "0",
+                LongName = "The one and only route in this feed.",
+                ShortName = "Route 0",
+                Tag = null,
+                TextColor = null,
+                Type = RouteType.Bus,
+                Url = null
+            });
+            feed.Trips.Add(new Trip()
+            {
+                AccessibilityType = null,
+                BlockId = "0",
+                Direction = 0,
+                Headsign = "Trip 0",
+                Id = "0",
+                RouteId = "0",
+                ServiceId = "0",
+                ShapeId = null,
+                ShortName = "Trip 0",
+                Tag = null
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DepartureTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DropOffType = DropOffType.Regular,
+                PickupType = PickupType.Regular,
+                ShapeDistTravelled = string.Empty,
+                StopHeadsign = "Stop 0",
+                StopId = "0",
+                StopSequence = 0,
+                Tag = null,
+                TripId = "0"
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DepartureTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DropOffType = DropOffType.Regular,
+                PickupType = PickupType.Regular,
+                ShapeDistTravelled = string.Empty,
+                StopHeadsign = "Stop 1",
+                StopId = "1",
+                StopSequence = 1,
+                Tag = null,
+                TripId = "0"
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DepartureTime = new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0,
+                    Seconds = 0
+                },
+                DropOffType = DropOffType.Regular,
+                PickupType = PickupType.Regular,
+                ShapeDistTravelled = string.Empty,
+                StopHeadsign = "Stop 2",
+                StopId = "2",
+                StopSequence = 2,
+                Tag = null,
+                TripId = "0"
+            });
+
+            var stopTimesInFeed = new List<StopTime>(feed.StopTimes);
+
+            var db = new GTFSConnectionsDb(feed);
+            var stops = db.GetStops();
+            Assert.IsNotNull(stops);
+            Assert.AreEqual(3, stops.Count);
+            Assert.AreEqual(0, stops[0].Latitude);
+            Assert.AreEqual(1, stops[0].Longitude);
+            Assert.AreEqual(1, stops[1].Latitude);
+            Assert.AreEqual(0, stops[1].Longitude);
+            Assert.AreEqual(2, stops[2].Latitude);
+            Assert.AreEqual(0, stops[2].Longitude);
+
+            var departureTimeView = db.GetDepartureTimeView();
+            Assert.IsNotNull(departureTimeView);
+            Assert.AreEqual(2, departureTimeView.Count);
+            Assert.AreEqual(0, departureTimeView[0].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, departureTimeView[0].DepartureTime);
+            Assert.AreEqual(1, departureTimeView[0].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, departureTimeView[0].ArrivalTime);
+            Assert.AreEqual(0, departureTimeView[0].TripId);
+            Assert.AreEqual(1, departureTimeView[1].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, departureTimeView[1].DepartureTime);
+            Assert.AreEqual(2, departureTimeView[1].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, departureTimeView[1].ArrivalTime);
+            Assert.AreEqual(0, departureTimeView[1].TripId);
+
+            var arrivalTimeView = db.GetArrivalTimeView();
+            Assert.IsNotNull(arrivalTimeView);
+            Assert.AreEqual(2, arrivalTimeView.Count);
+            Assert.AreEqual(0, arrivalTimeView[0].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, arrivalTimeView[0].DepartureTime);
+            Assert.AreEqual(1, arrivalTimeView[0].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, arrivalTimeView[0].ArrivalTime);
+            Assert.AreEqual(0, arrivalTimeView[0].TripId);
+            Assert.AreEqual(1, arrivalTimeView[1].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, arrivalTimeView[1].DepartureTime);
+            Assert.AreEqual(2, arrivalTimeView[1].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, arrivalTimeView[1].ArrivalTime);
+            Assert.AreEqual(0, arrivalTimeView[1].TripId);
+        }
+
+        /// <summary>
         /// Tests the db with two trips and including arrival- and departuretimes that should be sorted differently.
         /// </summary>
         [Test]

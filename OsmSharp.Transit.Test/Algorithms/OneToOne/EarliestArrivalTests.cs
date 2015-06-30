@@ -162,6 +162,67 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Tests a successful two-hop with a two-connection db but with identical arrival and departure times.
+        /// </summary>
+        [Test]
+        public void TestTwoHopsSuccessfulIdenticalTimes()
+        {
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.TwoConnectionsOneTrip(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 0
+                }));
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            Assert.AreEqual(30 * 60, algorithm.Duration());
+            Assert.AreEqual(new DateTime(2017, 05, 10, 08, 0, 00), algorithm.ArrivalTime());
+
+            var status = algorithm.GetStopStatus(2);
+            Assert.AreEqual(1, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 30 * 60, status.Seconds);
+            Assert.AreEqual(1, status.Transfers);
+            Assert.AreEqual(0, status.TripId);
+            var connection = algorithm.GetConnection(status.ConnectionId);
+            Assert.AreEqual(1, connection.DepartureStop);
+            status = algorithm.GetStopStatus(1);
+            Assert.AreEqual(0, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 30 * 60, status.Seconds);
+            Assert.AreEqual(1, status.Transfers);
+            Assert.AreEqual(0, status.TripId);
+            connection = algorithm.GetConnection(status.ConnectionId);
+            Assert.AreEqual(0, connection.DepartureStop);
+            status = algorithm.GetStopStatus(0);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, status.Seconds);
+            Assert.AreEqual(0, status.Transfers);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoTripId, status.TripId);
+        }
+
+
+        /// <summary>
         /// Tests a successful two-hop, one transfer with a two-connection db.
         /// </summary>
         [Test]

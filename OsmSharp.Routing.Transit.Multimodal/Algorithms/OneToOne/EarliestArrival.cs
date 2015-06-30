@@ -47,10 +47,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             if (status1.Seconds == status2.Seconds)
             {
-                return status1.Transfers.CompareTo(status2.Transfers);
+                if(status1.Transfers == status2.Transfers)
+                {
+                    return status2.ConnectionId.CompareTo(status1.ConnectionId);
+                }
+                return status2.Transfers.CompareTo(status1.Transfers);
             }
-            return (status1.Seconds + status1.Lazyness).CompareTo(
-                status2.Seconds + status2.Lazyness);
+            if (status1.Seconds + status1.Lazyness !=
+                status2.Seconds + status2.Lazyness)
+            {
+                return (status1.Seconds + status1.Lazyness).CompareTo(
+                    status2.Seconds + status2.Lazyness);
+            }
+            return status2.ConnectionId.CompareTo(status1.ConnectionId);
         };
 
         /// <summary>
@@ -226,7 +235,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                                 var weight = backwardStatus.Seconds + arrivalStopStatus.Seconds +
                                     backwardStatus.Lazyness + arrivalStopStatus.Lazyness;
                                 if (_bestTargetStop < 0 ||
-                                    bestWeight > weight)
+                                    bestWeight >= weight)
                                 { // this current route is a better one.
                                     bestWeight = weight;
                                     _bestTargetStop = connection.ArrivalStop;

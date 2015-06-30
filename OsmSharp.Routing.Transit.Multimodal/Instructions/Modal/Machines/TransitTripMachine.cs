@@ -246,6 +246,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
 
             // get time-of-day for first and last segment.
             int? startTimeOfDay = null;
+            string startStopId = null;
             if(route.Segments[firstPoint.SegmentIdx].Tags != null)
             { // there are tags, search them for the time of day.
                 var timeOfDayTag = route.Segments[firstPoint.SegmentIdx].Tags.GetValueFirst("transit.timeofday");
@@ -254,8 +255,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
                 { // parse time of day worked
                     startTimeOfDay = parsedInt;
                 }
+                startStopId = route.Segments[firstPoint.SegmentIdx].Tags.GetValueFirst("transit.stop.id");
             }
             int? endTimeOfDay = null;
+            string endStopId = null;
             if (route.Segments[lastPoint.SegmentIdx].Tags != null)
             { // there are tags, search them for the time of day.
                 var timeOfDayTag = route.Segments[lastPoint.SegmentIdx].Tags.GetValueFirst("transit.timeofday");
@@ -264,6 +267,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
                 { // parse time of day worked
                     endTimeOfDay = parsedInt;
                 }
+                endStopId = route.Segments[lastPoint.SegmentIdx].Tags.GetValueFirst("transit.stop.id");
             }
 
             // generate one instruction for the entire trip.
@@ -277,11 +281,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             metaData["osmsharp.instruction.vehicle"] = vehicle;
             if(startTimeOfDay.HasValue)
             {
-                metaData["osmsharp.instruction.starttimeofday"] = startTimeOfDay.Value;
+                metaData["osmsharp.instruction.start.timeofday"] = startTimeOfDay.Value;
+            }
+            if(!string.IsNullOrWhiteSpace(startStopId))
+            {
+                metaData["osmsharp.instruction.start.stop.id"] = startStopId;
             }
             if(endTimeOfDay.HasValue)
             {
-                metaData["osmsharp.instruction.endtimeofday"] = endTimeOfDay.Value;
+                metaData["osmsharp.instruction.end.timeofday"] = endTimeOfDay.Value;
+            }
+            if (!string.IsNullOrWhiteSpace(endStopId))
+            {
+                metaData["osmsharp.instruction.end.stop.id"] = endStopId;
             }
             this.Planner.SentencePlanner.GenerateInstruction(metaData, firstPoint.SegmentIdx, lastPoint.SegmentIdx, this.GetBoxForCurrentMessages(), pois);
 

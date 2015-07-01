@@ -27,44 +27,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// </summary>
     public class ProfileSearch : RoutingAlgorithmBase
     {
-        /// <summary>
-        /// Holds the connections view.
-        /// </summary>
         private readonly ConnectionsView _connections;
-
-        /// <summary>
-        /// Holds the source stop.
-        /// </summary>
         private readonly int _sourceStop;
-
-        /// <summary>
-        /// Holds the target stop.
-        /// </summary>
         private readonly int _targetStop;
-
-        /// <summary>
-        /// Holds the departure time.
-        /// </summary>
         private readonly DateTime _departureTime;
-
-        /// <summary>
-        /// Holds the maximum time in seconds to search from the given departure time before failing.
-        /// </summary>
         private readonly int _maximumSearchTime = Constants.OneDayInSeconds;
-
-        /// <summary>
-        /// Holds the minimum time it takes to tranfer from one trip to another at the same stop.
-        /// </summary>
         private readonly int _minimumTransferTime = 3 * 60;
-
-        /// <summary>
-        /// Holds the function to determine if a trip is possible or not on a given date.
-        /// </summary>
         private readonly Func<int, DateTime, bool> _isTripPossible;
-
-        /// <summary>
-        /// Holds the function to compare two stop statuses.
-        /// </summary>
         private readonly Func<Profile, Profile, int> _compareStatuses = (status1, status2) =>
         {
             if(status1.Seconds == status2.Seconds)
@@ -141,7 +110,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Holds all the statuses of all stops that have been touched.
         /// </summary>
-        private Dictionary<int, Profile> _profiles;
+        private Dictionary<int, ProfileCollection> _profiles;
 
         /// <summary>
         /// Executes the algorithm.
@@ -160,17 +129,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             var tripPossibilities = new Dictionary<int, bool>();
 
             // initialize stops status.
-            _profiles = new Dictionary<int, Profile>();
-            _profiles.Add(_sourceStop, new Profile()
+            _profiles = new Dictionary<int, ProfileCollection>();
+            _profiles.Add(_sourceStop, new ProfileCollection(new Profile()
             {
-                TripId = Constants.NoTripId,
                 ConnectionId = Constants.NoConnectionId,
                 Seconds = startTime,
                 Transfers = 0
-            });
-            Profile? targetStatus = null;
+            }));
+            ProfileCollection targetProfiles = null;
 
-            for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
+            for (var connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
                 var connection = _connections[connectionId];
                 var departureTime = connection.DepartureTime + (day * Constants.OneDayInSeconds);
@@ -182,67 +150,71 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (targetStatus.HasValue && departureTime >= targetStatus.Value.Seconds)
+                if (targetProfiles != null && departureTime >= targetProfiles.Seconds)
                 { // the current status at 'to' is the best status it's ever going to get.
                     break;
                 }
 
-                Profile status;
-                if (_profiles.TryGetValue(connection.DepartureStop, out status))
+                ProfileCollection departureProfiles;
+                if (_profiles.TryGetValue(connection.DepartureStop, out departureProfiles))
                 { // stop was visited, has a status.
-                    var transferTime = _minimumTransferTime;
-                    var tripPossible = false;
-                    var transfer = 1;
-                    if (status.TripId == connection.TripId || 
-                        (status.TripId != Constants.PseudoConnectionTripId && connection.TripId == Constants.PseudoConnectionTripId) ||
-                        (status.TripId == Constants.PseudoConnectionTripId && connection.TripId != Constants.PseudoConnectionTripId))
-                    { // the same trip.
-                        transferTime = 0;
-                        tripPossible = true; // trip is possible because it is already used.
-                        transfer = 0;
-                        if(connection.TripId == Constants.PseudoConnectionTripId)
-                        { // consider this a transfer because the connection itself is a transfer.
-                            transfer = 1;
+                    foreach (var departureProfile in departureProfiles)
+                    {
+                        var transferTime = _minimumTransferTime;
+                        var tripPossible = false;
+                        var transfer = 1;
+                        var departureProfileTripId = Constants.NoConnectionId;
+                        if (departureProfile.ConnectionId != Constants.NoConnectionId)
+                        { // connection is set.
+                            departureProfileTripId = _connections[departureProfile.ConnectionId].TripId;
                         }
-                    }
-
-                    if (status.Seconds <= departureTime - transferTime)
-                    { // a departure here is possible if the trip is possible.
-                        if (!tripPossibilities.TryGetValue(connection.TripId, out tripPossible))
-                        { // trip was not checked yet.
-                            tripPossible = _isTripPossible.Invoke(connection.TripId, date);
-                            tripPossibilities.Add(connection.TripId, tripPossible);
+                        if (departureProfileTripId == connection.TripId ||
+                            (departureProfileTripId != Constants.PseudoConnectionTripId && connection.TripId == Constants.PseudoConnectionTripId) ||
+                            (departureProfileTripId == Constants.PseudoConnectionTripId && connection.TripId != Constants.PseudoConnectionTripId))
+                        { // the same trip.
+                            transferTime = 0;
+                            tripPossible = true; // trip is possible because it is already used.
+                            transfer = 0;
+                            if (connection.TripId == Constants.PseudoConnectionTripId)
+                            { // consider this a transfer because the connection itself is a transfer.
+                                transfer = 1;
+                            }
                         }
 
-                        if (tripPossible)
-                        { // trip is possible.
-                            // calculate status at the target stop if this trip is taken.
-                            var arrivalStatus = new Profile()
-                            {
-                                TripId = connection.TripId,
-                                ConnectionId = connectionId,
-                                Transfers = (short)(status.Transfers + transfer),
-                                Seconds = connection.ArrivalTime
-                            };
+                        if (departureProfile.Seconds <= departureTime - transferTime)
+                        { // a departure here is possible if the trip is possible.
+                            if (!tripPossibilities.TryGetValue(connection.TripId, out tripPossible))
+                            { // trip was not checked yet.
+                                tripPossible = _isTripPossible.Invoke(connection.TripId, date);
+                                tripPossibilities.Add(connection.TripId, tripPossible);
+                            }
 
-                            Profile existingStatus;
-                            if (_profiles.TryGetValue(connection.ArrivalStop, out existingStatus))
-                            { // compare statuses if already a status there.
-                                if (_compareStatuses(existingStatus, arrivalStatus) > 0)
-                                { // existingStatus > targetStatus here, replace existing status.
-                                    _profiles[connection.ArrivalStop] = arrivalStatus;
+                            if (tripPossible)
+                            { // trip is possible.
+                                // calculate status at the target stop if this trip is taken.
+                                var arrivalProfile = new Profile()
+                                {
+                                    ConnectionId = connectionId,
+                                    Transfers = (short)(departureProfile.Transfers + transfer),
+                                    Seconds = connection.ArrivalTime
+                                };
+
+                                ProfileCollection arrivalProfiles;
+                                if (_profiles.TryGetValue(connection.ArrivalStop, out arrivalProfiles))
+                                { // compare statuses if already a status there.
+                                    arrivalProfiles.Add(arrivalProfile);
                                 }
-                            }
-                            else
-                            { // no status yet, just set it.
-                                _profiles.Add(connection.ArrivalStop, arrivalStatus);
-                            }
+                                else
+                                { // no status yet, just set it.
+                                    _profiles.Add(connection.ArrivalStop, new ProfileCollection(arrivalProfile));
+                                }
 
-                            // check target.
-                            if (connection.ArrivalStop == _targetStop)
-                            { // update toStatus.
-                                targetStatus = _profiles[connection.ArrivalStop];
-                                this.HasSucceeded = true;
+                                // check target.
+                                if (connection.ArrivalStop == _targetStop)
+                                { // update toStatus.
+                                    targetProfiles = _profiles[connection.ArrivalStop];
+                                    this.HasSucceeded = true;
+                                }
                             }
                         }
                     }
@@ -277,22 +249,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         /// <param name="stopId"></param>
         /// <returns></returns>
-        public Profile GetStopProfiles(int stopId)
+        public IReadOnlyList<Profile> GetStopProfiles(int stopId)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            Profile status;
-            if(!_profiles.TryGetValue(stopId, out status))
+            ProfileCollection profiles;
+            if(!_profiles.TryGetValue(stopId, out profiles))
             { // status not found.
-                return new Profile()
-                {
-                    ConnectionId = -1,
-                    Seconds = -1,
-                    Transfers = -1,
-                    TripId = -1
-                };
+                return new ProfileCollection();
             }
-            return status;
+            return profiles;
         }
 
         /// <summary>
@@ -304,6 +270,97 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         {
             return _connections[connectionId];
         }
+
+        /// <summary>
+        /// A profile collection that just points to the first and last profile of a linked-list.
+        /// </summary>
+        private class ProfileCollection : List<Profile>
+        {
+            /// <summary>
+            /// Creates a new profile collection.
+            /// </summary>
+            public ProfileCollection()
+            {
+
+            }
+
+            /// <summary>
+            /// Creates a new profile collection.
+            /// </summary>
+            public ProfileCollection(Profile profile)
+                : base(1)
+            {
+                this.Add(profile);
+
+                this.Seconds = profile.Seconds;
+                this.Lazyness = 0;
+            }
+
+            /// <summary>
+            /// Gets or sets the time in seconds.
+            /// </summary>
+            public int Seconds { get; private set; }
+
+            /// <summary>
+            /// Gets or sets the lazyness.
+            /// </summary>
+            public int Lazyness { get; private set; }
+
+            /// <summary>
+            /// Tries to add a profile and removes all entries that are dominated.
+            /// </summary>
+            /// <param name="profile"></param>
+            /// <returns></returns>
+            public bool TryAdd(Profile profile)
+            {
+                var i = this.Count - 1;
+                while(i >= 0)
+                {
+                    if(profile.ConnectionId != this[i].ConnectionId)
+                    { // no use comparing profiles on different connections.
+                        break;
+                    }
+                    var domination = this.Dominates(this[i], profile);
+                    if(domination.HasValue)
+                    {
+                        if(domination.Value)
+                        { // profile is dominated, do not add.
+                            return false;
+                        }
+                        else
+                        { // remove newly dominated profile.
+                            this.RemoveAt(i);
+                        }
+                    }
+                    i--;
+                }
+
+                // when we get to this point no domination of profile.
+                this.Add(profile);
+                if(this.Lazyness + this.Seconds > profile.Seconds)
+                {
+                    this.Seconds = profile.Seconds;
+                    this.Lazyness = 0;
+                }
+                return true;
+            }
+
+            /// <summary>
+            /// Figures out if, of the two given profiles, one dominates the other.
+            /// </summary>
+            /// <returns>null if there is no domination, true if profile1 dominates profile2 and false if profile2 dominates profile1.</returns>
+            private bool? Dominates(Profile profile1, Profile profile2)
+            {
+                if(profile1.ConnectionId == profile2.ConnectionId)
+                { // only compare profiles on the same connection.
+                    if(profile1.Transfers != profile2.Transfers)
+                    { // transfer count is different, one will definetly dominate.
+                        return profile1.Transfers.CompareTo(profile2.Transfers) > 0;
+                    }
+                }
+                return null;
+            }
+        }
     }
 
     /// <summary>
@@ -312,11 +369,6 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// <remarks>A stop status represents information about how the current stop was reached.</remarks>
     public struct Profile
     {
-        /// <summary>
-        /// Gets or sets the last trip id.
-        /// </summary>
-        public int TripId { get; set; }
-
         /// <summary>
         /// Gets or sets the connection id of the connection used.
         /// </summary>
@@ -331,5 +383,37 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// Gets or sets the number of seconds from source.
         /// </summary>
         public int Seconds { get; set; }
+    }
+
+    /// <summary>
+    /// Extension methods for profile collections.
+    /// </summary>
+    public static class ProfileCollectionExtensions
+    {
+        /// <summary>
+        /// Gets one of the best profiles.
+        /// </summary>
+        /// <returns></returns>
+        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection)
+        {
+            Profile? found = null;
+            foreach(var profile in profileCollection)
+            {
+                if(found == null)
+                {
+                    found = profile;
+                }
+                else if(found.Value.Seconds > profile.Seconds)
+                {
+                    found = profile;
+                }
+                else if(found.Value.Seconds == profile.Seconds &&
+                    found.Value.Transfers > profile.Transfers)
+                {
+                    found = profile;
+                }
+            }
+            return found.Value;
+        }
     }
 }

@@ -101,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDbBuilder.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />

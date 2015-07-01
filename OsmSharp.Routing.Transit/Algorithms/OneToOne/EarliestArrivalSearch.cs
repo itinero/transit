@@ -27,44 +27,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// </summary>
     public class EarliestArrivalSearch : RoutingAlgorithmBase
     {
-        /// <summary>
-        /// Holds the connections view.
-        /// </summary>
         private readonly ConnectionsView _connections;
-
-        /// <summary>
-        /// Holds the source stop.
-        /// </summary>
         private readonly int _sourceStop;
-
-        /// <summary>
-        /// Holds the target stop.
-        /// </summary>
         private readonly int _targetStop;
-
-        /// <summary>
-        /// Holds the departure time.
-        /// </summary>
         private readonly DateTime _departureTime;
-
-        /// <summary>
-        /// Holds the maximum time in seconds to search from the given departure time before failing.
-        /// </summary>
         private readonly int _maximumSearchTime = Constants.OneDayInSeconds;
-
-        /// <summary>
-        /// Holds the minimum time it takes to tranfer from one trip to another at the same stop.
-        /// </summary>
         private readonly int _minimumTransferTime = 3 * 60;
-
-        /// <summary>
-        /// Holds the function to determine if a trip is possible or not on a given date.
-        /// </summary>
         private readonly Func<int, DateTime, bool> _isTripPossible;
-
-        /// <summary>
-        /// Holds the function to compare two stop statuses.
-        /// </summary>
         private readonly Func<EarliestArrival, EarliestArrival, int> _compareStatuses = (status1, status2) =>
         {
             if(status1.Seconds == status2.Seconds)

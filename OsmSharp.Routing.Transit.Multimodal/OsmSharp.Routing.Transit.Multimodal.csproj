@@ -83,8 +83,8 @@
     <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrival.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilder.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilder.cs" />
     <Compile Include="Algorithms\Resolving\IResolver.cs" />
     <Compile Include="Algorithms\Resolving\PathSegmentVisitListResolver.cs" />
     <Compile Include="Data\MultimodalConnectionsDb.cs" />

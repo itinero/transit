@@ -51,7 +51,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 1, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 1, departureTime);
             algorithm.Run();
 
             // test results.
@@ -93,7 +93,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
                 }));
 
             // run algorithm.
-            var algorithm = new EarliestArrival(connectionsDb, 0, 1, new DateTime(2017, 05, 10, 08, 30, 00));
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 1, new DateTime(2017, 05, 10, 08, 30, 00));
             algorithm.Run();
 
             // test results.
@@ -131,7 +131,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
             algorithm.Run();
 
             // test results.
@@ -191,7 +191,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
             algorithm.Run();
 
             // test results.
@@ -252,7 +252,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
             algorithm.Run();
 
             // test results.
@@ -322,7 +322,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
             algorithm.Run();
 
             // test results.
@@ -375,7 +375,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 3, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 3, departureTime);
             algorithm.Run();
 
             // test results.
@@ -445,7 +445,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 3, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 3, departureTime);
             algorithm.Run();
 
             // test results.

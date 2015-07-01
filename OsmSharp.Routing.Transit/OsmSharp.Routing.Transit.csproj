@@ -83,8 +83,9 @@
     <Compile Include="..\SharedAssemblyVersion.cs">
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Algorithms\OneToOne\EarliestArrival.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilder.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilder.cs" />
     <Compile Include="IRoutingAlgorithm.cs" />
     <Compile Include="OneToOneRouteBuilder.cs" />
     <Compile Include="Constants.cs" />

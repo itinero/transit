@@ -28,7 +28,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two locations in the routing graph, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class EarliestArrival : RoutingAlgorithmBase
+    public class EarliestArrivalSearch : RoutingAlgorithmBase
     {
         private readonly MultimodalConnectionsDbBase<Edge> _db;
         private readonly ConnectionsView _connections;
@@ -65,7 +65,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
             OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
             : this(db, departureTime, sourceSearch, targetSearch, (t) => { return 0; })
         {
@@ -75,7 +75,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
             OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness)
         {
             _db = db;
@@ -91,7 +91,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        public EarliestArrival(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
             OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness, 
             Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
         {

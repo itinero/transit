@@ -134,7 +134,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToMany
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 1, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 1, departureTime);
             algorithm.Run();
 
             // check results first.
@@ -142,7 +142,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToMany
             Assert.IsTrue(algorithm.HasSucceeded);
 
             // run the route builder.
-            var routeBuilder = new EarliestArrivalRouteBuilder(
+            var routeBuilder = new EarliestArrivalSearchRouteBuilder(
                 algorithm, connectionsDb);
             var route = routeBuilder.Build();
 
@@ -294,7 +294,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToMany
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new EarliestArrival(connectionsDb, 0, 2, departureTime);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
             algorithm.Run();
 
             // test results.
@@ -302,7 +302,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToMany
             Assert.IsTrue(algorithm.HasSucceeded);
 
             // run the route builder.
-            var routeBuilder = new EarliestArrivalRouteBuilder(
+            var routeBuilder = new EarliestArrivalSearchRouteBuilder(
                 algorithm, connectionsDb);
             var route = routeBuilder.Build();
 

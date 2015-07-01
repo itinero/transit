@@ -25,7 +25,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two stops, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class EarliestArrival : RoutingAlgorithmBase
+    public class ProfileSearch : RoutingAlgorithmBase
     {
         /// <summary>
         /// Holds the connections view.
@@ -65,7 +65,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Holds the function to compare two stop statuses.
         /// </summary>
-        private readonly Func<StopStatus, StopStatus, int> _compareStatuses = (status1, status2) =>
+        private readonly Func<Profile, Profile, int> _compareStatuses = (status1, status2) =>
         {
             if(status1.Seconds == status2.Seconds)
             {
@@ -81,7 +81,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <param name="sourceStop">The stop to start at.</param>
         /// <param name="targetStop">The stop to end at.</param>
         /// <param name="departureTime">The departure time.</param>
-        public EarliestArrival(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
+        public ProfileSearch(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
         {
             _connections = connections.GetDepartureTimeView();
             _sourceStop = sourceStop;
@@ -102,8 +102,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <param name="maxmumSearchTime">The maximum search time (default: one day in seconds).</param>
         /// <param name="isTripPossible">The function to check if a trip is possible (default: connections.IsTripPossible).</param>
         /// <param name="compareStatuses">The function to compare a status at a stop of two distinct statuses are found at one stop (default: the lowest seconds, than the lowest transfer count).</param>
-        public EarliestArrival(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime, 
-            int minimumTransferTime, int maxmumSearchTime, Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
+        public ProfileSearch(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime,
+            int minimumTransferTime, int maxmumSearchTime, Func<int, DateTime, bool> isTripPossible, Func<Profile, Profile, int> compareStatuses)
         {
             _connections = connections.GetDepartureTimeView();
             _sourceStop = sourceStop;
@@ -141,7 +141,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Holds all the statuses of all stops that have been touched.
         /// </summary>
-        private Dictionary<int, StopStatus> _stopStatuses;
+        private Dictionary<int, Profile> _profiles;
 
         /// <summary>
         /// Executes the algorithm.
@@ -160,15 +160,15 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             var tripPossibilities = new Dictionary<int, bool>();
 
             // initialize stops status.
-            _stopStatuses = new Dictionary<int, StopStatus>();
-            _stopStatuses.Add(_sourceStop, new StopStatus()
+            _profiles = new Dictionary<int, Profile>();
+            _profiles.Add(_sourceStop, new Profile()
             {
                 TripId = Constants.NoTripId,
                 ConnectionId = Constants.NoConnectionId,
                 Seconds = startTime,
                 Transfers = 0
             });
-            StopStatus? targetStatus = null;
+            Profile? targetStatus = null;
 
             for (int connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
@@ -187,8 +187,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                     break;
                 }
 
-                StopStatus status;
-                if (_stopStatuses.TryGetValue(connection.DepartureStop, out status))
+                Profile status;
+                if (_profiles.TryGetValue(connection.DepartureStop, out status))
                 { // stop was visited, has a status.
                     var transferTime = _minimumTransferTime;
                     var tripPossible = false;
@@ -217,7 +217,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         if (tripPossible)
                         { // trip is possible.
                             // calculate status at the target stop if this trip is taken.
-                            var arrivalStatus = new StopStatus()
+                            var arrivalStatus = new Profile()
                             {
                                 TripId = connection.TripId,
                                 ConnectionId = connectionId,
@@ -225,23 +225,23 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 Seconds = connection.ArrivalTime
                             };
 
-                            StopStatus existingStatus;
-                            if (_stopStatuses.TryGetValue(connection.ArrivalStop, out existingStatus))
+                            Profile existingStatus;
+                            if (_profiles.TryGetValue(connection.ArrivalStop, out existingStatus))
                             { // compare statuses if already a status there.
                                 if (_compareStatuses(existingStatus, arrivalStatus) > 0)
                                 { // existingStatus > targetStatus here, replace existing status.
-                                    _stopStatuses[connection.ArrivalStop] = arrivalStatus;
+                                    _profiles[connection.ArrivalStop] = arrivalStatus;
                                 }
                             }
                             else
                             { // no status yet, just set it.
-                                _stopStatuses.Add(connection.ArrivalStop, arrivalStatus);
+                                _profiles.Add(connection.ArrivalStop, arrivalStatus);
                             }
 
                             // check target.
                             if (connection.ArrivalStop == _targetStop)
                             { // update toStatus.
-                                targetStatus = _stopStatuses[connection.ArrivalStop];
+                                targetStatus = _profiles[connection.ArrivalStop];
                                 this.HasSucceeded = true;
                             }
                         }
@@ -258,7 +258,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _departureTime.Date.AddSeconds(_stopStatuses[_targetStop].Seconds);
+            return _departureTime.Date.AddSeconds(_profiles[_targetStop].Seconds);
         }
 
         /// <summary>
@@ -269,7 +269,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _stopStatuses[_targetStop].Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+            return _profiles[_targetStop].Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 
         /// <summary>
@@ -277,14 +277,14 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         /// <param name="stopId"></param>
         /// <returns></returns>
-        public StopStatus GetStopStatus(int stopId)
+        public Profile GetStopProfiles(int stopId)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            StopStatus status;
-            if(!_stopStatuses.TryGetValue(stopId, out status))
+            Profile status;
+            if(!_profiles.TryGetValue(stopId, out status))
             { // status not found.
-                return new StopStatus()
+                return new Profile()
                 {
                     ConnectionId = -1,
                     Seconds = -1,
@@ -310,7 +310,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// Represents a stop status. 
     /// </summary>
     /// <remarks>A stop status represents information about how the current stop was reached.</remarks>
-    public struct StopStatus
+    public struct Profile
     {
         /// <summary>
         /// Gets or sets the last trip id.

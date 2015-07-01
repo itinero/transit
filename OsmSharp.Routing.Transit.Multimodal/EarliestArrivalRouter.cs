@@ -74,7 +74,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
             _lazyness = lazyness;
         }
 
-        private EarliestArrival _algorithm;
+        private EarliestArrivalSearch _algorithm;
 
         /// <summary>
         /// Executes the actual run of the algorithm.
@@ -99,12 +99,12 @@ namespace OsmSharp.Routing.Transit.Multimodal
             // instantiate earliest arrival search and run.
             if (_lazyness == null)
             {
-                _algorithm = new EarliestArrival(_db, _departureTime,
+                _algorithm = new EarliestArrivalSearch(_db, _departureTime,
                     sourceSearch, targetSearch);
             }
             else
             {
-                _algorithm = new EarliestArrival(_db, _departureTime,
+                _algorithm = new EarliestArrivalSearch(_db, _departureTime,
                     sourceSearch, targetSearch, _lazyness);
             }
 
@@ -121,7 +121,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
         /// <returns></returns>
         public Route BuildRoute()
         {
-            var routeBuilder = new EarliestArrivalRouteBuilder(_algorithm, _db);
+            var routeBuilder = new EarliestArrivalSearchRouteBuilder(_algorithm, _db);
             return routeBuilder.Build();
         }
     }

@@ -332,7 +332,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
             var status = algorithm.GetStopStatus(2);
-            Assert.AreEqual(1, status.ConnectionId);
+            Assert.AreEqual(2, status.ConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, status.Seconds);
             Assert.AreEqual(1, status.Transfers);
             Assert.AreEqual(2, status.TripId);

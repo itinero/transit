@@ -386,15 +386,15 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             var arrivalTimeView = db.GetArrivalTimeView();
             Assert.IsNotNull(arrivalTimeView);
             Assert.AreEqual(2, arrivalTimeView.Count);
-            Assert.AreEqual(0, arrivalTimeView[0].DepartureStop);
-            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, arrivalTimeView[0].DepartureTime);
-            Assert.AreEqual(1, arrivalTimeView[0].ArrivalStop);
-            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, arrivalTimeView[0].ArrivalTime);
+            Assert.AreEqual(1, arrivalTimeView[0].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, arrivalTimeView[0].DepartureTime);
+            Assert.AreEqual(2, arrivalTimeView[0].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, arrivalTimeView[0].ArrivalTime);
             Assert.AreEqual(0, arrivalTimeView[0].TripId);
-            Assert.AreEqual(1, arrivalTimeView[1].DepartureStop);
-            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, arrivalTimeView[1].DepartureTime);
-            Assert.AreEqual(2, arrivalTimeView[1].ArrivalStop);
-            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, arrivalTimeView[1].ArrivalTime);
+            Assert.AreEqual(0, arrivalTimeView[1].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, arrivalTimeView[1].DepartureTime);
+            Assert.AreEqual(1, arrivalTimeView[1].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, arrivalTimeView[1].ArrivalTime);
             Assert.AreEqual(0, arrivalTimeView[1].TripId);
         }
 
@@ -580,15 +580,15 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             var arrivalTimeView = db.GetArrivalTimeView();
             Assert.IsNotNull(arrivalTimeView);
             Assert.AreEqual(2, arrivalTimeView.Count);
-            Assert.AreEqual(0, arrivalTimeView[0].DepartureStop);
-            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, arrivalTimeView[0].DepartureTime);
-            Assert.AreEqual(1, arrivalTimeView[0].ArrivalStop);
-            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, arrivalTimeView[0].ArrivalTime);
+            Assert.AreEqual(1, arrivalTimeView[0].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, arrivalTimeView[0].DepartureTime);
+            Assert.AreEqual(2, arrivalTimeView[0].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, arrivalTimeView[0].ArrivalTime);
             Assert.AreEqual(0, arrivalTimeView[0].TripId);
-            Assert.AreEqual(1, arrivalTimeView[1].DepartureStop);
-            Assert.AreEqual(stopTimesInFeed[1].DepartureTime.TotalSeconds, arrivalTimeView[1].DepartureTime);
-            Assert.AreEqual(2, arrivalTimeView[1].ArrivalStop);
-            Assert.AreEqual(stopTimesInFeed[2].ArrivalTime.TotalSeconds, arrivalTimeView[1].ArrivalTime);
+            Assert.AreEqual(0, arrivalTimeView[1].DepartureStop);
+            Assert.AreEqual(stopTimesInFeed[0].DepartureTime.TotalSeconds, arrivalTimeView[1].DepartureTime);
+            Assert.AreEqual(1, arrivalTimeView[1].ArrivalStop);
+            Assert.AreEqual(stopTimesInFeed[1].ArrivalTime.TotalSeconds, arrivalTimeView[1].ArrivalTime);
             Assert.AreEqual(0, arrivalTimeView[1].TripId);
         }
 

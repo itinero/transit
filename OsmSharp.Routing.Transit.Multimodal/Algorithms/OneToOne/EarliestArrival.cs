@@ -51,7 +51,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 {
                     return status2.ConnectionId.CompareTo(status1.ConnectionId);
                 }
-                return status2.Transfers.CompareTo(status1.Transfers);
+                return status1.Transfers.CompareTo(status2.Transfers);
             }
             if (status1.Seconds + status1.Lazyness !=
                 status2.Seconds + status2.Lazyness)
@@ -215,21 +215,24 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                             };
 
                             StopStatus existingStatus;
+                            var accepted = false;
                             if (_forwardStopStatuses.TryGetValue(connection.ArrivalStop, out existingStatus))
                             { // compare statuses if already a status there.
                                 if (_compareStatuses(existingStatus, arrivalStatus) > 0)
                                 { // existingStatus > targetStatus here, replace existing status.
                                     _forwardStopStatuses[connection.ArrivalStop] = arrivalStatus;
+                                    accepted = true;
                                 }
                             }
                             else
                             { // no status yet, just set it.
                                 _forwardStopStatuses.Add(connection.ArrivalStop, arrivalStatus);
+                                accepted = true;
                             }
 
                             // check target(s).
                             StopStatus backwardStatus;
-                            if (_backwardStopStatuses.TryGetValue(connection.ArrivalStop, out backwardStatus))
+                            if (accepted && _backwardStopStatuses.TryGetValue(connection.ArrivalStop, out backwardStatus))
                             { // this stop has been reached by the backward search, figure out if it represents a better connection.
                                 var arrivalStopStatus = _forwardStopStatuses[connection.ArrivalStop];
                                 var weight = backwardStatus.Seconds + arrivalStopStatus.Seconds +

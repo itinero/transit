@@ -337,6 +337,50 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Gets the best target stop.
+        /// </summary>
+        /// <returns></returns>
+        public int GetBestTargetStop()
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return _bestTargetStop;
+        }
+
+        /// <summary>
+        /// Returns the source-search algorithm.
+        /// </summary>
+        public OneToManyDykstra SourceSearch
+        {
+            get
+            {
+                return _sourceSearch;
+            }
+        }
+
+        /// <summary>
+        /// Returns the target-search algorithm.
+        /// </summary>
+        public OneToManyDykstra TargetSearch
+        {
+            get
+            {
+                return _targetSearch;
+            }
+        }
+
+        /// <summary>
+        /// Gets the departure time.
+        /// </summary>
+        public DateTime DepartureTime
+        {
+            get
+            {
+                return _departureTime;
+            }
+        }
+
+        /// <summary>
         /// A profile collection that just points to the first and last profile of a linked-list.
         /// </summary>
         private class ProfileCollection : List<Profile>

@@ -17,7 +17,6 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Math.Geo;
-using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
@@ -30,17 +29,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// A class reponsable for building an earliest arrival route.
     /// </summary>
     /// <remarks>This route builder uses raw GTFS data, we do not abstract away GTFS, convert other formats to GTFS.</remarks>
-    public class EarliestArrivalSearchRouteBuilder : OneToOneRouteBuilder<EarliestArrivalSearch>
+    public class ProfileSearchRouteBuilder : OneToOneRouteBuilder<ProfileSearch>
     {
         private readonly MultimodalConnectionsDb _db;
 
         /// <summary>
-        /// Creates a new earliest arrival route builder.
+        /// Creates a new route builder.
         /// </summary>
-        /// <param name="earliestArrival">The earliest arrival algorithm.</param>
-        /// <param name="db">The connections database.</param>
-        public EarliestArrivalSearchRouteBuilder(EarliestArrivalSearch earliestArrival, MultimodalConnectionsDb db)
-            : base(earliestArrival)
+        public ProfileSearchRouteBuilder(ProfileSearch profileSearch, MultimodalConnectionsDb db)
+            : base(profileSearch)
         {
             _db = db;
         }
@@ -51,44 +48,46 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <returns></returns>
         public override Route DoBuild()
         {
-            var stops = new List<Tuple<int, EarliestArrivalSearch.StopStatus>>();
+            var stops = new List<Tuple<int, Profile>>();
             var connections = new List<Connection?>();
 
             // build the route backwards from the target stop.
             var bestTargetStop = this.Algorithm.GetBestTargetStop();
             var bestSourceStop = -1;
-            var status = this.Algorithm.GetStopStatus(bestTargetStop);
-            stops.Insert(0, new Tuple<int, EarliestArrivalSearch.StopStatus>(bestTargetStop, status));
-            while (status.ConnectionId >= 0)
+            var profiles = this.Algorithm.GetStopProfiles(bestTargetStop);
+            var profile = profiles.GetBest();
+            stops.Insert(0, new Tuple<int, Profile>(
+                bestTargetStop, profile));
+            while (profile.ConnectionId >= 0)
             { // keep searching until the connection id < 0, meaning the start status, without a previous trip.
                 // get connection information.
-                var connection = this.Algorithm.GetConnection(status.ConnectionId);
-                status = this.Algorithm.GetStopStatus(connection.DepartureStop);
-                if (status.TripId < 0)
+                var connection = this.Algorithm.GetConnection(profile.ConnectionId);
+                profiles = this.Algorithm.GetStopProfiles(connection.DepartureStop);
+                profile = profiles.GetBest(this.Algorithm, profile);
+                if (profile.ConnectionId == Constants.NoConnectionId)
                 { // this stop has no trip, this means that it is the first stop.
                     // insert the stop first with the departuretime of this connection.
-                    var statusWithTrip = new EarliestArrivalSearch.StopStatus()
+                    var statusWithTrip = new Profile()
                     {
                         ConnectionId = Constants.NoConnectionId,
                         Seconds = connection.DepartureTime,
-                        Transfers = 1,
-                        TripId = connection.TripId
+                        Transfers = 1
                     };
                     connections.Insert(0, connection);
-                    stops.Insert(0, new Tuple<int, EarliestArrivalSearch.StopStatus>(
+                    stops.Insert(0, new Tuple<int, Profile>(
                         connection.DepartureStop, statusWithTrip));
 
                     // insert the first and final stop.
                     connections.Insert(0, null);
-                    stops.Insert(0, new Tuple<int, EarliestArrivalSearch.StopStatus>(
-                        connection.DepartureStop, status));
+                    stops.Insert(0, new Tuple<int, Profile>(
+                        connection.DepartureStop, profile));
                     bestSourceStop = connection.DepartureStop;
                 }
                 else
                 { // just insert as normal.
                     connections.Insert(0, connection);
-                    stops.Insert(0, new Tuple<int, EarliestArrivalSearch.StopStatus>(
-                        connection.DepartureStop, status));
+                    stops.Insert(0, new Tuple<int, Profile>(
+                        connection.DepartureStop, profile));
                 }
             }
 

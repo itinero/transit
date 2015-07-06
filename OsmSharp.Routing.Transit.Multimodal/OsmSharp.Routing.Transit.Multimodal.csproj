@@ -86,6 +86,7 @@
     <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilder.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilder.cs" />
     <Compile Include="Algorithms\Resolving\IResolver.cs" />
     <Compile Include="Algorithms\Resolving\PathSegmentVisitListResolver.cs" />
     <Compile Include="Data\MultimodalConnectionsDb.cs" />

@@ -28,7 +28,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two stops, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class ProfileSearch : RoutingAlgorithmBase
+    public class ProfileSearch : RoutingAlgorithmBase, IConnectionList
     {
         private readonly MultimodalConnectionsDbBase<Edge> _db;
         private readonly ConnectionsView _connections;
@@ -420,7 +420,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 { // only compare profiles on the same connection.
                     if (profile1.Transfers != profile2.Transfers)
                     { // transfer count is different, one will definetly dominate.
-                        return profile1.Transfers.CompareTo(profile2.Transfers) > 0;
+                        return profile1.Transfers.CompareTo(profile2.Transfers) < 0;
                     }
                 }
                 return null;
@@ -490,11 +490,22 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Gets the best profile given the previous profile.
         /// </summary>
         /// <returns></returns>
-        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, Profile previous)
+        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, IConnectionList connectionsList, Profile previous)
         {
+            var previousTripId = connectionsList.GetConnection(previous.ConnectionId).TripId;
             Profile? found = null;
             foreach (var profile in profileCollection)
             {
+                var profileTripId = int.MaxValue;
+                if (profile.ConnectionId != Constants.NoConnectionId)
+                { // there is a connection, use it's trip.
+                    profileTripId = connectionsList.GetConnection(profile.ConnectionId).TripId;
+                    if (profileTripId == previousTripId)
+                    { // same trip, this is the only connection.
+                        found = profile;
+                        break;
+                    }
+                }
                 if (found == null)
                 {
                     found = profile;

@@ -23,7 +23,7 @@ namespace OsmSharp.Routing.Transit.Data
     /// <summary>
     /// A connections view based on a list.
     /// </summary>
-    public class ConnectionsListView : ConnectionsView
+    public class ConnectionsListView : ConnectionsView, IConnectionList
     {
         /// <summary>
         /// Holds the list of connections.
@@ -64,6 +64,16 @@ namespace OsmSharp.Routing.Transit.Data
         public override Connection this[int idx]
         {
             get { return _connections[idx]; }
+        }
+
+        /// <summary>
+        /// Implements IConnectionList.GetConnection.
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
+        Connection IConnectionList.GetConnection(int connectionId)
+        {
+            return this[connectionId];
         }
     }
 }

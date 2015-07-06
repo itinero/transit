@@ -25,7 +25,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two stops, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class ProfileSearch : RoutingAlgorithmBase
+    public class ProfileSearch : RoutingAlgorithmBase, IConnectionList
     {
         private readonly ConnectionsView _connections;
         private readonly int _sourceStop;
@@ -200,17 +200,19 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 };
 
                                 ProfileCollection arrivalProfiles;
+                                var accepted = false;
                                 if (_profiles.TryGetValue(connection.ArrivalStop, out arrivalProfiles))
                                 { // compare statuses if already a status there.
-                                    arrivalProfiles.Add(arrivalProfile);
+                                    accepted = arrivalProfiles.TryAdd(arrivalProfile);
                                 }
                                 else
                                 { // no status yet, just set it.
                                     _profiles.Add(connection.ArrivalStop, new ProfileCollection(arrivalProfile));
+                                    accepted = true;
                                 }
 
                                 // check target.
-                                if (connection.ArrivalStop == _targetStop)
+                                if (accepted && connection.ArrivalStop == _targetStop)
                                 { // update toStatus.
                                     targetProfiles = _profiles[connection.ArrivalStop];
                                     this.HasSucceeded = true;
@@ -355,7 +357,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 { // only compare profiles on the same connection.
                     if(profile1.Transfers != profile2.Transfers)
                     { // transfer count is different, one will definetly dominate.
-                        return profile1.Transfers.CompareTo(profile2.Transfers) > 0;
+                        return profile1.Transfers.CompareTo(profile2.Transfers) < 0;
                     }
                 }
                 return null;
@@ -420,11 +422,22 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// Gets the best profile given the previous profile.
         /// </summary>
         /// <returns></returns>
-        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, Profile previous)
+        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, IConnectionList connectionsList, Profile previous)
         {
+            var previousTripId = connectionsList.GetConnection(previous.ConnectionId).TripId;
             Profile? found = null;
             foreach (var profile in profileCollection)
             {
+                var profileTripId = int.MaxValue;
+                if(profile.ConnectionId != Constants.NoConnectionId)
+                { // there is a connection, use it's trip.
+                    profileTripId = connectionsList.GetConnection(profile.ConnectionId).TripId;
+                    if (profileTripId == previousTripId)
+                    { // same trip, this is the only connection.
+                        found = profile;
+                        break;
+                    }
+                }
                 if (found == null)
                 {
                     found = profile;

@@ -519,5 +519,118 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             });
             return feed;
         }
+
+        /// <summary>
+        /// Builds a GTFS feed with three connections on three different trips. Two of them share a transfers stop and one is a direct trip, also stopping at the middel stop,
+        /// but with the same arrival time.
+        /// </summary>
+        /// <returns></returns>
+        public static IGTFSFeed ThreeConnectionsThreeTripsTransferVSNoTranferWithStop(TimeOfDay departureTime1, TimeOfDay arrivalTime1,
+            TimeOfDay departureTime2, TimeOfDay arrivalTime2, TimeOfDay departureTime3, TimeOfDay arrivalTime3, TimeOfDay departureTime4, TimeOfDay arrivalTime4)
+        {
+            var feed = new GTFSFeed();
+            feed.Agencies.Add(new Agency()
+            {
+                Id = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "0",
+                AgencyId = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "1",
+                AgencyId = "0"
+            });
+            feed.Routes.Add(new Route()
+            {
+                Id = "2",
+                AgencyId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "0",
+                RouteId = "0"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "1",
+                RouteId = "1"
+            });
+            feed.Trips.Add(new Trip()
+            {
+                Id = "2",
+                RouteId = "2"
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "0",
+                Longitude = 0,
+                Latitude = 0
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "1",
+                Longitude = 1,
+                Latitude = 1
+            });
+            feed.Stops.Add(new Stop()
+            {
+                Id = "2",
+                Longitude = 2,
+                Latitude = 2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime1,
+                StopId = "0",
+                TripId = "0",
+                DepartureTime = departureTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime1,
+                StopId = "1",
+                TripId = "0",
+                DepartureTime = arrivalTime1
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime2,
+                StopId = "1",
+                TripId = "1",
+                DepartureTime = departureTime2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime2,
+                StopId = "2",
+                TripId = "1",
+                DepartureTime = arrivalTime2
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = departureTime3,
+                StopId = "0",
+                TripId = "2",
+                DepartureTime = departureTime3
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime3,
+                StopId = "1",
+                TripId = "2",
+                DepartureTime = arrivalTime3
+            });
+            feed.StopTimes.Add(new StopTime()
+            {
+                ArrivalTime = arrivalTime4,
+                StopId = "2",
+                TripId = "2",
+                DepartureTime = arrivalTime4
+            });
+            return feed;
+        }
     }
 }

@@ -489,5 +489,87 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
             Assert.AreEqual(0, profile.Transfers);
         }
+
+        /// <summary>
+        /// Tests a successful two-hop, one transfer with a four-connection db where one pseudo connection is skipped.
+        /// </summary>
+        [Test]
+        public void TestTwoHopsOneTransferVSOneTripSuccessfulSkippedPseudo()
+        {
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.ThreeConnectionsThreeTripsTransferVSNoTranferWithStop(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 20
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 20
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                }));
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new ProfileSearch(connectionsDb, 0, 2, departureTime);
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            Assert.AreEqual(55 * 60, algorithm.Duration());
+            Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
+
+            var profiles = algorithm.GetStopProfiles(2);
+            var profile = profiles.GetBest();
+            Assert.AreEqual(3, profile.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
+            Assert.AreEqual(0, profile.Transfers);
+            var connection = algorithm.GetConnection(profile.ConnectionId); // connection 1->2.
+            Assert.AreEqual(1, connection.DepartureStop);
+            Assert.AreEqual(2, connection.TripId);
+            profiles = algorithm.GetStopProfiles(1);
+            profile = profiles.GetBest(algorithm, profile);
+            Assert.AreEqual(2, profile.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
+            Assert.AreEqual(0, profile.Transfers);
+            connection = algorithm.GetConnection(profile.ConnectionId);
+            Assert.AreEqual(0, connection.DepartureStop);
+            Assert.AreEqual(2, connection.TripId);
+            profiles = algorithm.GetStopProfiles(0);
+            profile = profiles.GetBest(algorithm, profile);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+            Assert.AreEqual(0, profile.Transfers);
+        }
     }
 }

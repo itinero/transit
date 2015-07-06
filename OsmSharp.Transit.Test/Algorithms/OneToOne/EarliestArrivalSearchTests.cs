@@ -484,5 +484,84 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(0, status.Transfers);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoTripId, status.TripId);
         }
+
+        /// <summary>
+        /// Tests a successful two-hop, one transfer with a four-connection db where one pseudo connection is skipped.
+        /// </summary>
+        [Test]
+        public void TestTwoHopsOneTransferVSOneTripSuccessfulSkippedPseudo()
+        {
+            // build dummy db.
+            var connectionsDb = new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.ThreeConnectionsThreeTripsTransferVSNoTranferWithStop(
+                new TimeOfDay()
+                {
+                    Hours = 8
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 10
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 15
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 20
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 20
+                },
+                new TimeOfDay()
+                {
+                    Hours = 8,
+                    Minutes = 25
+                }));
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new EarliestArrivalSearch(connectionsDb, 0, 2, departureTime);
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            Assert.AreEqual(55 * 60, algorithm.Duration());
+            Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
+
+            var status = algorithm.GetStopStatus(2);
+            Assert.AreEqual(1, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, status.Seconds);
+            Assert.AreEqual(2, status.Transfers);
+            var connection = algorithm.GetConnection(status.ConnectionId); // connection 1->2.
+            Assert.AreEqual(1, connection.DepartureStop);
+            Assert.AreEqual(1, connection.TripId);
+            status = algorithm.GetStopStatus(1);
+            Assert.AreEqual(0, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, status.Seconds);
+            Assert.AreEqual(1, status.Transfers);
+            connection = algorithm.GetConnection(status.ConnectionId);
+            Assert.AreEqual(0, connection.DepartureStop);
+            Assert.AreEqual(0, connection.TripId);
+            status = algorithm.GetStopStatus(0);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, status.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, status.Seconds);
+            Assert.AreEqual(0, status.Transfers);
+        }
     }
 }

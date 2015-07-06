@@ -64,7 +64,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 // get connection information.
                 var connection = this.Algorithm.GetConnection(profile.ConnectionId);
                 profiles = this.Algorithm.GetStopProfiles(connection.DepartureStop);
-                profile = profiles.GetBest(profile);
+                profile = profiles.GetBest(this.Algorithm, profile);
                 if (profile.ConnectionId == Constants.NoConnectionId)
                 { // this stop has no trip, this means that it is the first stop.
                     // insert the stop first with the departuretime of this connection.

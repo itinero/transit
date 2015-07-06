@@ -132,6 +132,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             };
             _targetSearch.Run();
 
+            if(_forwardProfiles.Count == 0 || _backwardProfiles.Count == 0)
+            { // search failed because no forward or backward stops in range.
+                return; 
+            }
+
             // Remarks:
             // - Use the number of seconds from the previous midnight, this is also what is used to sort the connections.
             // - Use the date to determine if a trip is possible.

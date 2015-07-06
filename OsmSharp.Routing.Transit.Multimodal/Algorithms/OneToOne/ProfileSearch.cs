@@ -16,107 +16,121 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
+using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;
 using System.Collections.Generic;
 
-namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
+namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 {
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two stops, with a given departure time, that has the best arrival time.
     /// </summary>
     public class ProfileSearch : RoutingAlgorithmBase
     {
+        private readonly MultimodalConnectionsDbBase<Edge> _db;
         private readonly ConnectionsView _connections;
-        private readonly int _sourceStop;
-        private readonly int _targetStop;
         private readonly DateTime _departureTime;
-        private readonly int _maximumSearchTime = Constants.OneDayInSeconds;
+        private readonly int _maximumSearchTime = OsmSharp.Routing.Transit.Constants.OneDayInSeconds;
         private readonly int _minimumTransferTime = 3 * 60;
+        private readonly OneToManyDykstra _sourceSearch;
+        private readonly OneToManyDykstra _targetSearch;
         private readonly Func<int, DateTime, bool> _isTripPossible;
+        private readonly Func<float, float> _lazyness;
         private readonly Func<Profile, Profile, int> _compareStatuses = (status1, status2) =>
         {
-            if(status1.Seconds == status2.Seconds)
+            if (status1.Seconds == status2.Seconds)
             {
                 return status1.Transfers.CompareTo(status2.Transfers);
             }
             return status1.Seconds.CompareTo(status2.Seconds);
         };
+        
+
+        /// <summary>
+        /// Creates a new instance of the earliest arrival algorithm.
+        /// </summary>
+        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
+            : this(db, departureTime, sourceSearch, targetSearch, (t) => { return 0; })
+        {
+
+        }
 
         /// <summary>
         /// Creates a new instance of the profile search algorithm.
         /// </summary>
-        /// <param name="connections">The connections db.</param>
-        /// <param name="sourceStop">The stop to start at.</param>
-        /// <param name="targetStop">The stop to end at.</param>
-        /// <param name="departureTime">The departure time.</param>
-        public ProfileSearch(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime)
+        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness)
         {
-            _connections = connections.GetDepartureTimeView();
-            _sourceStop = sourceStop;
-            _targetStop = targetStop;
+            _db = db;
+            _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
+            _sourceSearch = sourceSearch;
+            _targetSearch = targetSearch;
+            _lazyness = lazyness;
 
-            _isTripPossible = connections.IsTripPossible;
+            _isTripPossible = db.ConnectionsDb.IsTripPossible;
         }
 
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        /// <param name="connections">The connections db.</param>
-        /// <param name="sourceStop">The stop to start at.</param>
-        /// <param name="targetStop">The stop to end at.</param>
-        /// <param name="departureTime">The departure time.</param>
-        /// <param name="minimumTransferTime">The minimum transfer time (default: 3 * 60s).</param>
-        /// <param name="maxmumSearchTime">The maximum search time (default: one day in seconds).</param>
-        /// <param name="isTripPossible">The function to check if a trip is possible (default: connections.IsTripPossible).</param>
-        /// <param name="compareStatuses">The function to compare a status at a stop of two distinct statuses are found at one stop (default: the lowest seconds, than the lowest transfer count).</param>
-        public ProfileSearch(GTFSConnectionsDb connections, int sourceStop, int targetStop, DateTime departureTime,
-            int minimumTransferTime, int maxmumSearchTime, Func<int, DateTime, bool> isTripPossible, Func<Profile, Profile, int> compareStatuses)
+        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness,
+            Func<int, DateTime, bool> isTripPossible, Func<Profile, Profile, int> compareStatuses)
         {
-            _connections = connections.GetDepartureTimeView();
-            _sourceStop = sourceStop;
-            _targetStop = targetStop;
+            _db = db;
+            _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
+            _sourceSearch = sourceSearch;
+            _targetSearch = targetSearch;
+            _lazyness = lazyness;
 
             _isTripPossible = isTripPossible;
-            _minimumTransferTime = minimumTransferTime;
-            _maximumSearchTime = maxmumSearchTime;
             _compareStatuses = compareStatuses;
         }
 
         /// <summary>
-        /// Gets the source stop.
+        /// Holds all the status of all stops touched by the backward search.
         /// </summary>
-        public int SourceStop
-        {
-            get
-            {
-                return _sourceStop;
-            }
-        }
+        private Dictionary<int, Profile> _backwardProfiles;
 
         /// <summary>
-        /// Gets the target stop.
+        /// Holds all the statuses of all stops that have been touched the forward search.
         /// </summary>
-        public int TargetStop
-        {
-            get
-            {
-                return _targetStop;
-            }
-        }
+        private Dictionary<int, ProfileCollection> _forwardProfiles;
 
         /// <summary>
-        /// Holds all the statuses of all stops that have been touched.
+        /// Holds the best target stop.
         /// </summary>
-        private Dictionary<int, ProfileCollection> _profiles;
+        private int _bestTargetStop;
 
         /// <summary>
         /// Executes the algorithm.
         /// </summary>
         protected override void DoRun()
         {
+            // initialize visits.
+            _forwardProfiles = new Dictionary<int, ProfileCollection>();
+            _backwardProfiles = new Dictionary<int, Profile>(100);
+
+            // STEP1: calculate forward from source and keep track of all stops reached.
+            _sourceSearch.WasFound = (vertex, time) =>
+            {
+                return this.ReachedVertexForward((uint)vertex, time);
+            };
+            _sourceSearch.Run();
+
+            // STEP2: calculate backward from target and keep track of all stops reached.
+            _targetSearch.WasFound = (vertex, time) =>
+            {
+                return this.ReachedVertexBackward((uint)vertex, time);
+            };
+            _targetSearch.Run();
+
             // Remarks:
             // - Use the number of seconds from the previous midnight, this is also what is used to sort the connections.
             // - Use the date to determine if a trip is possible.
@@ -128,16 +142,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
 
-            // initialize stops status.
-            _profiles = new Dictionary<int, ProfileCollection>();
-            _profiles.Add(_sourceStop, new ProfileCollection(new Profile()
-            {
-                ConnectionId = Constants.NoConnectionId,
-                Seconds = startTime,
-                Transfers = 0
-            }));
-            ProfileCollection targetProfiles = null;
-
+            // keep a list of possible target stops.
+            _bestTargetStop = -1;
+            var targetProfilesWeight = double.MaxValue;
             for (var connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
                 var connection = _connections[connectionId];
@@ -150,13 +157,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (targetProfiles != null && departureTime >= targetProfiles.Seconds)
+                if (departureTime >= targetProfilesWeight)
                 { // the current status at 'to' is the best status it's ever going to get.
                     break;
                 }
 
                 ProfileCollection departureProfiles;
-                if (_profiles.TryGetValue(connection.DepartureStop, out departureProfiles))
+                if (_forwardProfiles.TryGetValue(connection.DepartureStop, out departureProfiles))
                 { // stop was visited, has a status.
                     foreach (var departureProfile in departureProfiles)
                     {
@@ -200,20 +207,31 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 };
 
                                 ProfileCollection arrivalProfiles;
-                                if (_profiles.TryGetValue(connection.ArrivalStop, out arrivalProfiles))
+                                var accepted = false;
+                                if (_forwardProfiles.TryGetValue(connection.ArrivalStop, out arrivalProfiles))
                                 { // compare statuses if already a status there.
-                                    arrivalProfiles.Add(arrivalProfile);
+                                    accepted = arrivalProfiles.TryAdd(arrivalProfile);
                                 }
                                 else
                                 { // no status yet, just set it.
-                                    _profiles.Add(connection.ArrivalStop, new ProfileCollection(arrivalProfile));
+                                    _forwardProfiles.Add(connection.ArrivalStop, new ProfileCollection(arrivalProfile));
+                                    accepted = true;
                                 }
 
-                                // check target.
-                                if (connection.ArrivalStop == _targetStop)
-                                { // update toStatus.
-                                    targetProfiles = _profiles[connection.ArrivalStop];
-                                    this.HasSucceeded = true;
+                                // check target(s).
+                                Profile backwardStatus;
+                                if (accepted && _backwardProfiles.TryGetValue(connection.ArrivalStop, out backwardStatus))
+                                { // this stop has been reached by the backward search, figure out if it represents a better connection.
+                                    var arrivalStopProfiles = _forwardProfiles[connection.ArrivalStop];
+                                    var weight = backwardStatus.Seconds + arrivalStopProfiles.Seconds +
+                                        backwardStatus.Lazyness + arrivalStopProfiles.Lazyness;
+                                    if (_bestTargetStop < 0 ||
+                                        targetProfilesWeight >= weight)
+                                    { // this current route is a better one.
+                                        _bestTargetStop = connection.ArrivalStop;
+                                        targetProfilesWeight = weight;
+                                        this.HasSucceeded = true;
+                                    }
                                 }
                             }
                         }
@@ -223,6 +241,51 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Called when a vertex was reached during a forward search.
+        /// </summary>
+        /// <param name="vertex">The vertex reached.</param>
+        /// <param name="time">The time to reach it.</param>
+        /// <returns></returns>
+        private bool ReachedVertexForward(uint vertex, float time)
+        {
+            int stopId;
+            if (_db.TryGetStop(vertex, out stopId))
+            { // the vertex is a stop, mark it as reached.
+                _forwardProfiles.Add(stopId, new ProfileCollection(new Profile()
+                {
+                    ConnectionId = Constants.NoConnectionId,
+                    Lazyness = (int)_lazyness(time),
+                    Seconds = (int)time + (int)(_departureTime - _departureTime.Date).TotalSeconds,
+                    Transfers = 0
+                }));
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Called when a vertex was reached during a backward search.
+        /// </summary>
+        /// <param name="vertex">The vertex reached.</param>
+        /// <param name="time">The time to reach it.</param>
+        /// <returns></returns>
+        private bool ReachedVertexBackward(uint vertex, float time)
+        {
+            int stopId;
+            if (_db.TryGetStop(vertex, out stopId))
+            { // the vertex is a stop, mark it as reached.
+                _backwardProfiles.Add(stopId, new Profile()
+                {
+                    ConnectionId = Constants.NoConnectionId,
+                    Seconds = (int)time,
+                    Lazyness = (int)_lazyness(time),
+                    Transfers = 0
+                });
+            }
+            return true;
+        }
+
+
+        /// <summary>
         /// Gets the calculated arrival time.
         /// </summary>
         /// <returns></returns>
@@ -230,7 +293,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _departureTime.Date.AddSeconds(_profiles[_targetStop].Seconds);
+            return _departureTime.Date.AddSeconds(
+                _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds);
         }
 
         /// <summary>
@@ -241,7 +305,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _profiles[_targetStop].Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+            return _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds
+                - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 
         /// <summary>
@@ -254,7 +319,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             this.CheckHasRunAndHasSucceeded();
 
             ProfileCollection profiles;
-            if(!_profiles.TryGetValue(stopId, out profiles))
+            if (!_forwardProfiles.TryGetValue(stopId, out profiles))
             { // status not found.
                 return new ProfileCollection();
             }
@@ -314,16 +379,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             public bool TryAdd(Profile profile)
             {
                 var i = this.Count - 1;
-                while(i >= 0)
+                while (i >= 0)
                 {
-                    if(profile.ConnectionId != this[i].ConnectionId)
+                    if (profile.ConnectionId != this[i].ConnectionId)
                     { // no use comparing profiles on different connections.
                         break;
                     }
                     var domination = this.Dominates(this[i], profile);
-                    if(domination.HasValue)
+                    if (domination.HasValue)
                     {
-                        if(domination.Value)
+                        if (domination.Value)
                         { // profile is dominated, do not add.
                             return false;
                         }
@@ -337,7 +402,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
                 // when we get to this point no domination of profile.
                 this.Add(profile);
-                if(this.Lazyness + this.Seconds > profile.Seconds)
+                if (this.Lazyness + this.Seconds > profile.Seconds)
                 {
                     this.Seconds = profile.Seconds;
                     this.Lazyness = 0;
@@ -351,9 +416,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             /// <returns>null if there is no domination, true if profile1 dominates profile2 and false if profile2 dominates profile1.</returns>
             private bool? Dominates(Profile profile1, Profile profile2)
             {
-                if(profile1.ConnectionId == profile2.ConnectionId)
+                if (profile1.ConnectionId == profile2.ConnectionId)
                 { // only compare profiles on the same connection.
-                    if(profile1.Transfers != profile2.Transfers)
+                    if (profile1.Transfers != profile2.Transfers)
                     { // transfer count is different, one will definetly dominate.
                         return profile1.Transfers.CompareTo(profile2.Transfers) > 0;
                     }
@@ -383,6 +448,11 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// Gets or sets the number of seconds from source.
         /// </summary>
         public int Seconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lazyness.
+        /// </summary>
+        public int Lazyness { get; set; }
     }
 
     /// <summary>
@@ -397,17 +467,17 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         public static Profile GetBest(this IReadOnlyList<Profile> profileCollection)
         {
             Profile? found = null;
-            foreach(var profile in profileCollection)
+            foreach (var profile in profileCollection)
             {
-                if(found == null)
+                if (found == null)
                 {
                     found = profile;
                 }
-                else if(found.Value.Seconds > profile.Seconds)
+                else if (found.Value.Seconds > profile.Seconds)
                 {
                     found = profile;
                 }
-                else if(found.Value.Seconds == profile.Seconds &&
+                else if (found.Value.Seconds == profile.Seconds &&
                     found.Value.Transfers > profile.Transfers)
                 {
                     found = profile;

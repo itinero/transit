@@ -29,9 +29,9 @@ using System;
 namespace OsmSharp.Routing.Transit.Multimodal
 {
     /// <summary>
-    /// An earliest arrival router using a CSA and Dykstra to calculate multimodal earliest arrival routes.
+    /// A profile router using a CSA and Dykstra to calculate multimodal earliest arrival routes.
     /// </summary>
-    public class EarliestArrivalRouter : RouterBase
+    public class ProfileRouter : RouterBase
     {
         private readonly GeoCoordinate _sourceLocation;
         private readonly GeoCoordinate _targetLocation;
@@ -45,7 +45,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
         /// <summary>
         /// Creates a new earliest arrival router.
         /// </summary>
-        public EarliestArrivalRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
+        public ProfileRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
             Vehicle sourceVehicle, GeoCoordinate source, Vehicle targetVehicle, GeoCoordinate target)
         {
             _db = db;
@@ -61,7 +61,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
         /// <summary>
         /// Creates a new earliest arrival router.
         /// </summary>
-        public EarliestArrivalRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
+        public ProfileRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
             Vehicle sourceVehicle, GeoCoordinate source, Vehicle targetVehicle, GeoCoordinate target, Func<float, float> lazyness)
         {
             _db = db;
@@ -74,7 +74,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
             _lazyness = lazyness;
         }
 
-        private EarliestArrivalSearch _algorithm;
+        private ProfileSearch _algorithm;
 
         /// <summary>
         /// Executes the actual run of the algorithm.
@@ -99,18 +99,18 @@ namespace OsmSharp.Routing.Transit.Multimodal
             // instantiate earliest arrival search and run.
             if (_lazyness == null)
             {
-                _algorithm = new EarliestArrivalSearch(_db, _departureTime,
+                _algorithm = new ProfileSearch(_db, _departureTime,
                     sourceSearch, targetSearch);
             }
             else
             {
-                _algorithm = new EarliestArrivalSearch(_db, _departureTime,
+                _algorithm = new ProfileSearch(_db, _departureTime,
                     sourceSearch, targetSearch, _lazyness);
             }
 
             _algorithm.Run();
-            if(_algorithm.HasSucceeded)
-            { 
+            if (_algorithm.HasSucceeded)
+            {
                 this.HasSucceeded = true;
             }
         }
@@ -121,7 +121,7 @@ namespace OsmSharp.Routing.Transit.Multimodal
         /// <returns></returns>
         public Route BuildRoute()
         {
-            var routeBuilder = new EarliestArrivalSearchRouteBuilder(_algorithm, _db);
+            var routeBuilder = new ProfileSearchRouteBuilder(_algorithm, _db);
             return routeBuilder.Build();
         }
     }

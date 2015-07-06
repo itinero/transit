@@ -108,6 +108,7 @@
     <Compile Include="Instructions\Modal\ModalMicroPlanner.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ProfileSearchRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouterBase.cs" />
   </ItemGroup>

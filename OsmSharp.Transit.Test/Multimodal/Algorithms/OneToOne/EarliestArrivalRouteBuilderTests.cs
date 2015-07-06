@@ -75,7 +75,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.IsNull(route.Vehicle);
             Assert.AreEqual(3, route.Segments.Length);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
-            Assert.AreEqual("Transit.Wait", route.Segments[1].Vehicle);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitVehicle, route.Segments[1].Vehicle);
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Vehicle);
         }
 
@@ -125,7 +125,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.IsNull(route.Vehicle);
             Assert.AreEqual(4, route.Segments.Length);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
-            Assert.AreEqual("Transit.Wait", route.Segments[1].Vehicle);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitVehicle, route.Segments[1].Vehicle);
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Vehicle);
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
         }
@@ -186,7 +186,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(5, route.Segments.Length);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[1].Vehicle);
-            Assert.AreEqual("Transit.Wait", route.Segments[2].Vehicle);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitVehicle, route.Segments[2].Vehicle);
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[4].Vehicle);
         }
@@ -255,7 +255,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(5, route.Segments.Length);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[1].Vehicle);
-            Assert.AreEqual("Transit.Wait", route.Segments[2].Vehicle);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitVehicle, route.Segments[2].Vehicle);
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[4].Vehicle);
         }

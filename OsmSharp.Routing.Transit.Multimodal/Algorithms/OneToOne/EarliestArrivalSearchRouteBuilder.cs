@@ -155,7 +155,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = "Transit.Wait" // not an actual vehicle but just waiting.
+                        Vehicle = OsmSharp.Routing.Transit.Constants.WaitVehicle // not an actual vehicle but just waiting.
                     };
                 }
                 else if (previousTripId != null && connection == null)
@@ -175,7 +175,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = "Transit.Transfer" // not an actual vehicle but just a transfer.
+                        Vehicle = OsmSharp.Routing.Transit.Constants.TransferVehicle // not an actual vehicle but just a transfer.
                     };
                 }
                 else

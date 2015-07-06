@@ -29,7 +29,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
     /// A test fixture for the earliest arrival algorithm.
     /// </summary>
     [TestFixture]
-    public class EarliestArrivalTests
+    public class EarliestArrivalSearchTests
     {
         /// <summary>
         /// Tests a sucessful one-hop with a one-connection db.

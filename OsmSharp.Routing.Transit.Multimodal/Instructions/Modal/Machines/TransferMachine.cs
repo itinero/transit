@@ -108,7 +108,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Instructions.Modal.Machines
             if (arc != null &&
                 arc.Tags != null)
             { // there are tags.
-                return arc.Vehicle == "Transit.Wait";
+                return arc.Vehicle == OsmSharp.Routing.Transit.Constants.WaitVehicle ||
+                    arc.Vehicle == OsmSharp.Routing.Transit.Constants.TransferVehicle;
             }
             return false;
         }

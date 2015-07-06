@@ -101,10 +101,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilderTests.cs" />
     <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDbBuilder.cs" />
     <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyDykstraRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalTests.cs" />
@@ -118,7 +119,7 @@
     <Compile Include="RoutingAlgorithmMock.cs" />
     <Compile Include="TestNetworkFeed.cs" />
     <Compile Include="SampleFeed.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalTests.cs" />
+    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

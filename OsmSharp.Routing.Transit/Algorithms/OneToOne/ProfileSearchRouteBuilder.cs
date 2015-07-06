@@ -24,10 +24,10 @@ using System.Collections.Generic;
 namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 {
     /// <summary>
-    /// A class reponsable for building an earliest arrival route.
+    /// A class reponsable for building a profile search route.
     /// </summary>
     /// <remarks>This route builder uses raw GTFS data, we do not abstract away GTFS, convert other formats to GTFS.</remarks>
-    public class EarliestArrivalSearchRouteBuilder : OneToOneRouteBuilder<EarliestArrivalSearch>
+    public class ProfileSearchRouteBuilder : OneToOneRouteBuilder<ProfileSearch>
     {
         /// <summary>
         /// Holds the GTFS connections db.
@@ -39,8 +39,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         /// <param name="earliestArrival">The earliest arrival algorithm.</param>
         /// <param name="connectionsDb">The connections database.</param>
-        public EarliestArrivalSearchRouteBuilder(EarliestArrivalSearch earliestArrival, GTFSConnectionsDb connectionsDb)
-            :base(earliestArrival)
+        public ProfileSearchRouteBuilder(ProfileSearch earliestArrival, GTFSConnectionsDb connectionsDb)
+            : base(earliestArrival)
         {
             _connectionsDb = connectionsDb;
         }
@@ -51,42 +51,43 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <returns></returns>
         public override Route DoBuild()
         {
-            var stops = new List<Tuple<int, EarliestArrival>>();
+            var stops = new List<Tuple<int, Profile>>();
             var connections = new List<Connection?>();
 
             // build the route backwards from the target stop.
-            var status = this.Algorithm.GetStopStatus(this.Algorithm.TargetStop);
-            stops.Insert(0, new Tuple<int, EarliestArrival>(
-                this.Algorithm.TargetStop, status));
-            while(status.ConnectionId >= 0)
+            var profiles = this.Algorithm.GetStopProfiles(this.Algorithm.TargetStop);
+            var profile = profiles.GetBest();
+            stops.Insert(0, new Tuple<int, Profile>(
+                this.Algorithm.TargetStop, profile));
+            while (profile.ConnectionId >= 0)
             { // keep searching until the connection id < 0, meaning the start status, without a previous trip.
                 // get connection information.
-                var connection = this.Algorithm.GetConnection(status.ConnectionId);
-                status = this.Algorithm.GetStopStatus(connection.DepartureStop);
-                if (status.TripId < 0)
+                var connection = this.Algorithm.GetConnection(profile.ConnectionId);
+                profiles = this.Algorithm.GetStopProfiles(connection.DepartureStop);
+                profile = profiles.GetBest(profile);
+                if (profile.ConnectionId == Constants.NoConnectionId)
                 { // this stop has no trip, this means that it is the first stop.
                     // insert the stop first with the departuretime of this connection.
-                    var statusWithTrip = new EarliestArrival()
+                    var statusWithTrip = new Profile()
                     {
                         ConnectionId = Constants.NoConnectionId,
                         Seconds = connection.DepartureTime,
-                        Transfers = 1,
-                        TripId = connection.TripId
+                        Transfers = 1
                     };
                     connections.Insert(0, connection);
-                    stops.Insert(0, new Tuple<int, EarliestArrival>(
+                    stops.Insert(0, new Tuple<int, Profile>(
                         connection.DepartureStop, statusWithTrip));
 
                     // insert the first and final stop.
                     connections.Insert(0, null);
-                    stops.Insert(0, new Tuple<int, EarliestArrival>(
-                        connection.DepartureStop, status));
+                    stops.Insert(0, new Tuple<int, Profile>(
+                        connection.DepartureStop, profile));
                 }
                 else
                 { // just insert as normal.
                     connections.Insert(0, connection);
-                    stops.Insert(0, new Tuple<int, EarliestArrival>(
-                        connection.DepartureStop, status));
+                    stops.Insert(0, new Tuple<int, Profile>(
+                        connection.DepartureStop, profile));
                 }
             }
 
@@ -129,10 +130,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 if (previousTripId == null && connection == null)
                 { // this is waiting: current connection is null and there was no previous trip.
                     routeTags.Add(new RouteTags()
-                            {
-                                Key = "transit.timeofday",
-                                Value = stops[idx].Item2.Seconds.ToInvariantString()
-                            });
+                    {
+                        Key = "transit.timeofday",
+                        Value = stops[idx].Item2.Seconds.ToInvariantString()
+                    });
 
                     route.Segments[idx] = new RouteSegment()
                     {
@@ -146,7 +147,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Vehicle = Constants.WaitVehicle // not an actual vehicle but just waiting.
                     };
                 }
-                else if (previousTripId != null && connection == null)
+                else if (previousTripId != null || connection.Value.TripId == Constants.PseudoConnectionTripId)
                 { // this is a transfer: current connection is null but there was a previous trip.
                     routeTags.Add(new RouteTags()
                     {
@@ -163,7 +164,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = OsmSharp.Routing.Transit.Constants.TransferVehicle // not an actual vehicle but just a transfer.
+                        Vehicle = Constants.TransferVehicle // not an actual vehicle but just a transfer.
                     };
                 }
                 else
@@ -177,10 +178,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                     feedRoute.AppendTagsTo(routeTags);
                     feedAgency.AppendTagsTo(routeTags);
                     routeTags.Add(new RouteTags()
-                            {
-                                Key = "transit.timeofday",
-                                Value = stops[idx].Item2.Seconds.ToInvariantString()
-                            });
+                    {
+                        Key = "transit.timeofday",
+                        Value = stops[idx].Item2.Seconds.ToInvariantString()
+                    });
 
                     route.Segments[idx] = new RouteSegment()
                     {

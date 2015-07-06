@@ -415,5 +415,31 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             }
             return found.Value;
         }
+
+        /// <summary>
+        /// Gets the best profile given the previous profile.
+        /// </summary>
+        /// <returns></returns>
+        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, Profile previous)
+        {
+            Profile? found = null;
+            foreach (var profile in profileCollection)
+            {
+                if (found == null)
+                {
+                    found = profile;
+                }
+                else if (found.Value.Seconds > profile.Seconds)
+                {
+                    found = profile;
+                }
+                else if (found.Value.Seconds == profile.Seconds &&
+                    found.Value.Transfers > profile.Transfers)
+                {
+                    found = profile;
+                }
+            }
+            return found.Value;
+        }
     }
 }

@@ -42,5 +42,15 @@ namespace OsmSharp.Routing.Transit
         /// Holds the connection id to set if there is no information available.
         /// </summary>
         public const int NoConnectionId = -1;
+
+        /// <summary>
+        /// Holds the value to use as a vehicle profile when a segment in a route represents waiting time.
+        /// </summary>
+        public static string WaitVehicle = "Transit.Wait";
+
+        /// <summary>
+        /// Holds the value to use as a vehicle profile when a segment in a route represents a transfer from one trip to another.
+        /// </summary>
+        public static string TransferVehicle = "Transit.Transfer";
     }
 }

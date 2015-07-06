@@ -54,6 +54,11 @@ namespace OsmSharp.Routing.Transit.Data
         public int TripIdx { get; set; }
 
         /// <summary>
+        /// The route.
+        /// </summary>
+        public int RouteId { get; set; }
+
+        /// <summary>
         /// Returns a string representing this connection.
         /// </summary>
         /// <returns></returns>

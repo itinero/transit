@@ -44,6 +44,11 @@ namespace OsmSharp.Routing.Transit
         public const int NoConnectionId = -1;
 
         /// <summary>
+        /// Holds the route id in case there is no information available.
+        /// </summary>
+        public const int NoRouteId = -1;
+
+        /// <summary>
         /// Holds the value to use as a vehicle profile when a segment in a route represents waiting time.
         /// </summary>
         public static string WaitVehicle = "Transit.Wait";

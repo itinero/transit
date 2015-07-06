@@ -331,6 +331,11 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 Id = "1",
                 AgencyId = "0"
             });
+            feed.Routes.Add(new Route()
+            {
+                Id = "2",
+                AgencyId = "0"
+            });
             feed.Trips.Add(new Trip()
             {
                 Id = "0",

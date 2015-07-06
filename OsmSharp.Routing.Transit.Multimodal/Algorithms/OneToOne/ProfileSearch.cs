@@ -35,6 +35,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private readonly DateTime _departureTime;
         private readonly int _maximumSearchTime = OsmSharp.Routing.Transit.Constants.OneDayInSeconds;
         private readonly int _minimumTransferTime = 3 * 60;
+        private readonly int _defaultTransferPentaly = 5 * 60;
         private readonly OneToManyDykstra _sourceSearch;
         private readonly OneToManyDykstra _targetSearch;
         private readonly Func<int, DateTime, bool> _isTripPossible;
@@ -141,10 +142,12 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
+            var tripPerRoute = new Dictionary<int, int>(100);
 
             // keep a list of possible target stops.
             _bestTargetStop = -1;
             var targetProfilesWeight = double.MaxValue;
+            var targetProfilesTime = double.MaxValue;
             for (var connectionId = 0; connectionId < _connections.Count; connectionId++)
             { // scan all connections.
                 var connection = _connections[connectionId];
@@ -157,20 +160,38 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 }
 
                 // check if target has been reached and if departure time exceeds target arrival time.
-                if (departureTime >= targetProfilesWeight)
+                if (departureTime - targetProfilesTime >= (_defaultTransferPentaly * 5))
                 { // the current status at 'to' is the best status it's ever going to get.
                     break;
                 }
 
+                // check if route was visited already.
+                int routeTripId;
+                if(connection.TripId != Constants.NoRouteId &&
+                    tripPerRoute.TryGetValue(connection.TripId, out routeTripId) &&
+                    routeTripId != connection.TripId)
+                { // a different trip, but same route, do not consider again.
+                    continue;
+                }
+                tripPerRoute[connection.RouteId] = connection.TripId;
+
                 ProfileCollection departureProfiles;
                 if (_forwardProfiles.TryGetValue(connection.DepartureStop, out departureProfiles))
                 { // stop was visited, has a status.
+                    var transferTime = _minimumTransferTime;
+                    var tripPossible = false;
+                    var transfer = 1;
+                    var departureProfileTripId = Constants.NoConnectionId;
+                    if (departureProfiles.Seconds > departureTime)
+                    { // a departure here is not possible.
+                        continue;
+                    }
                     foreach (var departureProfile in departureProfiles)
                     {
-                        var transferTime = _minimumTransferTime;
-                        var tripPossible = false;
-                        var transfer = 1;
-                        var departureProfileTripId = Constants.NoConnectionId;
+                        transferTime = _minimumTransferTime;
+                        tripPossible = false;
+                        transfer = 1;
+                        departureProfileTripId = Constants.NoConnectionId;
                         if (departureProfile.ConnectionId != Constants.NoConnectionId)
                         { // connection is set.
                             departureProfileTripId = _connections[departureProfile.ConnectionId].TripId;
@@ -203,7 +224,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                                 {
                                     ConnectionId = connectionId,
                                     Transfers = (short)(departureProfile.Transfers + transfer),
-                                    Seconds = connection.ArrivalTime
+                                    Seconds = connection.ArrivalTime,
+                                    Lazyness = departureProfile.Lazyness,
+                                    PreviousConnectionId = departureProfile.ConnectionId
                                 };
 
                                 ProfileCollection arrivalProfiles;
@@ -225,11 +248,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                                     var arrivalStopProfiles = _forwardProfiles[connection.ArrivalStop];
                                     var weight = backwardStatus.Seconds + arrivalStopProfiles.Seconds +
                                         backwardStatus.Lazyness + arrivalStopProfiles.Lazyness;
-                                    if (_bestTargetStop < 0 ||
-                                        targetProfilesWeight >= weight)
+                                    if (_bestTargetStop < 0 || targetProfilesWeight >= weight)
                                     { // this current route is a better one.
                                         _bestTargetStop = connection.ArrivalStop;
                                         targetProfilesWeight = weight;
+                                        targetProfilesTime = backwardStatus.Seconds + arrivalStopProfiles.Seconds;
                                         this.HasSucceeded = true;
                                     }
                                 }
@@ -256,7 +279,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     ConnectionId = Constants.NoConnectionId,
                     Lazyness = (int)_lazyness(time),
                     Seconds = (int)time + (int)(_departureTime - _departureTime.Date).TotalSeconds,
-                    Transfers = 0
+                    Transfers = 0,
+                    PreviousConnectionId = Constants.NoConnectionId
                 }));
             }
             return true;
@@ -278,7 +302,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     ConnectionId = Constants.NoConnectionId,
                     Seconds = (int)time,
                     Lazyness = (int)_lazyness(time),
-                    Transfers = 0
+                    Transfers = 0,
+                    PreviousConnectionId = Constants.NoConnectionId
                 });
             }
             return true;
@@ -402,7 +427,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 this.Add(profile);
 
                 this.Seconds = profile.Seconds;
-                this.Lazyness = 0;
+                this.Lazyness = profile.Lazyness;
             }
 
             /// <summary>
@@ -446,10 +471,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 // when we get to this point no domination of profile.
                 this.Add(profile);
-                if (this.Lazyness + this.Seconds > profile.Seconds)
+                if (this.Lazyness + this.Seconds > profile.Seconds + profile.Lazyness)
                 {
                     this.Seconds = profile.Seconds;
-                    this.Lazyness = 0;
+                    this.Lazyness = profile.Lazyness;
                 }
                 return true;
             }
@@ -460,12 +485,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             /// <returns>null if there is no domination, true if profile1 dominates profile2 and false if profile2 dominates profile1.</returns>
             private bool? Dominates(Profile profile1, Profile profile2)
             {
-                if (profile1.ConnectionId == profile2.ConnectionId)
-                { // only compare profiles on the same connection.
-                    if (profile1.Transfers != profile2.Transfers)
-                    { // transfer count is different, one will definetly dominate.
-                        return profile1.Transfers.CompareTo(profile2.Transfers) < 0;
-                    }
+                if (profile1.Transfers != profile2.Transfers)
+                { // transfer count is different, one will definetly dominate.
+                    return profile1.Transfers.CompareTo(profile2.Transfers) < 0;
+                }
+                else if(profile1.Lazyness != profile2.Lazyness)
+                {
+                    return profile1.Lazyness.CompareTo(profile2.Lazyness) < 0;
+                }
+                else if(profile1.ConnectionId == profile2.ConnectionId)
+                { // identical.
+                    return true;
                 }
                 return null;
             }
@@ -484,6 +514,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         public int ConnectionId { get; set; }
 
         /// <summary>
+        /// The connection id before the connection we're coming from.
+        /// </summary>
+        public int PreviousConnectionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the # of transfers.
         /// </summary>
         public short Transfers { get; set; }
@@ -497,6 +532,16 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Gets or sets the lazyness.
         /// </summary>
         public int Lazyness { get; set; }
+
+        /// <summary>
+        /// Returns a description of this status.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Format("{3} -> {0} #{1} ({2})", this.Seconds, this.Transfers, this.Lazyness,
+                this.ConnectionId);
+        }
     }
 
     /// <summary>
@@ -517,11 +562,13 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 {
                     found = profile;
                 }
-                else if (found.Value.Seconds > profile.Seconds)
+                else if (found.Value.Seconds + found.Value.Lazyness > 
+                    profile.Seconds + profile.Lazyness)
                 {
                     found = profile;
                 }
-                else if (found.Value.Seconds == profile.Seconds &&
+                else if (found.Value.Seconds + found.Value.Lazyness ==
+                    profile.Seconds + profile.Lazyness &&
                     found.Value.Transfers > profile.Transfers)
                 {
                     found = profile;
@@ -534,37 +581,16 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Gets the best profile given the previous profile.
         /// </summary>
         /// <returns></returns>
-        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, IConnectionList connectionsList, Profile previous)
+        public static Profile GetBest(this IReadOnlyList<Profile> profileCollection, Profile previousProfile)
         {
-            var previousTripId = connectionsList.GetConnection(previous.ConnectionId).TripId;
-            Profile? found = null;
             foreach (var profile in profileCollection)
             {
-                var profileTripId = int.MaxValue;
-                if (profile.ConnectionId != Constants.NoConnectionId)
-                { // there is a connection, use it's trip.
-                    profileTripId = connectionsList.GetConnection(profile.ConnectionId).TripId;
-                    if (profileTripId == previousTripId)
-                    { // same trip, this is the only connection.
-                        found = profile;
-                        break;
-                    }
-                }
-                if (found == null)
+                if(profile.ConnectionId == previousProfile.PreviousConnectionId)
                 {
-                    found = profile;
-                }
-                else if (found.Value.Seconds > profile.Seconds)
-                {
-                    found = profile;
-                }
-                else if (found.Value.Seconds == profile.Seconds &&
-                    found.Value.Transfers > profile.Transfers)
-                {
-                    found = profile;
+                    return profile;
                 }
             }
-            return found.Value;
+            throw new Exception("Connection not found but profile points to connection as previous.");
         }
     }
 }

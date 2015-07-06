@@ -58,12 +58,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             var profile = profiles.GetBest();
             stops.Insert(0, new Tuple<int, Profile>(
                 bestTargetStop, profile));
+            var stopsInRoute = new HashSet<int>();
+            stopsInRoute.Add(bestTargetStop);
             while (profile.ConnectionId >= 0)
             { // keep searching until the connection id < 0, meaning the start status, without a previous trip.
                 // get connection information.
                 var connection = this.Algorithm.GetConnection(profile.ConnectionId);
                 profiles = this.Algorithm.GetStopProfiles(connection.DepartureStop);
-                profile = profiles.GetBest(this.Algorithm, profile);
+                profile = profiles.GetBest(profile);
                 if (profile.ConnectionId == Constants.NoConnectionId)
                 { // this stop has no trip, this means that it is the first stop.
                     // insert the stop first with the departuretime of this connection.
@@ -88,6 +90,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     connections.Insert(0, connection);
                     stops.Insert(0, new Tuple<int, Profile>(
                         connection.DepartureStop, profile));
+                    if(stopsInRoute.Contains(connection.DepartureStop))
+                    {
+                        throw new Exception("The same stop twice in the same route is impossible.");
+                    }
+                    stopsInRoute.Add(connection.DepartureStop);
                 }
             }
 

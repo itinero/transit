@@ -154,11 +154,28 @@ namespace OsmSharp.Routing.Transit.Data
 
             var stopIds = this.BuildStopIds();
             var tripIds = this.BuildTripIds();
+            var routeIds = this.BuildRouteIds();
 
-            var connections = this.BuildConnectionList(stopIds, tripIds);
+            var connections = this.BuildConnectionList(stopIds, tripIds, routeIds);
 
             this.BuildDepartureTimeView(connections);
             this.BuildArrivalTimeView(new List<Connection>(connections));
+        }
+
+        /// <summary>
+        /// Builds all the route ids.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, int> BuildRouteIds()
+        {
+            var routes = new Dictionary<string, int>();
+            var routeId = 0;
+            foreach (var route in _feed.Routes)
+            {
+                routes.Add(route.Id, routeId);
+                routeId++;
+            }
+            return routes;
         }
 
         /// <summary>
@@ -196,16 +213,16 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Builds a connections list.
         /// </summary>
-        /// <param name="stopIds">The stop id's per feed.</param>
-        /// <param name="tripIds">The trip id's per feed.</param>
         /// <returns></returns>
-        private List<Connection> BuildConnectionList(Dictionary<string, int> stopIds, Dictionary<string, int> tripIds)
+        private List<Connection> BuildConnectionList(Dictionary<string, int> stopIds, Dictionary<string, int> tripIds,
+            Dictionary<string, int> routeIds)
         {
             var connections = new List<Connection>();
             StopTime previousStopTime = null;
             var arrivalTimes = new Dictionary<int, List<int>>();
             var departureTimes = new Dictionary<int, List<int>>();
             var tripIdx = 0;
+            var routeId = -1;
             foreach (var stopTime in _feed.StopTimes)
             {
                 // get target stop id and arrival time.
@@ -241,20 +258,31 @@ namespace OsmSharp.Routing.Transit.Data
                     var trip = tripIds[previousStopTime.TripId];
 
                     // add connection.
-                    connections.Add(new Connection()
-                    {
-                        ArrivalStop = arrivalStop,
-                        ArrivalTime = arrival,
-                        DepartureStop = departureStop,
-                        DepartureTime = departure,
-                        TripId = trip,
-                        TripIdx = tripIdx
-                    });
+                    if (arrivalStop == departureStop)
+                    { // an invalid connection.
+                        OsmSharp.Logging.Log.TraceEvent("GTFSConnectionsDB.BuildConnectionList", Logging.TraceEventType.Warning,
+                            string.Format("A connection with the same departure and arrival stop detected on trip: {0}.", previousStopTime.TripId));
+                    }
+                    else
+                    { // we have a valid connection here!
+                        connections.Add(new Connection()
+                        {
+                            ArrivalStop = arrivalStop,
+                            ArrivalTime = arrival,
+                            DepartureStop = departureStop,
+                            DepartureTime = departure,
+                            TripId = trip,
+                            TripIdx = tripIdx,
+                            RouteId = routeId
+                        });
+                    }
                     tripIdx++;
                 }
                 else
                 { // reset trip idx.
                     tripIdx = 0;
+                    var trip = _feed.Trips.Get(tripIds[stopTime.TripId]);
+                    routeId = routeIds[trip.RouteId];
                 }
                 previousStopTime = stopTime;
             }
@@ -297,7 +325,8 @@ namespace OsmSharp.Routing.Transit.Data
                                             ArrivalTime = targetTimes[targetIdx],
                                             DepartureStop = sourceKeyValue.Value,
                                             DepartureTime = sourceTimes[sourceIdx],
-                                            TripId = Constants.PseudoConnectionTripId
+                                            TripId = Constants.PseudoConnectionTripId,
+                                            RouteId = Constants.NoRouteId
                                         });
                                     sourceIdx++;
                                 }

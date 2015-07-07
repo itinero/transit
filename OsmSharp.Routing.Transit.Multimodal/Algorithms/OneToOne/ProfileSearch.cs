@@ -274,7 +274,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private bool ReachedVertexForward(uint vertex, float time)
         {
             int stopId;
-            if (_db.TryGetStop(vertex, out stopId))
+            if (_db.TryGetStop(vertex, out stopId) &&
+                !_forwardProfiles.ContainsKey(stopId))
             { // the vertex is a stop, mark it as reached.
                 _forwardProfiles.Add(stopId, new ProfileCollection(new Profile()
                 {
@@ -297,7 +298,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private bool ReachedVertexBackward(uint vertex, float weight)
         {
             int stopId;
-            if (_db.TryGetStop(vertex, out stopId))
+            if (_db.TryGetStop(vertex, out stopId) &&
+                !_backwardProfiles.ContainsKey(stopId))
             { // the vertex is a stop, mark it as reached.
                 _backwardProfiles.Add(stopId, new Profile()
                 {
@@ -357,6 +359,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             {
                 this.CheckHasRunAndHasSucceeded();
 
+                if(_bestWeight == float.MaxValue)
+                {
+                    return true;
+                }
                 if (_bestTargetStop != -1)
                 {
                     var transitTime = _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds

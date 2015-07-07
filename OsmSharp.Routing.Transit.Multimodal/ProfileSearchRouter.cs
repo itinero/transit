@@ -35,9 +35,11 @@ namespace OsmSharp.Routing.Transit.Multimodal
     {
         private readonly GeoCoordinate _sourceLocation;
         private readonly GeoCoordinate _targetLocation;
-        private readonly MultimodalConnectionsDb _db;
+        private readonly int _maxSource;
+        private readonly int _maxTarget;
         private readonly Vehicle _sourceVehicle;
         private readonly Vehicle _targetVehicle;
+        private readonly MultimodalConnectionsDb _db;
         private readonly IRoutingInterpreter _routingInterpreter;
         private readonly DateTime _departureTime;
         private readonly Func<float, float> _lazyness;
@@ -56,6 +58,8 @@ namespace OsmSharp.Routing.Transit.Multimodal
             _targetVehicle = targetVehicle;
             _targetLocation = target;
             _lazyness = null;
+            _maxSource = 10 * 60;
+            _maxTarget = 10 * 60;
         }
 
         /// <summary>
@@ -72,6 +76,27 @@ namespace OsmSharp.Routing.Transit.Multimodal
             _targetVehicle = targetVehicle;
             _targetLocation = target;
             _lazyness = lazyness;
+            _maxSource = 10 * 60;
+            _maxTarget = 10 * 60;
+        }
+
+        /// <summary>
+        /// Creates a new earliest arrival router.
+        /// </summary>
+        public ProfileRouter(MultimodalConnectionsDb db, IRoutingInterpreter routingInterpreter, DateTime departureTime,
+            Vehicle sourceVehicle, GeoCoordinate source, int maxSource, Vehicle targetVehicle, GeoCoordinate target, int maxTarget, 
+            Func<float, float> lazyness)
+        {
+            _db = db;
+            _routingInterpreter = routingInterpreter;
+            _departureTime = departureTime;
+            _sourceVehicle = sourceVehicle;
+            _sourceLocation = source;
+            _targetVehicle = targetVehicle;
+            _targetLocation = target;
+            _lazyness = lazyness;
+            _maxSource = maxSource;
+            _maxTarget = maxTarget;
         }
 
         private ProfileSearch _algorithm;
@@ -85,16 +110,16 @@ namespace OsmSharp.Routing.Transit.Multimodal
             var sourceResolver = new PathSegmentVisitListResolver(_db.Graph, _sourceVehicle);
             var sourcePoint = sourceResolver.Resolve(_sourceLocation);
             var source = sourceResolver.GetHook(sourcePoint);
-            var targetResolver = new PathSegmentVisitListResolver(_db.Graph, _sourceVehicle);
+            var targetResolver = new PathSegmentVisitListResolver(_db.Graph, _targetVehicle);
             var targetPoint = targetResolver.Resolve(_targetLocation);
             var target = sourceResolver.GetHook(targetPoint);
 
             // instantiate source search.
             var sourceSearch = new OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra(
-                _db.Graph, _routingInterpreter, _sourceVehicle, source, 3600, false);
+                _db.Graph, _routingInterpreter, _sourceVehicle, source, _maxSource, false);
             // instantiate target search.
             var targetSearch = new OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra(
-                _db.Graph, _routingInterpreter, _sourceVehicle, target, 3600, true);
+                _db.Graph, _routingInterpreter, _targetVehicle, target, _maxTarget, true);
 
             // instantiate earliest arrival search and run.
             if (_lazyness == null)

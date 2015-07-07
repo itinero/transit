@@ -102,6 +102,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         // bidirectional dykstra management.
         private uint _bestVertex = uint.MaxValue;
         private float _bestWeight = float.MaxValue;
+        private bool _bidirectional = false;
 
         /// <summary>
         /// Executes the algorithm.
@@ -114,6 +115,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _bestTargetStop = -1;
             _bestVertex = uint.MaxValue;
             _bestWeight = float.MaxValue;
+            _bidirectional = _sourceSearch.Vehicle.UniqueName.Equals(_targetSearch.Vehicle.UniqueName);
 
             // STEP1: calculate forward from source and keep track of all stops reached.
             _sourceSearch.WasFound = (vertex, time) =>
@@ -286,6 +288,20 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     PreviousConnectionId = Constants.NoConnectionId
                 }));
             }
+
+            if (!_bidirectional)
+            { // only use forward visits when non-bidirectional routing.
+                if(_targetSearch.Source.Contains(vertex))
+                {
+                    var pathTo = _targetSearch.Source.GetPathTo(vertex);
+                    if(pathTo.Weight + time < _bestWeight)
+                    { // best vertex was found.
+                        _bestWeight = (float)pathTo.Weight + time;
+                        _bestVertex = vertex;
+                        this.HasSucceeded = true;
+                    }
+                }
+            }
             return true;
         }
 
@@ -312,15 +328,18 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             }
 
             // check forward search for the same vertex.
-            DykstraVisit forwardVisit;
-            if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
-            { // there is a status for this vertex in the source search.
-                weight = weight + forwardVisit.Weight;
-                if (weight < _bestWeight)
-                { // this vertex is a better match.
-                    _bestWeight = weight;
-                    _bestVertex = vertex;
-                    this.HasSucceeded = true;
+            if (_bidirectional)
+            { // only use backward visits when bidirectional routing.
+                DykstraVisit forwardVisit;
+                if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
+                { // there is a status for this vertex in the source search.
+                    weight = weight + forwardVisit.Weight;
+                    if (weight < _bestWeight)
+                    { // this vertex is a better match.
+                        _bestWeight = weight;
+                        _bestVertex = vertex;
+                        this.HasSucceeded = true;
+                    }
                 }
             }
             return true;

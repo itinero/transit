@@ -540,6 +540,88 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Tests a successful one-hop with a one-connection db and with before- and after road segments that competes with a 15km stretch of road and has different departure and arrival vehicles.
+        /// </summary>
+        [Test]
+        public void TestOneHopWithBeforeAndAfterVersus15kmRoadDifferentVehicles()
+        {
+            // build dummy db.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var connectionsDb = new MultimodalConnectionsDb(
+                graph,
+                new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.OneConnection(
+                    new TimeOfDay()
+                    {
+                        Hours = 8
+                    },
+                    new TimeOfDay()
+                    {
+                        Hours = 8,
+                        Minutes = 10
+                    })),
+                new OsmRoutingInterpreter());
+            var tagsIndex = (TagsIndex)connectionsDb.Graph.TagsIndex;
+            var tagsId = tagsIndex.Add(new TagsCollection(new Tag() { Key = "highway", Value = "residential" }));
+            var vertex1 = connectionsDb.Graph.AddVertex(0.000000f, 0f);
+            var vertex2 = (uint)1;
+            var vertex3 = (uint)2;
+            var vertex4 = connectionsDb.Graph.AddVertex(0.144045f, 0f);
+            connectionsDb.Graph.SetVertex(vertex2, 0.004484f, 0f);
+            connectionsDb.Graph.SetVertex(vertex3, 0.139560f, 0f);
+            connectionsDb.Graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+            connectionsDb.Graph.AddEdge(vertex2, vertex3, new Edge()
+            {
+                Distance = 15000,
+                Forward = true,
+                Tags = tagsId
+            });
+            connectionsDb.Graph.AddEdge(vertex3, vertex4, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new ProfileSearch(connectionsDb, departureTime,
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Bicycle,
+                    new PathSegmentVisitList(vertex1), int.MaxValue, true),
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
+                    new PathSegmentVisitList(vertex4), int.MaxValue, false));
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            Assert.IsTrue(algorithm.HasTransit);
+            var duration500mPedestrian = (int)(500 / ((OsmSharp.Units.Speed.MeterPerSecond)Vehicle.Pedestrian.ProbableSpeed(tagsIndex.Get(tagsId))).Value);
+            var duration500mBicycle = (int)(500 / ((OsmSharp.Units.Speed.MeterPerSecond)Vehicle.Bicycle.ProbableSpeed(tagsIndex.Get(tagsId))).Value);
+            var duration = 40 * 60 + duration500mPedestrian;
+            Assert.AreEqual(duration, algorithm.Duration(), 1);
+            Assert.AreEqual(new DateTime(2017, 05, 10, 07, 30, 00).AddSeconds(duration), algorithm.ArrivalTime());
+
+            var profiles = algorithm.GetStopProfiles(1);
+            var profile = profiles.GetBest();
+            Assert.AreEqual(0, profile.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
+            Assert.AreEqual(0, profile.Transfers);
+            var connection = algorithm.GetConnection(profile.ConnectionId);
+            Assert.AreEqual(0, connection.DepartureStop);
+            Assert.AreEqual(0, connection.TripId);
+            profiles = algorithm.GetStopProfiles(0);
+            profile = profiles.GetBest(profile);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + duration500mBicycle, profile.Seconds, 1);
+            Assert.AreEqual(0, profile.Transfers);
+        }
+
+        /// <summary>
         /// Tests a successful two-hop, one transfer with a four-connection db where one pseudo connection is skipped.
         /// </summary>
         [Test]
@@ -655,6 +737,43 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
                 new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
                     new PathSegmentVisitList(vertex1), 1000, true),
                 new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
+                    new PathSegmentVisitList(vertex2), 1000, false));
+            algorithm.Run();
+
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+            Assert.IsFalse(algorithm.HasTransit);
+            Assert.AreEqual(2, algorithm.GetBestNonTransitVertex());
+        }
+
+        /// <summary>
+        /// Tests a one hop route without any transit data and with different vehicles and source and target.
+        /// </summary>
+        [Test]
+        public void TestOneHopNoTransitDifferentVehicles()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var connectionsDb = new MultimodalConnectionsDb(graph,
+                new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.Empty()),
+                new OsmRoutingInterpreter(), Vehicle.Pedestrian);
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new ProfileSearch(connectionsDb, departureTime,
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
+                    new PathSegmentVisitList(vertex1), 1000, true),
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Bicycle,
                     new PathSegmentVisitList(vertex2), 1000, false));
             algorithm.Run();
 

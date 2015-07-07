@@ -33,34 +33,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
     /// </summary>
     public class OneToManyDykstra : RoutingAlgorithmBase, IDykstraAlgorithm
     {
-        /// <summary>
-        /// Holds the routing graph.
-        /// </summary>
         private readonly RouterDataSource<Edge> _graph;
-
-        /// <summary>
-        /// Hold the routing intepreter.
-        /// </summary>
         private readonly IRoutingInterpreter _interpreter;
-
-        /// <summary>
-        /// Holds the source vehicle.
-        /// </summary>
         private readonly Vehicle _vehicle;
-
-        /// <summary>
-        /// Holds the source location.
-        /// </summary>
         private readonly PathSegmentVisitList _source;
-
-        /// <summary>
-        /// Holds the maximum seconds for the source vehicle.
-        /// </summary>
         private readonly int _sourceMax;
-
-        /// <summary>
-        /// Holds the backward flag.
-        /// </summary>
         private readonly bool _backward;
 
         /// <summary>
@@ -228,6 +205,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         public bool TryGetVisit(long vertex, out DykstraVisit visit)
         {
             return _visits.TryGetValue(vertex, out visit);
+        }
+
+        /// <summary>
+        /// Returns the source visit list.
+        /// </summary>
+        public PathSegmentVisitList Source
+        {
+            get
+            {
+                return _source;
+            }
         }
 
         /// <summary>

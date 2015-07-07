@@ -84,121 +84,139 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
             _backward = backward;
         }
 
-        /// <summary>
-        /// Holds all visits made during the search.
-        /// </summary>
         private Dictionary<long, DykstraVisit> _visits;
+        private DykstraVisit _current;
+        private BinaryHeap<DykstraVisit> _heap;
+        private Speed _noSpeed = new Speed() { Direction = null, MeterPerSecond = 0 };
+        private Dictionary<uint, Speed> _speeds;
 
         /// <summary>
         /// Executes the algorithm.
         /// </summary>
         protected override void DoRun()
         {
+            // initialize stuff.
+            this.Initialize();
+
+            // start the search.
+            while (this.Step()) { }
+        }
+
+        /// <summary>
+        /// Initializes and resets.
+        /// </summary>
+        public void Initialize()
+        {
             // algorithm always succeeds, it may be dealing with an empty network and there are no targets.
             this.HasSucceeded = true;
 
             // initialize a dictionary of speeds per profile.
-            var speeds = new Dictionary<uint, Speed>();
-            var noSpeed = new Speed() { Direction = null, MeterPerSecond = 0 };
+            _speeds = new Dictionary<uint, Speed>();
 
             // intialize dykstra data structures.
             _visits = new Dictionary<long, DykstraVisit>();
-            var heap = new BinaryHeap<DykstraVisit>(1000);
+            _heap = new BinaryHeap<DykstraVisit>(1000);
 
             // queue all source vertices.
             foreach (long vertex in _source.GetVertices())
             {
                 var path = _source.GetPathTo(vertex);
-                heap.Push(new DykstraVisit(path), (float)path.Weight);
+                _heap.Push(new DykstraVisit(path), (float)path.Weight);
+            }
+        }
+
+        /// <summary>
+        /// Executes one step in the search.
+        /// </summary>
+        public bool Step()
+        {
+            // while the visit list is not empty.
+            _current = null;
+            if (_heap.Count > 0)
+            { // choose the next vertex.
+                _current = _heap.Pop();
+                while (_current != null && _visits.ContainsKey(_current.Vertex))
+                { // keep dequeuing.
+                    if(_heap.Count == 0)
+                    { // nothing more to pop.
+                        break;
+                    }
+                    _current = _heap.Pop();
+                }
             }
 
-            // start the search.
-            var current = heap.Pop();
-            while(true)
+            if (_current != null)
+            { // we visit this one, set visit.
+                _visits[_current.Vertex] = _current;
+            }
+            else
+            { // route is not found, there are no vertices left
+                // or the search went outside of the max bounds.
+                return false;
+            }
+
+            if (this.WasFound != null && !this.WasFound(_current.Vertex, _current.Weight))
+            { // vertex was found and false was returned.
+                return false;
+            }
+
+            // get neighbours.
+            var edges = _graph.GetEdges(Convert.ToUInt32(_current.Vertex));
+
+            while (edges.MoveNext())
             {
-                if (current != null)
-                { // we visit this one, set visit.
-                    _visits[current.Vertex] = current;
-                }
-                else
-                { // route is not found, there are no vertices left
-                    // or the search went outside of the max bounds.
-                    break;
+                var edge = edges;
+                var neighbour = edge.Neighbour;
+
+                if (_current.From == neighbour)
+                { // don't go back!
+                    continue;
                 }
 
-                if (this.WasFound != null && !this.WasFound(current.Vertex, current.Weight))
-                { // vertex was found and false was returned.
-                    return;
+                if (_visits.ContainsKey(neighbour))
+                { // has already been choosen.
+                    continue;
                 }
 
-                // get neighbours.
-                var edges = _graph.GetEdges(Convert.ToUInt32(current.Vertex));
-
-                while(edges.MoveNext())
-                {
-                    var edge = edges;
-                    var neighbour = edge.Neighbour;
-
-                    if (current.From == neighbour)
-                    { // don't go back!
-                        continue;
+                // get the speed from cache or calculate.
+                var edgeData = edge.EdgeData;
+                var speed = _noSpeed;
+                if (!_speeds.TryGetValue(edgeData.Tags, out speed))
+                { // speed not there, calculate speed.
+                    var tags = _graph.TagsIndex.Get(edgeData.Tags);
+                    speed = _noSpeed;
+                    if (_vehicle.CanTraverse(tags))
+                    { // can traverse, speed not null!
+                        speed = new Speed()
+                        {
+                            MeterPerSecond = ((OsmSharp.Units.Speed.MeterPerSecond)_vehicle.ProbableSpeed(tags)).Value,
+                            Direction = _vehicle.IsOneWay(tags)
+                        };
                     }
+                    _speeds.Add(edgeData.Tags, speed);
+                }
 
-                    if (_visits.ContainsKey(neighbour))
-                    { // has already been choosen.
-                        continue;
-                    }
+                // check the tags against the interpreter.
+                if (speed.MeterPerSecond > 0 && (!speed.Direction.HasValue ||
+                    (!_backward && speed.Direction.Value == edgeData.Forward) ||
+                    (_backward && speed.Direction.Value != edgeData.Forward)))
+                { // it's ok; the edge can be traversed by the given vehicle.
+                    if (_current.From == 0 ||
+                        (!_backward && _interpreter.CanBeTraversed(_current.From, _current.Vertex, neighbour)) ||
+                        (_backward && _interpreter.CanBeTraversed(neighbour, _current.Vertex, _current.From)))
+                    { // the neighbour is forward and is not settled yet!
+                        // calculate neighbors weight.
+                        var totalWeight = _current.Weight + (edgeData.Distance / speed.MeterPerSecond);
 
-                    // get the speed from cache or calculate.
-                    var edgeData = edge.EdgeData;
-                    var speed = noSpeed;
-                    if (!speeds.TryGetValue(edgeData.Tags, out speed))
-                    { // speed not there, calculate speed.
-                        var tags = _graph.TagsIndex.Get(edgeData.Tags);
-                        speed = noSpeed;
-                        if (_vehicle.CanTraverse(tags))
-                        { // can traverse, speed not null!
-                            speed = new Speed()
-                            {
-                                MeterPerSecond = ((OsmSharp.Units.Speed.MeterPerSecond)_vehicle.ProbableSpeed(tags)).Value,
-                                Direction = _vehicle.IsOneWay(tags)
-                            };
+                        if (totalWeight < _sourceMax)
+                        { // update the visit list.
+                            var neighbourVisit = new DykstraVisit(neighbour, _current.Vertex, (float)totalWeight, edge.EdgeData, edge.Intermediates);
+                            _heap.Push(neighbourVisit, neighbourVisit.Weight);
                         }
-                        speeds.Add(edgeData.Tags, speed);
-                    }
-
-                    // check the tags against the interpreter.
-                    if (speed.MeterPerSecond > 0 && (!speed.Direction.HasValue || 
-                        (!_backward && speed.Direction.Value == edgeData.Forward) || 
-                        (_backward && speed.Direction.Value != edgeData.Forward)))
-                    { // it's ok; the edge can be traversed by the given vehicle.
-                        if (current.From == 0 || 
-                            (!_backward && _interpreter.CanBeTraversed(current.From, current.Vertex, neighbour)) ||
-                            (_backward && _interpreter.CanBeTraversed(neighbour, current.Vertex, current.From)))
-                        { // the neighbour is forward and is not settled yet!
-                            // calculate neighbors weight.
-                            var totalWeight = current.Weight + (edgeData.Distance / speed.MeterPerSecond);
-
-                            if (totalWeight < _sourceMax)
-                            { // update the visit list.
-                                var neighbourVisit = new DykstraVisit(neighbour, current.Vertex, (float)totalWeight, edge.EdgeData, edge.Intermediates);
-                                heap.Push(neighbourVisit, neighbourVisit.Weight);
-                            }
-                        }
-                    }
-                }
-
-                // while the visit list is not empty.
-                current = null;
-                if (heap.Count > 0)
-                { // choose the next vertex.
-                    current = heap.Pop();
-                    while (current != null && _visits.ContainsKey(current.Vertex))
-                    { // keep dequeuing.
-                        current = heap.Pop();
                     }
                 }
             }
+            return true;
         }
 
         /// <summary>
@@ -209,8 +227,6 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <returns></returns>
         public bool TryGetVisit(long vertex, out DykstraVisit visit)
         {
-            this.CheckHasRunAndHasSucceeded();
-
             return _visits.TryGetValue(vertex, out visit);
         }
 

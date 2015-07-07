@@ -83,6 +83,7 @@
     <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
+    <Compile Include="Algorithms\OneToOne\BidirectionalDykstra.cs" />
     <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilder.cs" />

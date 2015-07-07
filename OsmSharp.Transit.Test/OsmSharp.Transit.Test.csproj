@@ -107,6 +107,7 @@
     <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyDykstraRouteBuilderTests.cs" />
+    <Compile Include="Multimodal\Algorithms\OneToOne\BidirectionalDykstraTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalTests.cs" />
     <Compile Include="Multimodal\Algorithms\OneToOne\ProfileSearchRouteBuilderTests.cs" />

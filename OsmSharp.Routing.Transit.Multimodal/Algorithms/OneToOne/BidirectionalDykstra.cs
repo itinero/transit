@@ -34,7 +34,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// </summary>
         public BidirectionalDykstra(OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
         {
-            if (!_sourceSearch.Vehicle.UniqueName.Equals(targetSearch.Vehicle.UniqueName)) { throw new ArgumentException("Bidirectional search is impossible with different vehicle profiles for forward and backward search."); }
+            if (!sourceSearch.Vehicle.UniqueName.Equals(targetSearch.Vehicle.UniqueName)) { throw new ArgumentException("Bidirectional search is impossible with different vehicle profiles for forward and backward search."); }
 
             _sourceSearch = sourceSearch;
             _targetSearch = targetSearch;

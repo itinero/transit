@@ -27,6 +27,15 @@ namespace OsmSharp.Transit.Test.Data.GTFS
     public static class GTFSConnectionsDbBuilder
     {
         /// <summary>
+        /// Builds an empty GTFS feed.
+        /// </summary>
+        /// <returns></returns>
+        public static IGTFSFeed Empty()
+        {
+            return new GTFSFeed();
+        }
+
+        /// <summary>
         /// Builds a GTFS feed with just one connection.
         /// </summary>
         /// <returns></returns>

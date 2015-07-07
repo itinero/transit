@@ -94,20 +94,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _compareStatuses = compareStatuses;
         }
 
-        /// <summary>
-        /// Holds all the status of all stops touched by the backward search.
-        /// </summary>
+        // transit data management.
         private Dictionary<int, Profile> _backwardProfiles;
-
-        /// <summary>
-        /// Holds all the statuses of all stops that have been touched the forward search.
-        /// </summary>
         private Dictionary<int, ProfileCollection> _forwardProfiles;
-
-        /// <summary>
-        /// Holds the best target stop.
-        /// </summary>
         private int _bestTargetStop;
+
+        // bidirectional dykstra management.
+        private uint _bestVertex = uint.MaxValue;
+        private float _bestWeight = float.MaxValue;
 
         /// <summary>
         /// Executes the algorithm.
@@ -117,6 +111,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             // initialize visits.
             _forwardProfiles = new Dictionary<int, ProfileCollection>();
             _backwardProfiles = new Dictionary<int, Profile>(100);
+            _bestTargetStop = -1;
+            _bestVertex = uint.MaxValue;
+            _bestWeight = float.MaxValue;
 
             // STEP1: calculate forward from source and keep track of all stops reached.
             _sourceSearch.WasFound = (vertex, time) =>
@@ -132,7 +129,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             };
             _targetSearch.Run();
 
-            if(_forwardProfiles.Count == 0 || _backwardProfiles.Count == 0)
+            if((_forwardProfiles.Count == 0 || _backwardProfiles.Count == 0) &&
+                _bestWeight == float.MaxValue)
             { // search failed because no forward or backward stops in range.
                 return; 
             }
@@ -150,7 +148,6 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             var tripPerRoute = new Dictionary<int, int>(100);
 
             // keep a list of possible target stops.
-            _bestTargetStop = -1;
             var targetProfilesWeight = double.MaxValue;
             var targetProfilesTime = double.MaxValue;
             for (var connectionId = 0; connectionId < _connections.Count; connectionId++)
@@ -295,9 +292,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Called when a vertex was reached during a backward search.
         /// </summary>
         /// <param name="vertex">The vertex reached.</param>
-        /// <param name="time">The time to reach it.</param>
+        /// <param name="weight">The time to reach it.</param>
         /// <returns></returns>
-        private bool ReachedVertexBackward(uint vertex, float time)
+        private bool ReachedVertexBackward(uint vertex, float weight)
         {
             int stopId;
             if (_db.TryGetStop(vertex, out stopId))
@@ -305,15 +302,27 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 _backwardProfiles.Add(stopId, new Profile()
                 {
                     ConnectionId = Constants.NoConnectionId,
-                    Seconds = (int)time,
-                    Lazyness = (int)_lazyness(time),
+                    Seconds = (int)weight,
+                    Lazyness = (int)_lazyness(weight),
                     Transfers = 0,
                     PreviousConnectionId = Constants.NoConnectionId
                 });
             }
+
+            // check forward search for the same vertex.
+            DykstraVisit forwardVisit;
+            if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
+            { // there is a status for this vertex in the source search.
+                weight = weight + forwardVisit.Weight;
+                if (weight < _bestWeight)
+                { // this vertex is a better match.
+                    _bestWeight = weight;
+                    _bestVertex = vertex;
+                    this.HasSucceeded = true;
+                }
+            }
             return true;
         }
-
 
         /// <summary>
         /// Gets the calculated arrival time.
@@ -337,6 +346,25 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
             return _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds
                 - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+        }
+
+        /// <summary>
+        /// Returns true if the best route route has transit, false otherwise.
+        /// </summary>
+        public bool HasTransit
+        {
+            get
+            {
+                this.CheckHasRunAndHasSucceeded();
+
+                if (_bestTargetStop != -1)
+                {
+                    var transitTime = _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds
+                        - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+                    return transitTime < (int)_bestWeight;
+                }
+                return false;
+            }
         }
 
         /// <summary>
@@ -375,6 +403,16 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             this.CheckHasRunAndHasSucceeded();
 
             return _bestTargetStop;
+        }
+
+        /// <summary>
+        /// Gets the best non-transit vertex.
+        /// </summary>
+        public uint GetBestNonTransitVertex()
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return _bestVertex;
         }
 
         /// <summary>

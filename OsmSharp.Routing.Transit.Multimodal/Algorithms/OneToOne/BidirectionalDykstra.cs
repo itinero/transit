@@ -104,6 +104,28 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Returns the source-search algorithm.
+        /// </summary>
+        public OneToManyDykstra SourceSearch
+        {
+            get
+            {
+                return _sourceSearch;
+            }
+        }
+
+        /// <summary>
+        /// Returns the target-search algorithm.
+        /// </summary>
+        public OneToManyDykstra TargetSearch
+        {
+            get
+            {
+                return _targetSearch;
+            }
+        }
+
+        /// <summary>
         /// Gets the best vertex.
         /// </summary>
         public uint BestVertex
@@ -114,24 +136,6 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 return _bestVertex;
             }
-        }
-
-        /// <summary>
-        /// Tries to get the visit information to the source.
-        /// </summary>
-        /// <returns></returns>
-        public bool TryGetSourceVisit(uint vertex, out DykstraVisit visit)
-        {
-            return _sourceSearch.TryGetVisit(vertex, out visit);
-        }
-
-        /// <summary>
-        /// Tries to get the visit information from the source.
-        /// </summary>
-        /// <returns></returns>
-        public bool TryGetTargetVisit(uint vertex, out DykstraVisit visit)
-        {
-            return _targetSearch.TryGetVisit(vertex, out visit);
         }
     }
 }

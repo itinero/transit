@@ -259,5 +259,53 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Vehicle);
             Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[4].Vehicle);
         }
+
+        /// <summary>
+        /// Tests a one hop route without any transit data.
+        /// </summary>
+        [Test]
+        public void TestOneHopNoTransit()
+        {
+            // build a tiny test graph.
+            var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
+            var connectionsDb = new MultimodalConnectionsDb(graph,
+                new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.Empty()),
+                new OsmRoutingInterpreter(), Vehicle.Pedestrian);
+            var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
+            var tagsId = graph.TagsIndex.Add(tags);
+            var vertex1 = graph.AddVertex(0.000000f, 0f);
+            var vertex2 = graph.AddVertex(0.004484f, 0f);
+            graph.AddEdge(vertex1, vertex2, new Edge()
+            {
+                Distance = 500,
+                Forward = true,
+                Tags = tagsId
+            });
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new ProfileSearch(connectionsDb, departureTime,
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex1), 1000, false),
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, new PathSegmentVisitList(vertex2), 1000, true));
+            algorithm.Run();
+
+            // run routebuilder.
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, connectionsDb);
+            var route = routeBuilder.Build();
+
+            Assert.IsNotNull(route);
+            Assert.IsNotNull(route.Vehicle);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[0].Vehicle);
+            Assert.AreEqual(2, route.Segments.Length);
+            Assert.AreEqual(0, route.Segments[0].Distance);
+            Assert.AreEqual(0, route.Segments[0].Time);
+            Assert.AreEqual(Vehicle.Pedestrian.UniqueName, route.Segments[1].Vehicle);
+            Assert.AreEqual(500, route.Segments[1].Distance);
+            Assert.AreEqual(500 / Vehicle.Pedestrian.ProbableSpeed(tags).Value * 3.6, route.Segments[1].Time);
+            Assert.IsNotNull(route.Segments[1].Tags);
+            Assert.AreEqual(1, route.Segments[1].Tags.Length);
+            Assert.AreEqual("highway", route.Segments[1].Tags[0].Key);
+            Assert.AreEqual("residential", route.Segments[1].Tags[0].Value);
+        }
     }
 }

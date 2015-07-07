@@ -278,9 +278,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Called when a vertex was reached during a backward search.
         /// </summary>
         /// <param name="vertex">The vertex reached.</param>
-        /// <param name="time">The time to reach it.</param>
+        /// <param name="weight">The time to reach it.</param>
         /// <returns></returns>
-        private bool ReachedVertexBackward(uint vertex, float time)
+        private bool ReachedVertexBackward(uint vertex, float weight)
         {
             int stopId;
             if (_db.TryGetStop(vertex, out stopId))
@@ -288,8 +288,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 _backwardStopStatuses.Add(stopId, new StopStatus()
                 {
                     ConnectionId = Constants.NoConnectionId,
-                    Seconds = (int)time,
-                    Lazyness = (int)_lazyness(time),
+                    Seconds = (int)weight,
+                    Lazyness = (int)_lazyness(weight),
                     Transfers = 0,
                     TripId = Constants.NoTripId
                 });

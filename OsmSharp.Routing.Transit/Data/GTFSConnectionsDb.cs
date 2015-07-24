@@ -231,7 +231,7 @@ namespace OsmSharp.Routing.Transit.Data
 
                 // add to list of stop times.
                 List<int> localStopTimes;
-                if(!arrivalTimes.TryGetValue(arrivalStop, out localStopTimes))
+                if (!arrivalTimes.TryGetValue(arrivalStop, out localStopTimes))
                 { // create new list.
                     localStopTimes = new List<int>();
                     arrivalTimes.Add(arrivalStop, localStopTimes);
@@ -288,36 +288,36 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             // build transfers db.
-            foreach(var sourceKeyValue in stopIds)
+            foreach (var sourceKeyValue in stopIds)
             {
                 var sourceStop = _feed.Stops.Get(sourceKeyValue.Value);
                 var sourceLocation = new GeoCoordinate(sourceStop.Latitude, sourceStop.Longitude);
-                foreach(var targetKeyValue in stopIds)
+                foreach (var targetKeyValue in stopIds)
                 {
-                    if(targetKeyValue.Value == sourceKeyValue.Value)
+                    if (targetKeyValue.Value == sourceKeyValue.Value)
                     { // do not transfer between identical stops.
                         continue;
                     }
 
                     var targetStop = _feed.Stops.Get(targetKeyValue.Value);
                     var targetLocation = new GeoCoordinate(targetStop.Latitude, targetStop.Longitude);
-                    if(targetLocation.DistanceEstimate(sourceLocation).Value < MAX_TRANSFER_DISTANCE)
+                    if (targetLocation.DistanceEstimate(sourceLocation).Value < MAX_TRANSFER_DISTANCE)
                     { // ok, between these two stops we should create transfers.
                         // build departure times.
                         List<int> targetTimes, sourceTimes;
-                        if(arrivalTimes.TryGetValue(sourceKeyValue.Value, out sourceTimes) &&
-                            departureTimes.TryGetValue(targetKeyValue.Value, out targetTimes))
+                        if (arrivalTimes.TryGetValue(sourceKeyValue.Value, out sourceTimes) &&
+                           departureTimes.TryGetValue(targetKeyValue.Value, out targetTimes))
                         { // both lists are available.
                             sourceTimes.Sort();
                             targetTimes.Sort();
 
                             var sourceIdx = 0;
                             var targetIdx = 0;
-                            while(sourceIdx < sourceTimes.Count &&
+                            while (sourceIdx < sourceTimes.Count &&
                                 targetIdx < targetTimes.Count)
                             {
                                 var diff = targetTimes[targetIdx] - sourceTimes[sourceIdx];
-                                if(diff >= MIN_TRANSFER_TIME)
+                                if (diff >= MIN_TRANSFER_TIME)
                                 { // ok a valid tranfer found here.
                                     connections.Add(new Connection()
                                         {
@@ -344,6 +344,30 @@ namespace OsmSharp.Routing.Transit.Data
                     }
                 }
             }
+
+            //// remove duplicates by first sorting and the removing consequitive duplicates.
+            //connections.Sort((connection1, connection2) =>
+            //{
+            //    if (connection1.DepartureTime == connection2.DepartureTime)
+            //    {
+            //        if (connection1.TripId == connection2.TripId)
+            //        {
+            //            return connection1.TripIdx.CompareTo(connection2.TripIdx);
+            //        }
+            //        return connection1.TripId.CompareTo(connection2.TripId);
+            //    }
+            //    return connection1.DepartureTime.CompareTo(connection2.DepartureTime);
+            //});
+            //var 
+            //for (var i = connections.Count - 1; i >= 1; i--)
+            //{
+            //    var connection1 = connections[i];
+            //    var connection2 = connections[i - 1];
+            //    if(Connection.Equals(connection1, connection2))
+            //    { // connections are equal.
+            //        connections.RemoveAt(i);
+            //    }
+            //}
 
             return connections;
         }

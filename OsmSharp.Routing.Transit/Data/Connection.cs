@@ -59,6 +59,50 @@ namespace OsmSharp.Routing.Transit.Data
         public int RouteId { get; set; }
 
         /// <summary>
+        /// Returns true if the given object represents the same connection.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if(obj is Connection)
+            {
+                return Connection.Equals(this, (Connection)obj);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return this.ArrivalStop.GetHashCode() ^
+                this.ArrivalTime.GetHashCode() ^
+                this.DepartureStop.GetHashCode() ^
+                this.DepartureTime.GetHashCode() ^
+                this.RouteId.GetHashCode() ^
+                this.TripId.GetHashCode() ^
+                this.TripIdx.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns true when the two connections represent the same connection.
+        /// </summary>
+        /// <returns></returns>
+        public static bool Equals(Connection connection1, Connection connection2)
+        {
+            return connection1.ArrivalStop == connection2.ArrivalStop &&
+                connection1.ArrivalTime == connection2.ArrivalTime &&
+                connection1.DepartureStop == connection2.DepartureStop &&
+                connection1.DepartureTime == connection2.DepartureTime &&
+                connection1.RouteId == connection2.RouteId &&
+                connection1.TripId == connection2.TripId &&
+                connection1.TripIdx == connection2.TripIdx;
+        }
+
+        /// <summary>
         /// Returns a string representing this connection.
         /// </summary>
         /// <returns></returns>

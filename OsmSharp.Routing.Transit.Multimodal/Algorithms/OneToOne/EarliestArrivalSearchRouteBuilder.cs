@@ -30,7 +30,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// A class reponsable for building an earliest arrival route.
     /// </summary>
     /// <remarks>This route builder uses raw GTFS data, we do not abstract away GTFS, convert other formats to GTFS.</remarks>
-    public class EarliestArrivalSearchRouteBuilder : OneToOneRouteBuilder<EarliestArrivalSearch>
+    public class EarliestArrivalSearchRouteBuilder : RouteBuilder<EarliestArrivalSearch>
     {
         private readonly MultimodalConnectionsDb _db;
 

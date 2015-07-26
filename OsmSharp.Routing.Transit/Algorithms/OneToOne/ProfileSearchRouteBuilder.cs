@@ -27,7 +27,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// A class reponsable for building a profile search route.
     /// </summary>
     /// <remarks>This route builder uses raw GTFS data, we do not abstract away GTFS, convert other formats to GTFS.</remarks>
-    public class ProfileSearchRouteBuilder : OneToOneRouteBuilder<ProfileSearch>
+    public class ProfileSearchRouteBuilder : RouteBuilder<ProfileSearch>
     {
         /// <summary>
         /// Holds the GTFS connections db.

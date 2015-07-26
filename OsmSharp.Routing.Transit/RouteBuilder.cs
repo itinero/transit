@@ -24,7 +24,7 @@ namespace OsmSharp.Routing.Transit
     /// Abstract implementation of a route builder.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class OneToOneRouteBuilder<T>
+    public abstract class RouteBuilder<T>
         where T : IRoutingAlgorithm
     {
         /// <summary>
@@ -36,7 +36,7 @@ namespace OsmSharp.Routing.Transit
         /// Creates a new route builder.
         /// </summary>
         /// <param name="algorithm"></param>
-        public OneToOneRouteBuilder(T algorithm)
+        public RouteBuilder(T algorithm)
         {
             _algorithm = algorithm;
         }

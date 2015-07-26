@@ -89,7 +89,7 @@
     <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilder.cs" />
     <Compile Include="Data\IConnectionList.cs" />
     <Compile Include="IRoutingAlgorithm.cs" />
-    <Compile Include="OneToOneRouteBuilder.cs" />
+    <Compile Include="RouteBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\Connection.cs" />
     <Compile Include="Data\ConnectionsListView.cs" />

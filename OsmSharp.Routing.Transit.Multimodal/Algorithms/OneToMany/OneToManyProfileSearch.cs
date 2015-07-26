@@ -468,7 +468,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <summary>
         /// Returns the target-search algorithm.
         /// </summary>
-        public OneToManyDykstra GetTargetSearcht(int i)
+        public OneToManyDykstra GetTargetSearch(int i)
         {
                 return _targetsSearch[i];
         }

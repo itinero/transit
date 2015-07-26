@@ -18,28 +18,29 @@
 
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;
 using System.Collections.Generic;
 
-namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
+namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
 {
     /// <summary>
     /// A class reponsable for building a route.
     /// </summary>
     /// <remarks>This route builder uses raw GTFS data, we do not abstract away GTFS, convert other formats to GTFS.</remarks>
-    public class ProfileSearchRouteBuilder : RouteBuilder<ProfileSearch>
+    public class OneToManyProfileSearchRouteBuilder : RouteBuilder<OneToManyProfileSearch>
     {
         private readonly MultimodalConnectionsDb _db;
+        private readonly int _i = 0;
 
         /// <summary>
         /// Creates a new route builder.
         /// </summary>
-        public ProfileSearchRouteBuilder(ProfileSearch profileSearch, MultimodalConnectionsDb db)
+        public OneToManyProfileSearchRouteBuilder(OneToManyProfileSearch profileSearch, MultimodalConnectionsDb db, int i)
             : base(profileSearch)
         {
             _db = db;
+            _i = i;
         }
 
         /// <summary>
@@ -48,13 +49,13 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <returns></returns>
         public override Route DoBuild()
         {
-            if (this.Algorithm.HasTransit)
+            if (this.Algorithm.GetHasTransit(_i))
             { // there is transit data; start by building that route.
                 var stops = new List<Tuple<int, Profile>>();
                 var connections = new List<Connection?>();
 
                 // build the route backwards from the target stop.
-                var bestTargetStop = this.Algorithm.GetBestTargetStop();
+                var bestTargetStop = this.Algorithm.GetBestTargetStop(_i);
                 var bestSourceStop = -1;
                 var profiles = this.Algorithm.GetStopProfiles(bestTargetStop);
                 var profile = profiles.GetBest();
@@ -237,7 +238,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 { // vertex not found.
                     throw new Exception("No vertex found for sourcestop.");
                 }
-                var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.TargetSearch, targetStopVertex);
+                var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.GetTargetSearch(_i), targetStopVertex);
                 var targetRoute = targetRouteBuilder.Build();
 
                 // concatenate routes.
@@ -268,14 +269,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             }
             else
             { // no transit route, just use the shortest path.
-                var bestVertex = this.Algorithm.GetBestNonTransitVertex();
+                var bestVertex = this.Algorithm.GetBestNonTransitVertex(_i);
 
                 // build route from sourcestop back to source location.
                 var sourceRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.SourceSearch, bestVertex);
                 var sourceRoute = sourceRouteBuilder.Build();
 
                 // build route from targetstop back to target location.
-                var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.TargetSearch, bestVertex);
+                var targetRouteBuilder = new OneToManyDykstraRouteBuilder(_db.Graph, this.Algorithm.GetTargetSearch(_i), bestVertex);
                 var targetRoute = targetRouteBuilder.Build();
 
                 return Route.Concatenate(sourceRoute, targetRoute);

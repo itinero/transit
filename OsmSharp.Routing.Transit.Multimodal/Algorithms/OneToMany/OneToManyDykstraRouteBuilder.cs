@@ -29,7 +29,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
     /// <summary>
     /// A class reponsable for building one of the routes obtained by a dykstra routing algorithm.
     /// </summary>
-    public class OneToManyDykstraRouteBuilder : OneToOneRouteBuilder<IDykstraAlgorithm>
+    public class OneToManyDykstraRouteBuilder : RouteBuilder<IDykstraAlgorithm>
     {
         private readonly uint _target;
         private readonly RouterDataSource<Edge> _graph;

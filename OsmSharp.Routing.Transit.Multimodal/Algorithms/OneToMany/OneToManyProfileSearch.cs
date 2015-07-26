@@ -18,17 +18,17 @@
 
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
-namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
+namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
 {
     /// <summary>
     /// An algorithm that calculates a one-to-one path between two locations, with a given departure time, that has the best arrival time.
     /// </summary>
-    public class ProfileSearch : RoutingAlgorithmBase, IConnectionList
+    public class OneToManyProfileSearch : RoutingAlgorithmBase, IConnectionList
     {
         private readonly MultimodalConnectionsDbBase<Edge> _db;
         private readonly ConnectionsView _connections;
@@ -37,7 +37,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         private readonly int _minimumTransferTime = 3 * 60;
         private readonly int _defaultTransferPentaly = 5 * 60;
         private readonly OneToManyDykstra _sourceSearch;
-        private readonly OneToManyDykstra _targetSearch;
+        private readonly List<OneToManyDykstra> _targetsSearch;
         private readonly Func<int, DateTime, bool> _isTripPossible;
         private readonly Func<float, float> _lazyness;
         private readonly Func<Profile, Profile, int> _compareStatuses = (status1, status2) =>
@@ -48,14 +48,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             }
             return status1.Seconds.CompareTo(status2.Seconds);
         };
-        
+
 
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
-            : this(db, departureTime, sourceSearch, targetSearch, (t) => { return 0; })
+        public OneToManyProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, params OneToManyDykstra[] targetsSearch)
+            : this(db, departureTime, sourceSearch, (t) => { return 0; }, targetsSearch)
         {
 
         }
@@ -63,14 +63,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the profile search algorithm.
         /// </summary>
-        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness)
+        public OneToManyProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, Func<float, float> lazyness, params OneToManyDykstra[] targetsSearch)
         {
             _db = db;
             _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
-            _targetSearch = targetSearch;
+            _targetsSearch = new List<OneToManyDykstra>(targetsSearch);
             _lazyness = lazyness;
 
             _isTripPossible = db.ConnectionsDb.IsTripPossible;
@@ -79,15 +79,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        public ProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness,
+        public OneToManyProfileSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
+            OneToManyDykstra sourceSearch, List<OneToManyDykstra> targetsSearch, Func<float, float> lazyness,
             Func<int, DateTime, bool> isTripPossible, Func<Profile, Profile, int> compareStatuses)
         {
             _db = db;
             _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
-            _targetSearch = targetSearch;
+            _targetsSearch = targetsSearch;
             _lazyness = lazyness;
 
             _isTripPossible = isTripPossible;
@@ -95,14 +95,13 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         }
 
         // transit data management.
-        private Dictionary<int, Profile> _backwardProfiles;
         private Dictionary<int, ProfileCollection> _forwardProfiles;
-        private int _bestTargetStop;
+        private List<Dictionary<int, Profile>> _backwardProfiles;
+        private List<int> _bestTargetStops;
 
         // bidirectional dykstra management.
-        private uint _bestVertex = uint.MaxValue;
-        private float _bestWeight = float.MaxValue;
-        private bool _bidirectional = false;
+        private List<uint> _bestVertices;
+        private List<float> _bestWeights;
 
         /// <summary>
         /// Executes the algorithm.
@@ -111,11 +110,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             // initialize visits.
             _forwardProfiles = new Dictionary<int, ProfileCollection>();
-            _backwardProfiles = new Dictionary<int, Profile>(100);
-            _bestTargetStop = -1;
-            _bestVertex = uint.MaxValue;
-            _bestWeight = float.MaxValue;
-            _bidirectional = _sourceSearch.Vehicle.UniqueName.Equals(_targetSearch.Vehicle.UniqueName);
+            _backwardProfiles = new List<Dictionary<int,Profile>>(_targetsSearch.Count);
+            _backwardProfiles.AddAll(new Dictionary<int, Profile>(), _targetsSearch.Count);
+            _bestTargetStops = new List<int>(_targetsSearch.Count);
+            _bestTargetStops.AddAll(-1, _targetsSearch.Count);
+            _bestVertices = new List<uint>();
+            _bestVertices.AddAll(uint.MaxValue, _targetsSearch.Count);
+            _bestWeights = new List<float>();
+            _bestWeights.AddAll(float.MaxValue, _targetsSearch.Count);
 
             // STEP1: calculate forward from source and keep track of all stops reached.
             _sourceSearch.WasFound = (vertex, time) =>
@@ -125,16 +127,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _sourceSearch.Run();
 
             // STEP2: calculate backward from target and keep track of all stops reached.
-            _targetSearch.WasFound = (vertex, time) =>
+            for (int targetIdx = 0; targetIdx < _targetsSearch.Count; targetIdx++)
             {
-                return this.ReachedVertexBackward((uint)vertex, time);
-            };
-            _targetSearch.Run();
+                _targetsSearch[targetIdx].WasFound = (vertex, time) =>
+                {
+                    return this.ReachedVertexBackward(targetIdx, (uint)vertex, time);
+                };
+                _targetsSearch[targetIdx].Run();
+            }
 
-            if((_forwardProfiles.Count == 0 || _backwardProfiles.Count == 0) &&
-                _bestWeight == float.MaxValue)
+            if ((_forwardProfiles.Count == 0 || !_backwardProfiles.Any(x => x.Count > 0)) &&
+                !this.HasSucceeded)
             { // search failed because no forward or backward stops in range.
-                return; 
+                return;
             }
 
             // Remarks:
@@ -171,7 +176,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 // check if route was visited already.
                 int routeTripId;
-                if(connection.TripId != Constants.NoRouteId &&
+                if (connection.TripId != Constants.NoRouteId &&
                     tripPerRoute.TryGetValue(connection.TripId, out routeTripId) &&
                     routeTripId != connection.TripId)
                 { // a different trip, but same route, do not consider again.
@@ -247,17 +252,21 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                                 // check target(s).
                                 Profile backwardStatus;
-                                if (accepted && _backwardProfiles.TryGetValue(connection.ArrivalStop, out backwardStatus))
-                                { // this stop has been reached by the backward search, figure out if it represents a better connection.
-                                    var arrivalStopProfiles = _forwardProfiles[connection.ArrivalStop];
-                                    var weight = backwardStatus.Seconds + arrivalStopProfiles.Seconds +
-                                        backwardStatus.Lazyness + arrivalStopProfiles.Lazyness;
-                                    if (_bestTargetStop < 0 || targetProfilesWeight >= weight)
-                                    { // this current route is a better one.
-                                        _bestTargetStop = connection.ArrivalStop;
-                                        targetProfilesWeight = weight;
-                                        targetProfilesTime = backwardStatus.Seconds + arrivalStopProfiles.Seconds;
-                                        this.HasSucceeded = true;
+                                for (var i = 0; i < _backwardProfiles.Count; i++)
+                                {
+                                    var backwardProfile = _backwardProfiles[i];
+                                    if (accepted && backwardProfile.TryGetValue(connection.ArrivalStop, out backwardStatus))
+                                    { // this stop has been reached by the backward search, figure out if it represents a better connection.
+                                        var arrivalStopProfiles = _forwardProfiles[connection.ArrivalStop];
+                                        var weight = backwardStatus.Seconds + arrivalStopProfiles.Seconds +
+                                            backwardStatus.Lazyness + arrivalStopProfiles.Lazyness;
+                                        if (_bestTargetStops[i] < 0 || targetProfilesWeight >= weight)
+                                        { // this current route is a better one.
+                                            _bestTargetStops[i] = connection.ArrivalStop;
+                                            targetProfilesWeight = weight;
+                                            targetProfilesTime = backwardStatus.Seconds + arrivalStopProfiles.Seconds;
+                                            this.HasSucceeded = true;
+                                        }
                                     }
                                 }
                             }
@@ -289,15 +298,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 }));
             }
 
-            if (!_bidirectional)
-            { // only use forward visits when non-bidirectional routing.
-                if(_targetSearch.Source.Contains(vertex))
+            // only use forward visits when non-bidirectional routing.
+            for (int i = 0; i < _targetsSearch.Count; i++)
+            {
+                var targetSearch = _targetsSearch[i];
+                if (targetSearch.Source.Contains(vertex))
                 {
-                    var pathTo = _targetSearch.Source.GetPathTo(vertex);
-                    if(pathTo.Weight + time < _bestWeight)
+                    var pathTo = targetSearch.Source.GetPathTo(vertex);
+                    if (pathTo.Weight + time < _bestWeights[i])
                     { // best vertex was found.
-                        _bestWeight = (float)pathTo.Weight + time;
-                        _bestVertex = vertex;
+                        _bestWeights[i] = (float)pathTo.Weight + time;
+                        _bestVertices[i] = vertex;
                         this.HasSucceeded = true;
                     }
                 }
@@ -308,37 +319,43 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Called when a vertex was reached during a backward search.
         /// </summary>
-        /// <param name="vertex">The vertex reached.</param>
-        /// <param name="weight">The time to reach it.</param>
         /// <returns></returns>
-        private bool ReachedVertexBackward(uint vertex, float weight)
+        private bool ReachedVertexBackward(int targetIdx, uint vertex, float weight)
         {
-            int stopId;
-            if (_db.TryGetStop(vertex, out stopId) &&
-                !_backwardProfiles.ContainsKey(stopId))
-            { // the vertex is a stop, mark it as reached.
-                _backwardProfiles.Add(stopId, new Profile()
-                {
-                    ConnectionId = Constants.NoConnectionId,
-                    Seconds = (int)weight,
-                    Lazyness = (int)_lazyness(weight),
-                    Transfers = 0,
-                    PreviousConnectionId = Constants.NoConnectionId
-                });
+            for (int i = 0; i < _targetsSearch.Count; i++)
+            {
+                var backwardprofile = _backwardProfiles[i];
+                int stopId;
+                if (_db.TryGetStop(vertex, out stopId) &&
+                    !backwardprofile.ContainsKey(stopId))
+                { // the vertex is a stop, mark it as reached.
+                    backwardprofile.Add(stopId, new Profile()
+                    {
+                        ConnectionId = Constants.NoConnectionId,
+                        Seconds = (int)weight,
+                        Lazyness = (int)_lazyness(weight),
+                        Transfers = 0,
+                        PreviousConnectionId = Constants.NoConnectionId
+                    });
+                }
             }
 
             // check forward search for the same vertex.
-            if (_bidirectional)
+            for (int i = 0; i < _backwardProfiles.Count; i++)
             { // only use backward visits when bidirectional routing.
                 DykstraVisit forwardVisit;
                 if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
                 { // there is a status for this vertex in the source search.
-                    weight = weight + forwardVisit.Weight;
-                    if (weight < _bestWeight)
-                    { // this vertex is a better match.
-                        _bestWeight = weight;
-                        _bestVertex = vertex;
-                        this.HasSucceeded = true;
+                    if (_targetsSearch[i].Vehicle.UniqueName.Equals(
+                       _sourceSearch.Vehicle))
+                    { // 
+                        weight = weight + forwardVisit.Weight;
+                        if (weight < _bestWeights[i])
+                        { // this vertex is a better match.
+                            _bestWeights[i] = weight;
+                            _bestVertices[i] = vertex;
+                            this.HasSucceeded = true;
+                        }
                     }
                 }
             }
@@ -349,47 +366,44 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Gets the calculated arrival time.
         /// </summary>
         /// <returns></returns>
-        public DateTime ArrivalTime()
+        public DateTime ArrivalTime(int i)
         {
             this.CheckHasRunAndHasSucceeded();
 
             return _departureTime.Date.AddSeconds(
-                _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds);
+                _forwardProfiles[_bestTargetStops[i]].Seconds + _backwardProfiles[i][_bestTargetStops[i]].Seconds);
         }
 
         /// <summary>
         /// Gets the duration is seconds.
         /// </summary>
         /// <returns></returns>
-        public int Duration()
+        public int Duration(int i)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds
+            return _forwardProfiles[_bestTargetStops[i]].Seconds + _backwardProfiles[i][_bestTargetStops[i]].Seconds
                 - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 
         /// <summary>
         /// Returns true if the best route route has transit, false otherwise.
         /// </summary>
-        public bool HasTransit
+        public bool GetHasTransit(int i)
         {
-            get
-            {
-                this.CheckHasRunAndHasSucceeded();
+            this.CheckHasRunAndHasSucceeded();
 
-                if(_bestWeight == float.MaxValue)
-                {
-                    return true;
-                }
-                if (_bestTargetStop != -1)
-                {
-                    var transitTime = _forwardProfiles[_bestTargetStop].Seconds + _backwardProfiles[_bestTargetStop].Seconds
-                        - (int)(_departureTime - _departureTime.Date).TotalSeconds;
-                    return transitTime < (int)_bestWeight;
-                }
-                return false;
+            if (_bestWeights[i] == float.MaxValue)
+            {
+                return true;
             }
+            if (_bestTargetStops[i] != -1)
+            {
+                var transitTime = _forwardProfiles[_bestTargetStops[i]].Seconds + _backwardProfiles[i][_bestTargetStops[i]].Seconds
+                    - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+                return transitTime < (int)_bestWeights[i];
+            }
+            return false;
         }
 
         /// <summary>
@@ -423,21 +437,21 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Gets the best target stop.
         /// </summary>
         /// <returns></returns>
-        public int GetBestTargetStop()
+        public int GetBestTargetStop(int i)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _bestTargetStop;
+            return _bestTargetStops[i];
         }
 
         /// <summary>
         /// Gets the best non-transit vertex.
         /// </summary>
-        public uint GetBestNonTransitVertex()
+        public uint GetBestNonTransitVertex(int i)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _bestVertex;
+            return _bestVertices[i];
         }
 
         /// <summary>
@@ -454,12 +468,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Returns the target-search algorithm.
         /// </summary>
-        public OneToManyDykstra TargetSearch
+        public OneToManyDykstra GetTargetSearcht(int i)
         {
-            get
-            {
-                return _targetSearch;
-            }
+                return _targetsSearch[i];
         }
 
         /// <summary>
@@ -557,11 +568,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 { // transfer count is different, one will definetly dominate.
                     return profile1.Transfers.CompareTo(profile2.Transfers) < 0;
                 }
-                else if(profile1.Lazyness != profile2.Lazyness)
+                else if (profile1.Lazyness != profile2.Lazyness)
                 {
                     return profile1.Lazyness.CompareTo(profile2.Lazyness) < 0;
                 }
-                else if(profile1.ConnectionId == profile2.ConnectionId)
+                else if (profile1.ConnectionId == profile2.ConnectionId)
                 { // identical.
                     return true;
                 }
@@ -630,7 +641,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 {
                     found = profile;
                 }
-                else if (found.Value.Seconds + found.Value.Lazyness > 
+                else if (found.Value.Seconds + found.Value.Lazyness >
                     profile.Seconds + profile.Lazyness)
                 {
                     found = profile;
@@ -653,7 +664,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             foreach (var profile in profileCollection)
             {
-                if(profile.ConnectionId == previousProfile.PreviousConnectionId)
+                if (profile.ConnectionId == previousProfile.PreviousConnectionId)
                 {
                     return profile;
                 }

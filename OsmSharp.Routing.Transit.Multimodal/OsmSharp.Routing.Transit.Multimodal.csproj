@@ -83,6 +83,7 @@
     <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
+    <Compile Include="Algorithms\OneToMany\OneToManyProfileSearch.cs" />
     <Compile Include="Algorithms\OneToOne\BidirectionalDykstra.cs" />
     <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Data\MultimodalConnectionsDb.cs" />
     <Compile Include="Data\MultimodalConnectionsDbBase.cs" />
     <Compile Include="EarliestArrivalRouter.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Instructions\Modal\Machines\AnythingButTransitMachine.cs">
       <SubType>Code</SubType>
     </Compile>

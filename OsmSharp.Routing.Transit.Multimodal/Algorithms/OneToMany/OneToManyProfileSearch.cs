@@ -390,7 +390,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
 
             if (_bestWeights[i] == float.MaxValue)
             {
-                return true;
+                return (_bestTargetStops[i] != -1);
             }
             if (_bestTargetStops[i] != -1)
             {
@@ -399,6 +399,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 return transitTime < (int)_bestWeights[i];
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns true if a route was found to the given target.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public bool GetHasRoute(int i)
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            return (_bestWeights[i] != float.MaxValue ||
+                _bestTargetStops[i] != -1);
         }
 
         /// <summary>

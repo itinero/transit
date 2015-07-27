@@ -49,6 +49,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <returns></returns>
         public override Route DoBuild()
         {
+            if(!this.Algorithm.GetHasRoute(_i))
+            { // there is no route.
+                return null;
+            }
+
             if (this.Algorithm.GetHasTransit(_i))
             { // there is transit data; start by building that route.
                 var stops = new List<Tuple<int, Profile>>();

@@ -117,11 +117,11 @@ namespace OsmSharp.Routing.Transit.Multimodal
 
             // instantiate target searches.
             var targetSearches = new List<OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra>(_targetLocations.Length);
-            for(var i = 0; i < targetSearches.Count; i++)
+            for (var i = 0; i < _targetLocations.Length; i++)
             {
                 var targetResolver = new PathSegmentVisitListResolver(_db.Graph, _targetVehicles[i]);
                 var targetPoint = targetResolver.Resolve(_targetLocations[i]);
-                var target = sourceResolver.GetHook(targetPoint);
+                var target = targetResolver.GetHook(targetPoint);
                 var targetSearch = new OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany.OneToManyDykstra(
                     _db.Graph, _routingInterpreter, _targetVehicles[i], target, _maxTarget, true);
                 targetSearches.Add(targetSearch);

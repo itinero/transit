@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Multimodal
@@ -45,6 +46,18 @@ namespace OsmSharp.Routing.Transit.Multimodal
             {
                 count--;
                 list.Add(value);
+            }
+        }
+
+        /// <summary>
+        /// Adds elements to the given list with the given value.
+        /// </summary>
+        public static void AddAll<T>(this IList<T> list, Func<T> valueFunc, int count)
+        {
+            while (count > 0)
+            {
+                count--;
+                list.Add(valueFunc());
             }
         }
     }

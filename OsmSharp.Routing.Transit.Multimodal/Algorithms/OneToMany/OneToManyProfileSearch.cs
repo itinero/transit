@@ -111,7 +111,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
             // initialize visits.
             _forwardProfiles = new Dictionary<int, ProfileCollection>();
             _backwardProfiles = new List<Dictionary<int,Profile>>(_targetsSearch.Count);
-            _backwardProfiles.AddAll(new Dictionary<int, Profile>(), _targetsSearch.Count);
+            _backwardProfiles.AddAll(() => new Dictionary<int, Profile>(), _targetsSearch.Count);
             _bestTargetStops = new List<int>(_targetsSearch.Count);
             _bestTargetStops.AddAll(-1, _targetsSearch.Count);
             _bestVertices = new List<uint>();
@@ -322,40 +322,35 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         /// <returns></returns>
         private bool ReachedVertexBackward(int targetIdx, uint vertex, float weight)
         {
-            for (int i = 0; i < _targetsSearch.Count; i++)
-            {
-                var backwardprofile = _backwardProfiles[i];
-                int stopId;
-                if (_db.TryGetStop(vertex, out stopId) &&
-                    !backwardprofile.ContainsKey(stopId))
-                { // the vertex is a stop, mark it as reached.
-                    backwardprofile.Add(stopId, new Profile()
-                    {
-                        ConnectionId = Constants.NoConnectionId,
-                        Seconds = (int)weight,
-                        Lazyness = (int)_lazyness(weight),
-                        Transfers = 0,
-                        PreviousConnectionId = Constants.NoConnectionId
-                    });
-                }
+            var backwardprofile = _backwardProfiles[targetIdx];
+            int stopId;
+            if (_db.TryGetStop(vertex, out stopId) &&
+                !backwardprofile.ContainsKey(stopId))
+            { // the vertex is a stop, mark it as reached.
+                backwardprofile.Add(stopId, new Profile()
+                {
+                    ConnectionId = Constants.NoConnectionId,
+                    Seconds = (int)weight,
+                    Lazyness = (int)_lazyness(weight),
+                    Transfers = 0,
+                    PreviousConnectionId = Constants.NoConnectionId
+                });
             }
 
             // check forward search for the same vertex.
-            for (int i = 0; i < _backwardProfiles.Count; i++)
-            { // only use backward visits when bidirectional routing.
-                DykstraVisit forwardVisit;
-                if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
-                { // there is a status for this vertex in the source search.
-                    if (_targetsSearch[i].Vehicle.UniqueName.Equals(
-                       _sourceSearch.Vehicle))
-                    { // 
-                        weight = weight + forwardVisit.Weight;
-                        if (weight < _bestWeights[i])
-                        { // this vertex is a better match.
-                            _bestWeights[i] = weight;
-                            _bestVertices[i] = vertex;
-                            this.HasSucceeded = true;
-                        }
+            // only use backward visits when bidirectional routing.
+            DykstraVisit forwardVisit;
+            if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
+            { // there is a status for this vertex in the source search.
+                if (_targetsSearch[targetIdx].Vehicle.UniqueName.Equals(
+                   _sourceSearch.Vehicle))
+                { // 
+                    weight = weight + forwardVisit.Weight;
+                    if (weight < _bestWeights[targetIdx])
+                    { // this vertex is a better match.
+                        _bestWeights[targetIdx] = weight;
+                        _bestVertices[targetIdx] = vertex;
+                        this.HasSucceeded = true;
                     }
                 }
             }

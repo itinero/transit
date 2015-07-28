@@ -21,6 +21,7 @@ using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
+using OsmSharp.Routing.Transit.Builders;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne;
 using OsmSharp.Routing.Vehicles;
 using System;
@@ -31,7 +32,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
     /// <summary>
     /// An algorithm that calculates one-to-many paths between on source and all targets within a certain range.
     /// </summary>
-    public class OneToManyDykstra : RoutingAlgorithmBase, IDykstraAlgorithm
+    public class OneToManyDykstra : RoutingAlgorithmBase, IDykstraAlgorithm, IHeatmapSource
     {
         private readonly RouterDataSource<Edge> _graph;
         private readonly IRoutingInterpreter _interpreter;
@@ -137,6 +138,16 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 return false;
             }
 
+            var heatmapSource = (IHeatmapSource)this;
+            if(heatmapSource.ReportSampleAction != null)
+            { // be a good heatmap source.
+                float lat, lon;
+                if(_graph.GetVertex(Convert.ToUInt32(_current.Vertex), out lat, out lon))
+                {
+                    heatmapSource.ReportSampleAction(lat, lon, _current.Weight);
+                }
+            }
+
             // get neighbours.
             var edges = _graph.GetEdges(Convert.ToUInt32(_current.Vertex));
 
@@ -194,6 +205,21 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Sets a visit on a vertex from an external source (like a transit-algorithm).
+        /// </summary>
+        /// <remarks>The algorithm will pick up these visits as if it was one it's own.</remarks>
+        /// <returns>True if the visit was set successfully.</returns>
+        public bool SetVisit(DykstraVisit visit)
+        {
+            if(!_visits.ContainsKey(visit.Vertex))
+            {
+                _heap.Push(visit, visit.Weight);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -261,6 +287,17 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
         }
 
         /// <summary>
+        /// Gets the current.
+        /// </summary>
+        public DykstraVisit Current
+        {
+            get
+            {
+                return _current;
+            }
+        }
+
+        /// <summary>
         /// Represents speed.
         /// </summary>
         private struct Speed
@@ -274,6 +311,15 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany
             /// Gets or sets the direction.
             /// </summary>
             public bool? Direction { get; set; }
+        }
+
+        /// <summary>
+        /// Gets or sets the report sample action.
+        /// </summary>
+        Action<float, float, float> IHeatmapSource.ReportSampleAction
+        {
+            get;
+            set;
         }
     }
 }

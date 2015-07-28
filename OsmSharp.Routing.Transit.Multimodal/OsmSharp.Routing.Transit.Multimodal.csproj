@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Algorithms\DykstraVisit.cs" />
     <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
+    <Compile Include="Algorithms\OneToAll\OneToAllProfileSearch.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyProfileSearch.cs" />

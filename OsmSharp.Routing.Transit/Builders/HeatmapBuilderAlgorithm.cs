@@ -18,27 +18,38 @@
 
 using System;
 
-namespace OsmSharp.Routing.Transit
+namespace OsmSharp.Routing.Transit.Builders
 {
     /// <summary>
-    /// Abstract implementation of a route builder.
+    /// An heatmap builder that fills an heatmap live based on a heatmap source.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class RouteBuilder<T>
-        where T : IRoutingAlgorithm
+    public class HeatmapBuilderAlgorithm<T> : IRoutingAlgorithm
+        where T : IHeatmapSource
     {
-        /// <summary>
-        /// Holds the algorithm after it's run.
-        /// </summary>
-        private T _algorithm;
+        private readonly T _algorithm;
+        private readonly Heatmap _heatmap;
 
         /// <summary>
-        /// Creates a new route builder.
+        /// Creates a new heatmap builder.
         /// </summary>
-        /// <param name="algorithm"></param>
-        public RouteBuilder(T algorithm)
+        public HeatmapBuilderAlgorithm(T algorithm)
+            : this(algorithm, new Heatmap(15))
         {
+
+        }
+
+        /// <summary>
+        /// Creates a new heatmap builder.
+        /// </summary>
+        public HeatmapBuilderAlgorithm(T algorithm, Heatmap heatmap)
+        {
+            _heatmap = heatmap;
             _algorithm = algorithm;
+            _algorithm.ReportSampleAction = (lat, lon, weight) =>
+            {
+                _heatmap.AddSample(lat, lon, weight);
+            };
         }
 
         /// <summary>
@@ -53,32 +64,27 @@ namespace OsmSharp.Routing.Transit
         }
 
         /// <summary>
-        /// Builds a route.
+        /// Returns true if this instance has run already.
         /// </summary>
-        /// <returns></returns>
-        public Route Build()
+        public bool HasRun
         {
-            this.CheckHasRunAndSucceeded();
-
-            return this.DoBuild();
+            get { return _algorithm.HasRun; }
         }
 
         /// <summary>
-        /// Checks has run and succeeded and throws an exception if not true.
+        /// Returns true if this instance has run and it was succesfull.
         /// </summary>
-        protected void CheckHasRunAndSucceeded()
+        public bool HasSucceeded
         {
-            if (_algorithm.HasRun && _algorithm.HasSucceeded)
-            {
-                return;
-            }
-            throw new InvalidOperationException("Cannot build a route when algorithm has not succeeded.");
+            get { return _algorithm.HasRun; }
         }
 
         /// <summary>
-        /// Executes the route build step.
+        /// Runs the algorithm.
         /// </summary>
-        /// <returns></returns>
-        public abstract Route DoBuild();
+        public void Run()
+        {
+            _algorithm.Run();
+        }
     }
 }

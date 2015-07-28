@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Transit.Builders;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;

@@ -42,6 +42,15 @@ namespace OsmSharp.Routing.Transit.Builders
         /// <summary>
         /// Creates a new heatmap builder.
         /// </summary>
+        public HeatmapBuilderAlgorithm(T algorithm, int zoom)
+            : this(algorithm, new Heatmap(zoom))
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new heatmap builder.
+        /// </summary>
         public HeatmapBuilderAlgorithm(T algorithm, Heatmap heatmap)
         {
             _heatmap = heatmap;
@@ -50,6 +59,17 @@ namespace OsmSharp.Routing.Transit.Builders
             {
                 _heatmap.AddSample(lat, lon, weight);
             };
+        }
+
+        /// <summary>
+        /// Gets the heatmap.
+        /// </summary>
+        public Heatmap Heatmap
+        {
+            get
+            {
+                return _heatmap;
+            }
         }
 
         /// <summary>
@@ -76,7 +96,7 @@ namespace OsmSharp.Routing.Transit.Builders
         /// </summary>
         public bool HasSucceeded
         {
-            get { return _algorithm.HasRun; }
+            get { return _algorithm.HasSucceeded; }
         }
 
         /// <summary>

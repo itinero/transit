@@ -18,6 +18,7 @@
 
 using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
+using OsmSharp.Math.Structures.QTree;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Interpreter;
 using OsmSharp.Routing.Transit.Data;
@@ -46,7 +47,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <param name="vehicles">The vehicle profiles to support.</param>
         public MultimodalConnectionsDb(RouterDataSource<Edge> graph, GTFSConnectionsDb connectionsDb,
             IRoutingInterpreter interpreter, params Vehicle[] vehicles)
-            :base(graph, connectionsDb, interpreter, vehicles)
+            : base(graph, connectionsDb, interpreter, vehicles)
         {
 
         }
@@ -68,10 +69,22 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <param name="vehicles">The vehicle profiles to connect the stops for.</param>
         public override void ConnectStops(IRoutingInterpreter interpreter, Vehicle[] vehicles)
         {
-            _stopVertices = new Dictionary<uint, int>();
             _verticesStop = new List<uint>();
+            _stopVertices = new Dictionary<uint, int>();
 
             var graph = this.Graph;
+
+            // build a vertex-index.
+            var vertexIndex = new QuadTree<GeoCoordinate, uint>();
+            for (uint vertex = 0; vertex <= graph.VertexCount; vertex++)
+            {
+                float latitude, longitude;
+                if (graph.GetVertex(vertex, out latitude, out longitude))
+                {
+                    vertexIndex.Add(new GeoCoordinate(latitude, longitude),
+                        vertex);
+                }
+            }
 
             // get all stops.
             var stops = this.ConnectionsDb.GetStops();
@@ -80,7 +93,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
 
             // create vertices for each of the stops.
             var nonTransitVertexCount = graph.VertexCount;
-            for(int stopId = 0; stopId < stops.Count; stopId++)
+            for (int stopId = 0; stopId < stops.Count; stopId++)
             {
                 var stop = stops[stopId];
                 var stopVertex = graph.AddVertex(stop.Latitude, stop.Longitude);
@@ -91,7 +104,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                 var stopLocation = new GeoCoordinate(stop.Latitude, stop.Longitude);
 
                 // neighbouring vertices.
-                var arcs = graph.GetEdges(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(stop.Latitude - 0.005, stop.Longitude - 0.0025),
+                var vertices = vertexIndex.GetInside(new Math.Geo.GeoCoordinateBox(new Math.Geo.GeoCoordinate(stop.Latitude - 0.005, stop.Longitude - 0.0025),
                     new Math.Geo.GeoCoordinate(stop.Latitude + 0.005, stop.Longitude + 0.0025)));
 
                 float latitude, longitude;
@@ -101,33 +114,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                     var closestVertices = new Dictionary<uint, double>();
 
                     // link this station to the road network for the current vehicle.
-                    foreach (var arc in arcs)
+                    foreach (var vertex in vertices)
                     {
-                        bool isRoutable = arc.EdgeData.Tags != 0;
-                        if (isRoutable)
-                        { // the arc is already a road.
-                            //if (graph.TagsIndex.Contains(arc.EdgeData.Tags))
-                            //{ // there is a tags collection.
-                                var tags = graph.TagsIndex.Get(arc.EdgeData.Tags);
-                                isRoutable = interpreter.EdgeInterpreter.CanBeTraversedBy(tags, vehicle);
-                            //}
-                        }
-                        if (isRoutable)
-                        { // this arc is a road to keep it.
-                            if (arc.Vertex1 != stopVertex &&
-                                graph.GetVertex(arc.Vertex1, out latitude, out longitude))
-                            { // check distance.
-                                var keyDistance = stopLocation.DistanceEstimate(
-                                    new GeoCoordinate(latitude, longitude)).Value;
-                                closestVertices[arc.Vertex1] = keyDistance;
-                            }
-                            if (arc.Vertex2 != stopVertex &&
-                                graph.GetVertex(arc.Vertex2, out latitude, out longitude))
-                            { // check distance.
-                                var keyDistance = stopLocation.DistanceEstimate(
-                                    new GeoCoordinate(latitude, longitude)).Value;
-                                closestVertices[arc.Vertex2] = keyDistance;
-                            }
+                        if (vertex != stopVertex &&
+                            graph.GetVertex(vertex, out latitude, out longitude))
+                        { // check distance.
+                            var keyDistance = stopLocation.DistanceEstimate(
+                                new GeoCoordinate(latitude, longitude)).Value;
+                            closestVertices[vertex] = keyDistance;
                         }
                     }
 
@@ -158,6 +152,19 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
                     }
                 }
             }
+
+            // re-sort graph.
+            var newStopVertices = new Dictionary<uint, int>();
+            graph.SortHilbert(GraphExtensions.DefaultHilbertSteps, (oldId, newId) =>
+            {
+                int stopId;
+                if (_stopVertices.TryGetValue(oldId, out stopId))
+                { // if vertex is a stop, update it's id.
+                    newStopVertices.Add(newId, stopId);
+                    _verticesStop[stopId] = newId;
+                }
+            });
+            _stopVertices = newStopVertices;
         }
 
         /// <summary>
@@ -179,9 +186,9 @@ namespace OsmSharp.Routing.Transit.Multimodal.Data
         /// <returns></returns>
         public override bool TryGetVertex(int stopId, out uint vertex)
         {
-            if(stopId >= 0 && stopId < _verticesStop.Count)
+            if (stopId >= 0 && stopId < _verticesStop.Count)
             {
-                vertex =  _verticesStop[stopId];
+                vertex = _verticesStop[stopId];
                 return true;
             }
             vertex = uint.MaxValue;

@@ -75,15 +75,20 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 10, 00), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(1);
+            Assert.IsNotNull(profiles);
+            Assert.AreEqual(2, profiles.Count);
             var profile = profiles[0];
-            Assert.AreEqual(0, profile.ConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.TripId);
             Assert.AreEqual(0, connection.DepartureStop);
             profiles = algorithm.GetStopProfiles(0);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
         }
 
@@ -165,26 +170,31 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 20, 00), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(2);
+            Assert.AreEqual(2, profiles.Count);
             var profile = profiles[0];
-            Assert.AreEqual(1, profile.ConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.TripId);
             Assert.AreEqual(1, connection.DepartureStop);
-            profiles = algorithm.GetStopProfiles(1);
+            profiles = algorithm.GetStopProfiles(1); 
             profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            Assert.AreEqual(0, profile.ConnectionId);
-            connection = algorithm.GetConnection(profile.ConnectionId);
+            Assert.AreEqual(0, profile.PreviousConnectionId);
+            connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(0, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
+            //Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -232,26 +242,36 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(2);
+            Assert.AreEqual(3, profiles.Count);
             var profile = profiles[0];
-            Assert.AreEqual(1, profile.ConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[2];
+            Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
-            Assert.AreEqual(1, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            //Assert.AreEqual(1, profile.Transfers);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(1, connection.DepartureStop);
             Assert.AreEqual(1, connection.TripId);
             profiles = algorithm.GetStopProfiles(1);
             profile = profiles[0];
-            Assert.AreEqual(0, profile.ConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            connection = algorithm.GetConnection(profile.ConnectionId);
+            //Assert.AreEqual(0, profile.Transfers);
+            connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(0, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
+            //Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -309,18 +329,19 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(2);
-            var profile = profiles.GetBest();
-            Assert.AreEqual(2, profile.ConnectionId);
+            var profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(2, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(2, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -381,18 +402,19 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 07, 30, 00).AddSeconds(duration), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(1);
-            var profile = profiles.GetBest();
-            Assert.AreEqual(0, profile.ConnectionId);
+            var profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(0, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
-            profile = profiles.GetBest();
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            profile = profiles[0];
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + duration500m, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -446,9 +468,9 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
             var algorithm = new ProfileSearch(connectionsDb, departureTime,
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
                     new PathSegmentVisitList(vertex1), int.MaxValue, true),
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
                     new PathSegmentVisitList(vertex4), int.MaxValue, false));
             algorithm.Run();
 
@@ -462,18 +484,20 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 07, 30, 00).AddSeconds(duration), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(1);
-            var profile = profiles.GetBest();
-            Assert.AreEqual(0, profile.ConnectionId);
+            var profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(39681, profile.Seconds); // the number of seconds to destination without transit.
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(0, connection.TripId);
+
             profiles = algorithm.GetStopProfiles(0);
-            profile = profiles.GetBest(profile);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            profile = profiles[0];
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + duration500m, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -607,22 +631,28 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 07, 30, 00).AddSeconds(duration), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(1);
-            var profile = profiles.GetBest();
-            Assert.AreEqual(0, profile.ConnectionId);
+            var profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(30720, profile.Seconds); // the number of seconds to destination without transit.
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId);
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
             Assert.AreEqual(0, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
-            profile = profiles.GetBest(profile);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            profile = profiles[0];
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + duration500mBicycle, profile.Seconds, 1);
-            Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
         /// Tests a successful two-hop, one transfer with a four-connection db where one pseudo connection is skipped.
+        /// 
+        /// 0:  0@08:00 -> 1@08:10
+        /// 1:  1@08:15 -> 2@08:25
+        /// 2:  0@08:15 -> 1@08:20
+        ///     1@08:20 -> 2@08:25
         /// </summary>
         [Test]
         public void TestTwoHopsOneTransferVSOneTripSuccessfulSkippedPseudo()
@@ -687,26 +717,29 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
             var profiles = algorithm.GetStopProfiles(2);
-            var profile = profiles.GetBest();
-            Assert.AreEqual(3, profile.ConnectionId);
+            var profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(3, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            var connection = algorithm.GetConnection(profile.ConnectionId); // connection 1->2.
+            var connection = algorithm.GetConnection(profile.PreviousConnectionId); // connection 1->2.
             Assert.AreEqual(1, connection.DepartureStop);
             Assert.AreEqual(2, connection.TripId);
-            profiles = algorithm.GetStopProfiles(1);
-            profile = profiles.GetBest(profile);
-            Assert.AreEqual(2, profile.ConnectionId);
-            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
-            connection = algorithm.GetConnection(profile.ConnectionId);
+            profiles = algorithm.GetStopProfiles(1); 
+            profile = profiles[0];
+            Assert.AreEqual(Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual(Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            profile = profiles[1];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
+            connection = algorithm.GetConnection(profile.PreviousConnectionId);
             Assert.AreEqual(0, connection.DepartureStop);
-            Assert.AreEqual(2, connection.TripId);
+            Assert.AreEqual(0, connection.TripId);
             profiles = algorithm.GetStopProfiles(0);
-            profile = profiles.GetBest(profile);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.ConnectionId);
+            profile = profiles[0];
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
-            Assert.AreEqual(0, profile.Transfers);
         }
 
         /// <summary>
@@ -717,7 +750,7 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
         {
             // build a tiny test graph.
             var graph = new RouterDataSource<Edge>(new Graph<Edge>(), new TagsIndex());
-            var connectionsDb = new MultimodalConnectionsDb(graph, 
+            var connectionsDb = new MultimodalConnectionsDb(graph,
                 new GTFSConnectionsDb(Data.GTFS.GTFSConnectionsDbBuilder.Empty()),
                 new OsmRoutingInterpreter(), Vehicle.Pedestrian);
             var tags = new TagsCollection(new Tag() { Key = "highway", Value = "residential" });
@@ -734,9 +767,9 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
             var algorithm = new ProfileSearch(connectionsDb, departureTime,
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
                     new PathSegmentVisitList(vertex1), 1000, true),
-                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian, 
+                new OneToManyDykstra(connectionsDb.Graph, new OsmRoutingInterpreter(), Vehicle.Pedestrian,
                     new PathSegmentVisitList(vertex2), 1000, false));
             algorithm.Run();
 

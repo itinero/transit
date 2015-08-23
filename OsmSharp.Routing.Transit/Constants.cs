@@ -44,6 +44,11 @@ namespace OsmSharp.Routing.Transit
         public const int NoConnectionId = -1;
 
         /// <summary>
+        /// Holds the seconds to set if no seconds information available.
+        /// </summary>
+        public const int NoSeconds = -1;
+
+        /// <summary>
         /// Holds the route id in case there is no information available.
         /// </summary>
         public const int NoRouteId = -1;
@@ -57,5 +62,15 @@ namespace OsmSharp.Routing.Transit
         /// Holds the value to use as a vehicle profile when a segment in a route represents a transfer from one trip to another.
         /// </summary>
         public static string TransferVehicle = "Transit.Transfer";
+
+        /// <summary>
+        /// Holds the value to use for a stop id when no information is available.
+        /// </summary>
+        public static int NoStopId = -1;
+
+        /// <summary>
+        /// Holds the value to use for transfers when no information is available.
+        /// </summary>
+        public static int NoTransfers = -1;
     }
 }

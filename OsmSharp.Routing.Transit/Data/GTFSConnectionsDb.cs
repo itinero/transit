@@ -391,6 +391,25 @@ namespace OsmSharp.Routing.Transit.Data
                     }
                     return connection1.DepartureTime.CompareTo(connection2.DepartureTime);
                 });
+
+            // set previousconnection id's.
+            var currentConnection = new Dictionary<int, int>();
+            for (var connectionId = 0; connectionId < connections.Count; connectionId++)
+            {
+                var connection = connections[connectionId];
+                if(connection.TripId != Constants.NoConnectionId &&
+                    connection.TripId != Constants.PseudoConnectionTripId)
+                {
+                    int previousConnectionId;
+                    if (currentConnection.TryGetValue(connection.TripId, out previousConnectionId))
+                    {
+                        connection.PreviousConnectionId = previousConnectionId;
+                        connections[connectionId] = connection;
+                    }
+                    currentConnection[connection.TripId] = connectionId;
+                }
+            }
+                
             _departureTimeView = new ConnectionsListView(connections);
         }
 

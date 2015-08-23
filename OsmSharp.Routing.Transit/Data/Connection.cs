@@ -59,6 +59,11 @@ namespace OsmSharp.Routing.Transit.Data
         public int RouteId { get; set; }
 
         /// <summary>
+        /// The previous connection on the same trip.
+        /// </summary>
+        public int PreviousConnectionId { get; set; }
+
+        /// <summary>
         /// Returns true if the given object represents the same connection.
         /// </summary>
         /// <param name="obj"></param>

@@ -22,6 +22,7 @@ using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 {
@@ -55,48 +56,96 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 // build the route backwards from the target stop.
                 var bestTargetStop = this.Algorithm.GetBestTargetStop();
-                var bestSourceStop = -1;
-                var profiles = this.Algorithm.GetStopProfiles(bestTargetStop);
-                var profile = profiles.GetBest();
-                stops.Insert(0, new Tuple<int, Profile>(
-                    bestTargetStop, profile));
-                var stopsInRoute = new HashSet<int>();
-                stopsInRoute.Add(bestTargetStop);
-                while (profile.ConnectionId >= 0)
-                { // keep searching until the connection id < 0, meaning the start status, without a previous trip.
-                    // get connection information.
-                    var connection = this.Algorithm.GetConnection(profile.ConnectionId);
-                    profiles = this.Algorithm.GetStopProfiles(connection.DepartureStop);
-                    profile = profiles.GetBest(profile);
-                    if (profile.ConnectionId == Constants.NoConnectionId)
-                    { // this stop has no trip, this means that it is the first stop.
-                        // insert the stop first with the departuretime of this connection.
-                        var statusWithTrip = new Profile()
-                        {
-                            ConnectionId = Constants.NoConnectionId,
-                            Seconds = connection.DepartureTime,
-                            Transfers = 1
-                        };
-                        connections.Insert(0, connection);
-                        stops.Insert(0, new Tuple<int, Profile>(
-                            connection.DepartureStop, statusWithTrip));
 
-                        // insert the first and final stop.
-                        connections.Insert(0, null);
-                        stops.Insert(0, new Tuple<int, Profile>(
-                            connection.DepartureStop, profile));
-                        bestSourceStop = connection.DepartureStop;
-                    }
-                    else
-                    { // just insert as normal.
-                        connections.Insert(0, connection);
-                        stops.Insert(0, new Tuple<int, Profile>(
-                            connection.DepartureStop, profile));
-                        if (stopsInRoute.Contains(connection.DepartureStop))
-                        {
-                            throw new Exception("The same stop twice in the same route is impossible.");
+                // choose the best profile (for now this is the profile with the best arrival time).
+                var profiles = this.Algorithm.GetStopProfiles(bestTargetStop);
+                var transfers = profiles.Count - 1;
+                var profile = profiles[transfers];
+                stops.Insert(0, new Tuple<int, Profile>(bestTargetStop, profile));
+
+                Connection previousConnection;
+                if(profile.PreviousConnectionId != Constants.NoConnectionId)
+                { // there is a connection to the target stop.
+                    previousConnection = this.Algorithm.GetConnection(profile.PreviousConnectionId);
+                    connections.Insert(0, previousConnection);
+
+                    var previousProfile = profile;
+                    while (true)
+                    { // keep looping until the best option is a profile without a previous connection.
+                        previousConnection = connections[0].Value;
+
+                        // choose the best option from the current profiles.
+                        profiles = this.Algorithm.GetStopProfiles(previousConnection.DepartureStop);
+                        if (profiles.Count > transfers &&
+                            profiles[transfers].Seconds != Constants.NoSeconds)
+                        { // there is a profile for the same amount of transfers.
+                            var connection = this.Algorithm.GetConnection(profiles[transfers].PreviousConnectionId);
+                            if(previousConnection.TripId == Constants.PseudoConnectionTripId)
+                            { // the previous connection was a pseudo connection, choose a connection with?
+                                // search for the best connection available (but don't take into account transfer time)
+                                profile = First(profiles, 
+                                    x => x.Seconds != Constants.NoSeconds &&
+                                        x.Seconds <= previousConnection.DepartureTime &&
+                                            previousConnection.PreviousConnectionId > x.PreviousConnectionId,
+                                            out transfers);
+                            }
+                            else if (previousConnection.TripId == connection.TripId)
+                            { // ok, this is it!
+                                profile = profiles[transfers];
+                            }
+                            else
+                            { // not the same trip. check if there is a previous connection and if the trip doesn't end here.
+                                var previousTripStatus = this.Algorithm.GetTripStatus(previousConnection.TripId);
+                                if (previousTripStatus.StopId == previousConnection.DepartureStop)
+                                { // there is not previous connection on the same trip anymore.
+                                    // search for the best connection available.
+                                    profile = First(profiles, 
+                                            x => x.Seconds != Constants.NoSeconds &&
+                                                x.Seconds <= previousConnection.DepartureTime &&
+                                                    profile.PreviousConnectionId > x.PreviousConnectionId,
+                                                    out transfers);
+                                }
+                                else
+                                { // get the previous connection on the same.
+                                    profile = new Profile()
+                                    {
+                                        PreviousConnectionId = previousConnection.PreviousConnectionId,
+                                        Seconds = Constants.NoSeconds
+                                    };
+                                }
+                            }
                         }
-                        stopsInRoute.Add(connection.DepartureStop);
+                        else
+                        { // search for the best connection available.
+                            profile = First(profiles, x => x.Seconds != Constants.NoSeconds &&
+                                    x.Seconds <= previousConnection.DepartureTime &&
+                                    profile.PreviousConnectionId > x.PreviousConnectionId,
+                                    out transfers);
+                        }
+
+                        if(profile.PreviousConnectionId == Constants.NoConnectionId)
+                        { // the profile of the current stop indicates this is the source-stop.
+                            // insert the stop first with the departuretime of the previous connection.
+                            stops.Insert(0, new Tuple<int, Profile>(previousConnection.DepartureStop, new Profile()
+                            {
+                                PreviousConnectionId = Constants.NoConnectionId,
+                                Seconds = previousConnection.DepartureTime
+                            }));
+                            connections.Insert(0, null);
+                            stops.Insert(0, new Tuple<int, Profile>(previousConnection.DepartureStop, new Profile()
+                            {
+                                PreviousConnectionId = Constants.NoConnectionId,
+                                Seconds = profile.Seconds
+                            }));
+                            break;
+                        }
+                        else
+                        { // the profiles of the current stop indicate there is another connection before this one.
+                            stops.Insert(0, new Tuple<int, Profile>(previousConnection.DepartureStop, profile));
+                            connections.Insert(0, this.Algorithm.GetConnection(profile.PreviousConnectionId));
+                        }
+
+                        previousProfile = profile;
                     }
                 }
 
@@ -224,7 +273,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 // build route from sourcestop back to source location.
                 uint sourceStopVertex;
-                if (!_db.TryGetVertex(bestSourceStop, out sourceStopVertex))
+                if (!_db.TryGetVertex(stops[0].Item1, out sourceStopVertex))
                 { // vertex not found.
                     throw new Exception("No vertex found for sourcestop.");
                 }
@@ -280,6 +329,23 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 
                 return Route.Concatenate(sourceRoute, targetRoute);
             }
+        }
+
+        /// <summary>
+        /// Returns the first element in the list that validates the predicate.
+        /// </summary>
+        /// <returns></returns>
+        private static T First<T>(List<T> list, Func<T, bool> predicate, out int index)
+        {
+            for (int i = 0; i < list.Count; i++)
+			{
+			    if(predicate(list[i]))
+                {
+                    index = i;
+                    return list[i];
+                }
+			}
+            throw new System.InvalidOperationException("No element validates the predicate or source sequence is empty.");
         }
     }
 }

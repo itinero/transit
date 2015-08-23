@@ -87,9 +87,12 @@
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearch.cs" />
     <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilder.cs" />
     <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilder.cs" />
+    <Compile Include="Builders\Heatmap.cs" />
+    <Compile Include="Builders\IHeatmapSource.cs" />
     <Compile Include="Data\IConnectionList.cs" />
+    <Compile Include="Builders\HeatmapBuilderAlgorithm.cs" />
     <Compile Include="IRoutingAlgorithm.cs" />
-    <Compile Include="RouteBuilder.cs" />
+    <Compile Include="Builders\RouteBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\Connection.cs" />
     <Compile Include="Data\ConnectionsListView.cs" />

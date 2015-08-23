@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Algorithms\DykstraVisit.cs" />
     <Compile Include="Algorithms\IDykstraAlgorithm.cs" />
+    <Compile Include="Algorithms\OneToAll\OneToAllProfileSearch.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstra.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyDykstraRouteBuilder.cs" />
     <Compile Include="Algorithms\OneToMany\OneToManyProfileSearch.cs" />
@@ -96,6 +97,8 @@
     <Compile Include="Data\MultimodalConnectionsDbBase.cs" />
     <Compile Include="EarliestArrivalRouter.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="HeatmapRouterDykstra.cs" />
+    <Compile Include="HeatmapRouterOneToAllProfileSearch.cs" />
     <Compile Include="Instructions\Modal\Machines\AnythingButTransitMachine.cs">
       <SubType>Code</SubType>
     </Compile>

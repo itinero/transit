@@ -18,6 +18,7 @@
 
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
+using OsmSharp.Routing.Transit.Builders;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;

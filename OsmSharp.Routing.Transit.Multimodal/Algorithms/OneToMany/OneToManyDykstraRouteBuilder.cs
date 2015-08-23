@@ -20,6 +20,7 @@ using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Graph;
 using OsmSharp.Routing.Graph.Routing;
+using OsmSharp.Routing.Transit.Builders;
 using OsmSharp.Units.Speed;
 using System;
 using System.Collections.Generic;

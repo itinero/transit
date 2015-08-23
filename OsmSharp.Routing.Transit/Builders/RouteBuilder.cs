@@ -18,7 +18,7 @@
 
 using System;
 
-namespace OsmSharp.Routing.Transit
+namespace OsmSharp.Routing.Transit.Builders
 {
     /// <summary>
     /// Abstract implementation of a route builder.

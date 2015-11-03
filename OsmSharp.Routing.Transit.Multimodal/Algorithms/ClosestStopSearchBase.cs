@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Routing.Algorithms;
+using OsmSharp.Routing.Profiles;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
 {
@@ -40,8 +41,29 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
         }
 
         /// <summary>
+        /// Gets the profile.
+        /// </summary>
+        public abstract Profile Profile
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the source point.
+        /// </summary>
+        public abstract RouterPoint SourcePoint
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets the path to the given stop.
         /// </summary>
         public abstract Path GetPath(uint stop);
+
+        /// <summary>
+        /// Gets the target point to the given stop.
+        /// </summary>
+        public abstract RouterPoint GetTargetPoint(uint stop);
     }
 }

@@ -476,8 +476,8 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
                 MetaId = 0,
                 Profile = 0
             }, null);
-            routerDb.Network.AddVertex(2, 1, 1);
-            routerDb.Network.AddVertex(3, 1.1f, 1.1f);
+            routerDb.Network.AddVertex(2, 2.2f, 2.2f);
+            routerDb.Network.AddVertex(3, 2.1f, 2.1f);
             routerDb.Network.AddEdge(2, 3, new Routing.Network.Data.EdgeData()
             {
                 Distance = 500,

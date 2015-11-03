@@ -141,7 +141,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Longitude = (float)feedStop.Longitude,
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Tags = routeTags.ToArray(),
-                        Profile = Constants.WaitVehicle // not an actual vehicle but just waiting.
+                        Profile = Constants.WaitProfile // not an actual vehicle but just waiting.
                     });
                 }
                 else if (previousTripId != null || connection.Value.TripId == Constants.PseudoConnectionTripId)
@@ -159,7 +159,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Longitude = (float)feedStop.Longitude,
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Tags = routeTags.ToArray(),
-                        Profile = Constants.TransferVehicle // not an actual vehicle but just a transfer.
+                        Profile = Constants.TransferProfile // not an actual vehicle but just a transfer.
                     });
                 }
                 else

@@ -56,12 +56,12 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the value to use as a vehicle profile when a segment in a route represents waiting time.
         /// </summary>
-        public static string WaitVehicle = "Transit.Wait";
+        public static string WaitProfile = "Transit.Wait";
 
         /// <summary>
         /// Holds the value to use as a vehicle profile when a segment in a route represents a transfer from one trip to another.
         /// </summary>
-        public static string TransferVehicle = "Transit.Transfer";
+        public static string TransferProfile = "Transit.Transfer";
 
         /// <summary>
         /// Holds the value to use for a stop id when no information is available.

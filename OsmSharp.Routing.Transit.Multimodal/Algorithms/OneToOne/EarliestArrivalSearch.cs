@@ -123,11 +123,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _backwardStopStatuses = new Dictionary<int, StopStatus>(100);
 
             // calculate forward from source and keep track of all stops reached.
-            _sourceSearch.StopFound = this.ReachedVertexForward;
+            _sourceSearch.StopFound = this.ReachedStopForward;
             _sourceSearch.Run();
 
             // calculate backward from target and keep track of all stops reached.
-            _targetSearch.StopFound = this.ReachedEdgeBackward;
+            _targetSearch.StopFound = this.ReachedStopBackward;
             _targetSearch.Run();
 
             // use the calculate times at the stops from source/target and start to scan connections.
@@ -241,7 +241,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// Called when a vertex was reached during a forward search.
         /// </summary>
         /// <returns></returns>
-        private bool ReachedVertexForward(uint stop, float seconds)
+        private bool ReachedStopForward(uint stop, float seconds)
         {
             var newStatus = new StopStatus()
                     {
@@ -270,7 +270,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Called when an edge was reached during a backward search.
         /// </summary>
-        private bool ReachedEdgeBackward(uint stop, float seconds)
+        private bool ReachedStopBackward(uint stop, float seconds)
         {
             var newStatus = new StopStatus()
             {

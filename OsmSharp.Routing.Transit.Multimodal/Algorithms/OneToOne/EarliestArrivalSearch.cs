@@ -16,12 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using OsmSharp.Routing.Graph;
+using OsmSharp.Routing.Graphs;
+using OsmSharp.Routing.Algorithms.Default;
 using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToMany;
 using OsmSharp.Routing.Transit.Multimodal.Data;
 using System;
 using System.Collections.Generic;
+using OsmSharp.Routing.Algorithms;
+using OsmSharp.Routing.Profiles;
 
 namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
 {
@@ -30,15 +32,14 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
     /// </summary>
     public class EarliestArrivalSearch : RoutingAlgorithmBase
     {
-        private readonly MultimodalConnectionsDbBase<Edge> _db;
-        private readonly ConnectionsView _connections;
+        private readonly MultimodalDb _db;
         private readonly DateTime _departureTime;
         private readonly int _maximumSearchTime = OsmSharp.Routing.Transit.Constants.OneDayInSeconds;
         private readonly int _minimumTransferTime = 3 * 60;
         private readonly Func<int, DateTime, bool> _isTripPossible;
         private readonly Func<float, float> _lazyness;
-        private readonly OneToManyDykstra _sourceSearch;
-        private readonly OneToManyDykstra _targetSearch;
+        private readonly ClosestStopSearchBase _sourceSearch;
+        private readonly ClosestStopSearchBase _targetSearch;
 
         /// <summary>
         /// Holds the function to compare two stop statuses.
@@ -47,7 +48,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             if (status1.Seconds == status2.Seconds)
             {
-                if(status1.Transfers == status2.Transfers)
+                if (status1.Transfers == status2.Transfers)
                 {
                     return status2.ConnectionId.CompareTo(status1.ConnectionId);
                 }
@@ -65,8 +66,8 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch)
+        public EarliestArrivalSearch(MultimodalDb db, DateTime departureTime,
+            ClosestStopSearchBase sourceSearch, ClosestStopSearchBase targetSearch)
             : this(db, departureTime, sourceSearch, targetSearch, (t) => { return 0; })
         {
 
@@ -75,11 +76,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the earliest arrival algorithm.
         /// </summary>
-        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness)
+        public EarliestArrivalSearch(MultimodalDb db, DateTime departureTime,
+            ClosestStopSearchBase sourceSearch, ClosestStopSearchBase targetSearch, Func<float, float> lazyness)
         {
             _db = db;
-            _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
             _targetSearch = targetSearch;
@@ -91,12 +91,11 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        public EarliestArrivalSearch(MultimodalConnectionsDbBase<Edge> db, DateTime departureTime,
-            OneToManyDykstra sourceSearch, OneToManyDykstra targetSearch, Func<float, float> lazyness, 
+        public EarliestArrivalSearch(MultimodalDb db, DateTime departureTime,
+            ClosestStopSearchBase sourceSearch, ClosestStopSearchBase targetSearch, Func<float, float> lazyness,
             Func<int, DateTime, bool> isTripPossible, Func<StopStatus, StopStatus, int> compareStatuses)
         {
             _db = db;
-            _connections = db.ConnectionsDb.GetDepartureTimeView();
             _departureTime = departureTime;
             _sourceSearch = sourceSearch;
             _targetSearch = targetSearch;
@@ -106,45 +105,32 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             _compareStatuses = compareStatuses;
         }
 
-        /// <summary>
-        /// Holds all the statuses of all stops that have been touched by the forward search.
-        /// </summary>
-        private Dictionary<int, StopStatus> _forwardStopStatuses;
-
-        /// <summary>
-        /// Holds all the statuses of all stops that have been touched by the backward search.
-        /// </summary>
-        private Dictionary<int, StopStatus> _backwardStopStatuses;
-
-        /// <summary>
-        /// Holds the best stop to target.
-        /// </summary>
-        private int _bestTargetStop = -1;
+        private Dictionary<int, StopStatus> _forwardStopStatuses; // Holds all the statuses of all stops that have been touched by the forward search.
+        private Dictionary<int, StopStatus> _backwardStopStatuses; // Holds all the statuses of all stops that have been touched by the backward search.
+        private int _bestTargetStop = -1; // Holds the best stop to target.
+        private ConnectionsView _connections;
 
         /// <summary>
         /// Executes the algorithm.
         /// </summary>
         protected override void DoRun()
         {
+            // get the connection view.
+            _connections = _db.ConnectionsDb.GetDepartureTimeView();
+
             // initialize visits.
-            _forwardStopStatuses = new Dictionary<int, StopStatus>(1000);
+            _forwardStopStatuses = new Dictionary<int, StopStatus>(100);
             _backwardStopStatuses = new Dictionary<int, StopStatus>(100);
 
-            // STEP1: calculate forward from source and keep track of all stops reached.
-            _sourceSearch.WasFound = (vertex, time) => 
-                {
-                    return this.ReachedVertexForward((uint)vertex, time);
-                };
+            // calculate forward from source and keep track of all stops reached.
+            _sourceSearch.StopFound = this.ReachedVertexForward;
             _sourceSearch.Run();
 
-            // STEP2: calculate backward from target and keep track of all stops reached.
-            _targetSearch.WasFound = (vertex, time) =>
-                {
-                    return this.ReachedVertexBackward((uint)vertex, time);
-                };
+            // calculate backward from target and keep track of all stops reached.
+            _targetSearch.StopFound = this.ReachedEdgeBackward;
             _targetSearch.Run();
 
-            // STEP3: use the calculate times at the stops from source/target and start to scan connections.
+            // use the calculate times at the stops from source/target and start to scan connections.
             var date = _departureTime.Date;
             var day = 0;
             var startTime = (int)(_departureTime - _departureTime.Date).TotalSeconds;
@@ -254,47 +240,60 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Called when a vertex was reached during a forward search.
         /// </summary>
-        /// <param name="vertex">The vertex reached.</param>
-        /// <param name="time">The time to reach it.</param>
         /// <returns></returns>
-        private bool ReachedVertexForward(uint vertex, float time)
+        private bool ReachedVertexForward(uint stop, float seconds)
         {
-            int stopId;
-            if(_db.TryGetStop(vertex, out stopId))
-            { // the vertex is a stop, mark it as reached.
-                _forwardStopStatuses.Add(stopId, new StopStatus()
+            var newStatus = new StopStatus()
+                    {
+                        ConnectionId = Constants.NoConnectionId,
+                        Seconds = (int)seconds + (int)(_departureTime - _departureTime.Date).TotalSeconds,
+                        Lazyness = (int)_lazyness(seconds),
+                        Transfers = 0,
+                        TripId = Constants.NoTripId
+                    };
+
+            StopStatus existingStatus;
+            if (_forwardStopStatuses.TryGetValue((int)stop, out existingStatus))
+            { // a status already exists, compare.
+                if(existingStatus.Seconds > newStatus.Seconds)
                 {
-                    ConnectionId = Constants.NoConnectionId,
-                    Seconds = (int)time + (int)(_departureTime - _departureTime.Date).TotalSeconds,
-                    Lazyness = (int)_lazyness(time),
-                    Transfers = 0,
-                    TripId = Constants.NoTripId
-                });
+                    _forwardStopStatuses[(int)stop] = newStatus;
+                }
             }
-            return true;
+            else
+            {
+                _forwardStopStatuses.Add((int)stop, newStatus);
+            }
+            return false;
         }
 
         /// <summary>
-        /// Called when a vertex was reached during a backward search.
+        /// Called when an edge was reached during a backward search.
         /// </summary>
-        /// <param name="vertex">The vertex reached.</param>
-        /// <param name="weight">The time to reach it.</param>
-        /// <returns></returns>
-        private bool ReachedVertexBackward(uint vertex, float weight)
+        private bool ReachedEdgeBackward(uint stop, float seconds)
         {
-            int stopId;
-            if (_db.TryGetStop(vertex, out stopId))
-            { // the vertex is a stop, mark it as reached.
-                _backwardStopStatuses.Add(stopId, new StopStatus()
+            var newStatus = new StopStatus()
+            {
+                ConnectionId = Constants.NoConnectionId,
+                Seconds = (int)seconds,
+                Lazyness = (int)_lazyness(seconds),
+                Transfers = 0,
+                TripId = Constants.NoTripId
+            };
+            
+            StopStatus existingStatus;
+            if(_backwardStopStatuses.TryGetValue((int)stop, out existingStatus))
+            {
+                if(existingStatus.Seconds > newStatus.Seconds)
                 {
-                    ConnectionId = Constants.NoConnectionId,
-                    Seconds = (int)weight,
-                    Lazyness = (int)_lazyness(weight),
-                    Transfers = 0,
-                    TripId = Constants.NoTripId
-                });
+                    _backwardStopStatuses[(int)stop] = newStatus;
+                }
             }
-            return true;
+            else
+            {
+                _backwardStopStatuses.Add((int)stop, newStatus);
+            }
+            return false;
         }
 
         /// <summary>
@@ -343,7 +342,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Returns the source-search algorithm.
         /// </summary>
-        public OneToManyDykstra SourceSearch
+        public ClosestStopSearchBase SourceSearch
         {
             get
             {
@@ -354,7 +353,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         /// <summary>
         /// Returns the target-search algorithm.
         /// </summary>
-        public OneToManyDykstra TargetSearch
+        public ClosestStopSearchBase TargetSearch
         {
             get
             {
@@ -393,7 +392,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _forwardStopStatuses[_bestTargetStop].Seconds + _backwardStopStatuses[_bestTargetStop].Seconds 
+            return _forwardStopStatuses[_bestTargetStop].Seconds + _backwardStopStatuses[_bestTargetStop].Seconds
                 - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 

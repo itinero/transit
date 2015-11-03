@@ -18,6 +18,7 @@
 
 using GTFS;
 using GTFS.Entities;
+using OsmSharp.Collections.Coordinates.Collections;
 
 namespace OsmSharp.Transit.Test.Data.GTFS
 {
@@ -33,6 +34,22 @@ namespace OsmSharp.Transit.Test.Data.GTFS
         public static IGTFSFeed Empty()
         {
             return new GTFSFeed();
+        }
+
+        /// <summary>
+        /// Builds a GTFS feed with just one stop.
+        /// </summary>
+        /// <returns></returns>
+        public static IGTFSFeed OneStop(ICoordinate location)
+        {
+            var feed = new GTFSFeed();
+            feed.Stops.Add(new Stop()
+            {
+                Id = "0",
+                Longitude = location.Longitude,
+                Latitude = location.Latitude
+            });
+            return feed;
         }
 
         /// <summary>

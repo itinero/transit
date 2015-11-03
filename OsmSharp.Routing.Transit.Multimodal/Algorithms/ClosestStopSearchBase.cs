@@ -16,30 +16,32 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Algorithms;
 
-namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.Resolving
+namespace OsmSharp.Routing.Transit.Multimodal.Algorithms
 {
     /// <summary>
-    /// Abstract a resolver.
+    /// Abstract representation of an algorithm executing a search for closest stops.
     /// </summary>
-    /// <typeparam name="THook"></typeparam>
-    /// <typeparam name="TRoutingPoint"></typeparam>
-    public interface IResolver<THook, TRoutingPoint>
+    public abstract class ClosestStopSearchBase : AlgorithmBase
     {
         /// <summary>
-        /// Resolves a location to a routing point.
+        /// A function to report that a stop was found and the number of seconds to travel to/from.
         /// </summary>
-        /// <param name="location"></param>
-        /// <exception cref="System.Exception">The resolving operation failed.</exception>
-        /// <returns>A routing point. This method should quarantee a non-null return.</returns>
-        TRoutingPoint Resolve(GeoCoordinate location);
+        public delegate bool StopFoundFunc(uint stop, float time);
 
         /// <summary>
-        /// Converts a resolved point to a routing hook that can serve as the start of a routing algorithm run.
+        /// Gets or sets the stop found function.
         /// </summary>
-        /// <param name="routingPoint"></param>
-        /// <returns></returns>
-        THook GetHook(TRoutingPoint routingPoint);
+        public virtual StopFoundFunc StopFound
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the path to the given stop.
+        /// </summary>
+        public abstract Path GetPath(uint stop);
     }
 }

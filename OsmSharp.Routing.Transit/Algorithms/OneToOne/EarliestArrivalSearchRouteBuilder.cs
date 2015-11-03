@@ -93,7 +93,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
             // convert the stop and connection sequences into an actual route.
             var route = new Route();
-            route.Segments = new RouteSegment[stops.Count];
+            route.Segments = new List<RouteSegment>();
 
             // get the first stop.
             var feedStop = _connectionsDb.GetGTFSStop(stops[0].Item1);
@@ -105,16 +105,14 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 Value = stops[0].Item2.Seconds.ToInvariantString()
             });
             var departureTime = stops[0].Item2.Seconds;
-            route.Segments[0] = new RouteSegment()
+            route.Segments.Add(new RouteSegment()
             {
                 Distance = -1, // distance is not important in transit routing.
                 Latitude = (float)feedStop.Latitude,
                 Longitude = (float)feedStop.Longitude,
-                Name = feedStop.Name,
                 Time = 0,
-                Type = RouteSegmentType.Start,
                 Tags = routeTags.ToArray()
-            };
+            });
             int? previousTripId = null;
             for (int idx = 1; idx < stops.Count; idx++)
             {
@@ -135,17 +133,15 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 Value = stops[idx].Item2.Seconds.ToInvariantString()
                             });
 
-                    route.Segments[idx] = new RouteSegment()
+                    route.Segments.Add(new RouteSegment()
                     {
                         Distance = -1,
                         Latitude = (float)feedStop.Latitude,
                         Longitude = (float)feedStop.Longitude,
-                        Name = feedStop.Name,
                         Time = stops[idx].Item2.Seconds - departureTime,
-                        Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = Constants.WaitVehicle // not an actual vehicle but just waiting.
-                    };
+                        Profile = Constants.WaitVehicle // not an actual vehicle but just waiting.
+                    });
                 }
                 else if (previousTripId != null && connection == null)
                 { // this is a transfer: current connection is null but there was a previous trip.
@@ -155,17 +151,15 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Value = stops[idx].Item2.Seconds.ToInvariantString()
                     });
 
-                    route.Segments[idx] = new RouteSegment()
+                    route.Segments.Add(new RouteSegment()
                     {
                         Distance = -1,
                         Latitude = (float)feedStop.Latitude,
                         Longitude = (float)feedStop.Longitude,
-                        Name = feedStop.Name,
                         Time = stops[idx].Item2.Seconds - departureTime,
-                        Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = OsmSharp.Routing.Transit.Constants.TransferVehicle // not an actual vehicle but just a transfer.
-                    };
+                        Profile = OsmSharp.Routing.Transit.Constants.TransferVehicle // not an actual vehicle but just a transfer.
+                    });
                 }
                 else
                 { // this is a connection: connection is not null.
@@ -183,24 +177,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 Value = stops[idx].Item2.Seconds.ToInvariantString()
                             });
 
-                    route.Segments[idx] = new RouteSegment()
+                    route.Segments.Add(new RouteSegment()
                     {
                         Distance = -1,
                         Latitude = (float)feedStop.Latitude,
                         Longitude = (float)feedStop.Longitude,
-                        Name = feedStop.Name,
                         Time = stops[idx].Item2.Seconds - departureTime,
-                        Type = RouteSegmentType.Along,
                         Tags = routeTags.ToArray(),
-                        Vehicle = feedRoute.Type.ToVehicleUniqueName()
-                    };
+                        Profile = feedRoute.Type.ToVehicleUniqueName()
+                    });
                 }
-            }
-
-            // mark last segment as stop.
-            if (route.Segments.Length > 0)
-            {
-                route.Segments[route.Segments.Length - 1].Type = RouteSegmentType.Stop;
             }
 
             return route;

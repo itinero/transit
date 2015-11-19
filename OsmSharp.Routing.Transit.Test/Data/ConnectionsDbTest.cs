@@ -346,5 +346,118 @@ namespace OsmSharp.Routing.Transit.Test.Data
                 Assert.AreEqual(enumerator.Longitude, locations[(int)stop].Longitude);
             }
         }
+
+        /// <summary>
+        /// Tests connection sorting.
+        /// </summary>
+        [Test]
+        public void TestConnectionSorting()
+        {
+            var db = new ConnectionsDb();
+
+            db.AddStop(1.1f, 1.2f, 124);
+            db.AddStop(2.1f, 2.2f, 128);
+            db.AddStop(3.1f, 3.2f, 132);
+            db.AddStop(4.1f, 4.2f, 136);
+            db.AddStop(5.1f, 5.2f, 140);
+            db.AddStop(6.1f, 6.2f, 144);
+
+            db.AddConnection(0, 1, 1234, 0, 100);
+            db.AddConnection(0, 1, 1234, 100, 1000);
+            db.AddConnection(0, 2, 1234, 10, 200);
+            db.AddConnection(0, 3, 1234, 1000, 2000);
+            db.AddConnection(0, 4, 1234, 101, 201);
+            db.AddConnection(0, 5, 1234, 102, 101 + (1 << 15) - 1);
+
+            db.SortConnections(DefaultSorting.DepartureTime, null);
+
+            var enumerator = db.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+
+            Assert.IsTrue(enumerator.MoveTo(0));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(1, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(0, enumerator.DepartureTime);
+            Assert.AreEqual(100, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(1));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(2, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(10, enumerator.DepartureTime);
+            Assert.AreEqual(200, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(2));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(1, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(1000, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(3));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(4, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(101, enumerator.DepartureTime);
+            Assert.AreEqual(201, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(4));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(5, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(102, enumerator.DepartureTime);
+            Assert.AreEqual(101 + (1 << 15) - 1, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(5));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(3, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(1000, enumerator.DepartureTime);
+            Assert.AreEqual(2000, enumerator.ArrivalTime);
+
+            enumerator = db.GetConnectionEnumerator(DefaultSorting.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(0));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(1, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(0, enumerator.DepartureTime);
+            Assert.AreEqual(100, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(1));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(2, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(10, enumerator.DepartureTime);
+            Assert.AreEqual(200, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(2));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(4, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(101, enumerator.DepartureTime);
+            Assert.AreEqual(201, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(3));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(1, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(1000, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(4));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(3, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(1000, enumerator.DepartureTime);
+            Assert.AreEqual(2000, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveTo(5));
+            Assert.AreEqual(0, enumerator.Stop1);
+            Assert.AreEqual(5, enumerator.Stop2);
+            Assert.AreEqual(1234, enumerator.ProfileId);
+            Assert.AreEqual(102, enumerator.DepartureTime);
+            Assert.AreEqual(101 + (1 << 15) - 1, enumerator.ArrivalTime);
+        }
     }
 }

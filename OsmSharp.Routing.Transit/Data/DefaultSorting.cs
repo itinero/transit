@@ -26,7 +26,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Sorted by departure time.
         /// </summary>
-        DepatureTime,
+        DepartureTime,
         /// <summary>
         /// Sorted by arrival time.
         /// </summary>

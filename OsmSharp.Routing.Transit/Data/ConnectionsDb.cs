@@ -190,7 +190,67 @@ namespace OsmSharp.Routing.Transit.Data
         {
             _sorting = sorting;
 
-            throw new Exception();
+            if (_nextConnectionId > 0)
+            {
+                _connectionsOrder.Resize(_nextConnectionId);
+
+                for (uint i = 0; i < _nextConnectionId; i++)
+                {
+                    _connectionsOrder[i] = i;
+                }
+
+                QuickSort.Sort((connection) =>
+                    {
+                        uint departureTime, duration;
+                        ConnectionsDb.DecodeDepartureTimeAndDuration(
+                            _connections[connection * CONNECTION_SIZE + 3],
+                                out departureTime, out duration);
+                        if (sorting == DefaultSorting.DepartureTime)
+                        {
+                            return departureTime;
+                        }
+                        return departureTime + duration;
+                    },
+                    (connection1, connection2) =>
+                    {
+                        var value0 = _connections[connection1 * CONNECTION_SIZE + 0];
+                        var value1 = _connections[connection1 * CONNECTION_SIZE + 1];
+                        var value2 = _connections[connection1 * CONNECTION_SIZE + 2];
+                        var value3 = _connections[connection1 * CONNECTION_SIZE + 3];
+                        _connections[connection1 * CONNECTION_SIZE + 0] = _connections[connection2 * CONNECTION_SIZE + 0];
+                        _connections[connection1 * CONNECTION_SIZE + 1] = _connections[connection2 * CONNECTION_SIZE + 1];
+                        _connections[connection1 * CONNECTION_SIZE + 2] = _connections[connection2 * CONNECTION_SIZE + 2];
+                        _connections[connection1 * CONNECTION_SIZE + 3] = _connections[connection2 * CONNECTION_SIZE + 3];
+                        _connections[connection2 * CONNECTION_SIZE + 0] = value0;
+                        _connections[connection2 * CONNECTION_SIZE + 1] = value1;
+                        _connections[connection2 * CONNECTION_SIZE + 2] = value2;
+                        _connections[connection2 * CONNECTION_SIZE + 3] = value3;
+
+                        if (switchConnections != null)
+                        {
+                            switchConnections((uint)connection1, (uint)connection2);
+                        }
+                    }, 0, _nextConnectionId - 1);
+
+                QuickSort.Sort((connection) =>
+                    {
+                        uint departureTime, duration;
+                        ConnectionsDb.DecodeDepartureTimeAndDuration(
+                            _connections[_connectionsOrder[connection] * CONNECTION_SIZE + 3],
+                                out departureTime, out duration);
+                        if (sorting != DefaultSorting.DepartureTime)
+                        {
+                            return departureTime;
+                        }
+                        return departureTime + duration;
+                    },
+                     (connection1, connection2) =>
+                     {
+                         var value = _connectionsOrder[connection1];
+                         _connectionsOrder[connection1] = _connectionsOrder[connection2];
+                         _connectionsOrder[connection2] = value;
+                     }, 0, _nextConnectionId - 1);
+            }
         }
 
         /// <summary>
@@ -274,11 +334,11 @@ namespace OsmSharp.Routing.Transit.Data
         /// <returns></returns>
         public ConnectionEnumerator GetConnectionOrderEnumerator()
         {
-            if (_connectionsOrder.Length * CONNECTION_SIZE != _connections.Length)
+            if (_connectionsOrder.Length == 0 && _connections.Length != 0)
             {
                 throw new InvalidOperationException("Cannot get sorted enumerator, db is not sorted.");
             }
-            return new ConnectionEnumerator(_connections, _connectionsOrder, _nextConnectionId + 1);
+            return new ConnectionEnumerator(_connections, _connectionsOrder, _nextConnectionId);
         }
 
         /// <summary>
@@ -341,7 +401,7 @@ namespace OsmSharp.Routing.Transit.Data
                 {
                     if (_connectionsOrder != null)
                     { // translate index.
-                        _index = _connectionsOrder[_index];
+                        _index = _connectionsOrder[_id] * CONNECTION_SIZE;
                     }
                     return true;
                 }

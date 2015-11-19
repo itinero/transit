@@ -112,7 +112,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Route 0",
                 Tag = null,
                 TextColor = null,
-                Type = RouteType.Bus,
+                Type = RouteTypeExtended.BusService,
                 Url = null
             });
             feed.Trips.Add(new Trip()
@@ -270,7 +270,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Route 0",
                 Tag = null,
                 TextColor = null,
-                Type = RouteType.Bus,
+                Type = RouteTypeExtended.BusService,
                 Url = null
             });
             feed.Trips.Add(new Trip()
@@ -464,7 +464,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Route 0",
                 Tag = null,
                 TextColor = null,
-                Type = RouteType.Bus,
+                Type = RouteTypeExtended.BusService,
                 Url = null
             });
             feed.Trips.Add(new Trip()
@@ -657,7 +657,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Route 0",
                 Tag = null,
                 TextColor = null,
-                Type = RouteType.Bus,
+                Type = RouteTypeExtended.BusService,
                 Url = null
             });
             feed.Routes.Add(new Route()
@@ -670,7 +670,7 @@ namespace OsmSharp.Transit.Test.Data.GTFS
                 ShortName = "Route 1",
                 Tag = null,
                 TextColor = null,
-                Type = RouteType.Bus,
+                Type = RouteTypeExtended.BusService,
                 Url = null
             });
             feed.Trips.Add(new Trip()

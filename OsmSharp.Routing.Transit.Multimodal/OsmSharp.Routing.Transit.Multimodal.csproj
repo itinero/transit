@@ -52,41 +52,45 @@
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="GTFS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.dll</HintPath>
-    </Reference>
-    <Reference Include="GTFS.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\GTFS.0.0.4.84-beta\lib\GTFS.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="OsmSharp, Version=0.0.0.48, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Core.0.0.0.48-beta\lib\net45\OsmSharp.dll</HintPath>
+    <Reference Include="GTFS, Version=1.0.4.90, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.0.4.90-beta\lib\net40\GTFS.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp.Osm, Version=0.0.0.48, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Core.0.0.0.48-beta\lib\net45\OsmSharp.Osm.dll</HintPath>
+    <Reference Include="GTFS.IO, Version=1.0.4.90, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.0.4.90-beta\lib\net40\GTFS.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp.Routing, Version=0.0.0.9999, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\routing\Output\OsmSharp.Routing.dll</HintPath>
-    </Reference>
-    <Reference Include="OsmSharp.UI, Version=0.0.0.1076, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.UI.0.0.0.1076-beta\lib\net45\OsmSharp.UI.dll</HintPath>
+    <Reference Include="GTFS.IO.Desktop, Version=1.0.4.90, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.0.4.90-beta\lib\net40\GTFS.IO.Desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp.WinForms.UI, Version=0.0.0.1076, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.UI.0.0.0.1076-beta\lib\net45\OsmSharp.WinForms.UI.dll</HintPath>
+    <Reference Include="OsmSharp, Version=0.0.0.50, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.Core.0.0.0.50-beta\lib\net45\OsmSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OsmSharp.Osm, Version=0.0.0.50, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.Core.0.0.0.50-beta\lib\net45\OsmSharp.Osm.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OsmSharp.Routing, Version=0.0.1.56, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.Routing.0.0.1.56-beta\lib\net45\OsmSharp.Routing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OsmSharp.UI, Version=0.0.0.1082, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.UI.0.0.0.1082-beta\lib\net45\OsmSharp.UI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OsmSharp.WinForms.UI, Version=0.0.0.1082, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.UI.0.0.0.1082-beta\lib\net45\OsmSharp.WinForms.UI.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Reminiscence, Version=0.0.0.15, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\reminiscence\Output\Reminiscence.dll</HintPath>
+    <Reference Include="Reminiscence, Version=0.0.0.24, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Reminiscence.0.0.0.24-beta\lib\portable-net40+sl4+win8+wp7\Reminiscence.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

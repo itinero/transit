@@ -252,7 +252,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                         Longitude = (float)feedStop.Longitude,
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Tags = routeTags.ToArray(),
-                        Profile = feedRoute.Type.ToVehicleUniqueName()
+                        Profile = feedRoute.Type.ToProfileName()
                     });
                 }
             }
@@ -271,7 +271,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
             var targetProfile = this.Algorithm.TargetSearch.Profile;
             var targetTargetPoint = this.Algorithm.TargetSearch.SourcePoint;
             var targetRoute = OsmSharp.Routing.Algorithms.RouteBuilder.Build(_db.RouterDb, targetProfile,
-                targetSourcePoint, targetTargetPoint, targetPath.Reverse());
+                targetSourcePoint, targetTargetPoint, targetPath);
 
             // concatenate routes.
             var route = transitRoute;

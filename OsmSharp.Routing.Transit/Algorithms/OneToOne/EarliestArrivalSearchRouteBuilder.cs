@@ -38,8 +38,6 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Creates a new earliest arrival route builder.
         /// </summary>
-        /// <param name="earliestArrival">The earliest arrival algorithm.</param>
-        /// <param name="connectionsDb">The connections database.</param>
         public EarliestArrivalSearchRouteBuilder(EarliestArrivalSearch earliestArrival, GTFSConnectionsDb connectionsDb)
             :base(earliestArrival)
         {
@@ -49,7 +47,6 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Executes the route build step.
         /// </summary>
-        /// <returns></returns>
         public override Route DoBuild()
         {
             var stops = new List<Tuple<int, EarliestArrival>>();
@@ -184,11 +181,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Longitude = (float)feedStop.Longitude,
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Tags = routeTags.ToArray(),
-                        Profile = feedRoute.Type.ToVehicleUniqueName()
+                        Profile = feedRoute.Type.ToProfileName()
                     });
                 }
             }
-
             return route;
         }
     }

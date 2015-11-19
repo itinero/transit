@@ -517,7 +517,7 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                     }
                 }
                 if (this.Count - 1 < transfers)
-                { // no profile yet at this tranfer, just update list and insert.
+                { // no profile yet at this transfer, just update list and insert.
                     do
                     {
                         this.Add(Profile.Empty);
@@ -529,8 +529,10 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.OneToOne
                 { // yes, there is a profile, compare it and remove dominated entries if needed.
                     for (var i = this.Count - 1; i > transfers; i--)
                     {
-                        if (this[i].PreviousConnectionId != Constants.NoConnectionId &&
-                            this[i].Seconds >= profile.Seconds)
+                        if ((this[i].PreviousConnectionId != Constants.NoConnectionId &&
+                             this[i].Seconds >= profile.Seconds) ||
+                            (this[i].PreviousConnectionId == -1 &&
+                             this[i].Seconds == -1))
                         {
                             if (i == this.Count - 1)
                             { // remove last if it would be set to empty.

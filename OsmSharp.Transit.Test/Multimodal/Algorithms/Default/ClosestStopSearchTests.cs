@@ -66,14 +66,27 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.Default
                 routerDb, profile, stopLinksDb, new RouterPoint(0.5f, 0.5f, 0, ushort.MaxValue / 2), 1800, false);
             closestStopSearch.StopFound = (uint stopId, float seconds) =>
                 {
-                    Assert.AreEqual(0, stopId);
-                    Assert.AreEqual(0, seconds);
-                    stopFound = true;
+                    if (!stopFound)
+                    {
+                        Assert.AreEqual(0, stopId);
+                        Assert.AreEqual(0, seconds);
+                        stopFound = true;
+                    }
                     return false;
                 };
             closestStopSearch.Run();
 
             Assert.IsTrue(stopFound);
+
+            var path = closestStopSearch.GetPath(0);
+            Assert.IsNotNull(path);
+            Assert.AreEqual(OsmSharp.Routing.Constants.NO_VERTEX, path.Vertex);
+            Assert.IsNull(path.From);
+            Assert.AreEqual(0, path.Weight);
+            var point = closestStopSearch.GetTargetPoint(0);
+            Assert.IsNotNull(point);
+            Assert.AreEqual(0, point.EdgeId);
+            Assert.AreEqual(ushort.MaxValue / 2, point.Offset);
 
             stopFound = false;
             closestStopSearch = new ClosestStopSearch(
@@ -88,6 +101,17 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.Default
             closestStopSearch.Run();
 
             Assert.IsTrue(stopFound);
+
+            path = closestStopSearch.GetPath(0);
+            Assert.IsNotNull(path);
+            Assert.AreEqual(OsmSharp.Routing.Constants.NO_VERTEX, path.Vertex);
+            Assert.IsNotNull(path.From);
+            Assert.AreEqual(0, path.From.Vertex);
+            Assert.AreEqual(profile.Factor(null).Value * 500, path.Weight, .1f);
+            point = closestStopSearch.GetTargetPoint(0);
+            Assert.IsNotNull(point);
+            Assert.AreEqual(0, point.EdgeId);
+            Assert.AreEqual(ushort.MaxValue / 2, point.Offset);
         }
 
         /// <summary>

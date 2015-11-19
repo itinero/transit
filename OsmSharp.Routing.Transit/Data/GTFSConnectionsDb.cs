@@ -30,19 +30,33 @@ namespace OsmSharp.Routing.Transit.Data
     public class GTFSConnectionsDb
     {
         private readonly IGTFSFeed _feed; // the source GTFS-feed.
-        private readonly int MAX_TRANSFER_DISTANCE = 50; // maximum transfer distance in meter.
-        private readonly int MIN_TRANSFER_TIME = 3 * 60; // maximum transfer time in seconds.
+        private readonly Dictionary<string, TransfersDb> _transferDbs; // holds the transfer databases.
 
         /// <summary>
         /// Creates a new GTFS connections db based on the given feed.
         /// </summary>
-        /// <param name="feed"></param>
-        /// <remarks>The use multiple feeds they need to be merged into one feed first.</remarks>
         public GTFSConnectionsDb(IGTFSFeed feed)
         {
             _feed = feed;
+            _transferDbs = new Dictionary<string, TransfersDb>();
 
             this.BuildViews();
+        }
+
+        /// <summary>
+        /// Adds the transfers db for the given profile.
+        /// </summary>
+        public void AddTransfersDb(Profiles.Profile profile, TransfersDb transfers)
+        {
+            _transferDbs[profile.Name] = transfers;
+        }
+
+        /// <summary>
+        /// Gets the tranfers db for the given profile.
+        /// </summary>
+        public TransfersDb GetTransfersDb(Profiles.Profile profile)
+        {
+            return _transferDbs[profile.Name];
         }
 
         /// <summary>
@@ -89,9 +103,6 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Returns true if the given trip is possible on the given date.
         /// </summary>
-        /// <param name="trip"></param>
-        /// <param name="date"></param>
-        /// <returns></returns>
         private bool DoIsTripPossible(int trip, DateTime date)
         {
             return true;
@@ -130,20 +141,9 @@ namespace OsmSharp.Routing.Transit.Data
  
         #region Connection Management
 
-        /// <summary>
-        /// Holds the departure time view.
-        /// </summary>
-        private ConnectionsView _departureTimeView;
-
-        /// <summary>
-        /// Holds the arrival time view.
-        /// </summary>
-        private ConnectionsView _arrivalTimeView;
-
-        /// <summary>
-        /// Holds the stops view.
-        /// </summary>
-        private GTFSStopsView _stopsView;
+        private ConnectionsView _departureTimeView; // Holds the departure time view.
+        private ConnectionsView _arrivalTimeView; // Holds the arrival time view.
+        private GTFSStopsView _stopsView; // Holds the stops view.
 
         /// <summary>
         /// Builds all views.
@@ -287,95 +287,12 @@ namespace OsmSharp.Routing.Transit.Data
                 previousStopTime = stopTime;
             }
 
-            // build transfers db.
-            foreach (var sourceKeyValue in stopIds)
-            {
-                var sourceStop = _feed.Stops.Get(sourceKeyValue.Value);
-                var sourceLocation = new GeoCoordinate(sourceStop.Latitude, sourceStop.Longitude);
-                foreach (var targetKeyValue in stopIds)
-                {
-                    if (targetKeyValue.Value == sourceKeyValue.Value)
-                    { // do not transfer between identical stops.
-                        continue;
-                    }
-
-                    var targetStop = _feed.Stops.Get(targetKeyValue.Value);
-                    var targetLocation = new GeoCoordinate(targetStop.Latitude, targetStop.Longitude);
-                    if (targetLocation.DistanceEstimate(sourceLocation).Value < MAX_TRANSFER_DISTANCE)
-                    { // ok, between these two stops we should create transfers.
-                        // build departure times.
-                        List<int> targetTimes, sourceTimes;
-                        if (arrivalTimes.TryGetValue(sourceKeyValue.Value, out sourceTimes) &&
-                           departureTimes.TryGetValue(targetKeyValue.Value, out targetTimes))
-                        { // both lists are available.
-                            sourceTimes.Sort();
-                            targetTimes.Sort();
-
-                            var sourceIdx = 0;
-                            var targetIdx = 0;
-                            while (sourceIdx < sourceTimes.Count &&
-                                targetIdx < targetTimes.Count)
-                            {
-                                var diff = targetTimes[targetIdx] - sourceTimes[sourceIdx];
-                                if (diff >= MIN_TRANSFER_TIME)
-                                { // ok a valid tranfer found here.
-                                    connections.Add(new Connection()
-                                        {
-                                            ArrivalStop = targetKeyValue.Value,
-                                            ArrivalTime = targetTimes[targetIdx],
-                                            DepartureStop = sourceKeyValue.Value,
-                                            DepartureTime = sourceTimes[sourceIdx],
-                                            TripId = Constants.PseudoConnectionTripId,
-                                            RouteId = Constants.NoRouteId
-                                        });
-                                    sourceIdx++;
-                                }
-                                if (sourceIdx < sourceTimes.Count)
-                                {
-                                    // move target until after source time.
-                                    while (targetIdx < targetTimes.Count &&
-                                        targetTimes[targetIdx] - sourceTimes[sourceIdx] <= MIN_TRANSFER_TIME)
-                                    { // transfer still not possible.
-                                        targetIdx++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            //// remove duplicates by first sorting and the removing consequitive duplicates.
-            //connections.Sort((connection1, connection2) =>
-            //{
-            //    if (connection1.DepartureTime == connection2.DepartureTime)
-            //    {
-            //        if (connection1.TripId == connection2.TripId)
-            //        {
-            //            return connection1.TripIdx.CompareTo(connection2.TripIdx);
-            //        }
-            //        return connection1.TripId.CompareTo(connection2.TripId);
-            //    }
-            //    return connection1.DepartureTime.CompareTo(connection2.DepartureTime);
-            //});
-            //var 
-            //for (var i = connections.Count - 1; i >= 1; i--)
-            //{
-            //    var connection1 = connections[i];
-            //    var connection2 = connections[i - 1];
-            //    if(Connection.Equals(connection1, connection2))
-            //    { // connections are equal.
-            //        connections.RemoveAt(i);
-            //    }
-            //}
-
             return connections;
         }
 
         /// <summary>
         /// Builds departure time view.
         /// </summary>
-        /// <param name="connections"></param>
         private void BuildDepartureTimeView(List<Connection> connections)
         {
             // sort connections.
@@ -416,7 +333,6 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Builds arrival time view.
         /// </summary>
-        /// <param name="connections"></param>
         private void BuildArrivalTimeView(List<Connection> connections)
         {
             // sort connections.

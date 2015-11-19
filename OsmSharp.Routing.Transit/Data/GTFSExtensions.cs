@@ -32,9 +32,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Converts the given GTFS-route type into a vehicle name in the OsmSharp-space.
         /// </summary>
-        /// <param name="routeType"></param>
-        /// <returns></returns>
-        public static string ToVehicleUniqueName(this RouteType routeType)
+        public static string ToProfileName(this RouteType routeType)
         {
             switch(routeType)
             {
@@ -59,10 +57,85 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Converts the given GTFS-route type into a vehicle name in the OsmSharp-space.
+        /// </summary>
+        public static string ToProfileName(this RouteTypeExtended routeType)
+        {
+            var id = (int)routeType;
+            if (100 >= id && id < 200)
+            {
+                return "Transit.Rail";
+            }
+            if (200 >= id && id < 300)
+            {
+                return "Transit.Coach";
+            }
+            if (300 >= id && id < 400)
+            {
+                return "Transit.Rail";
+            }
+            if (400 >= id && id < 500)
+            {
+                return "Transit.Rail";
+            }
+            if (500 >= id && id < 600)
+            {
+                return "Transit.SubwayMetro";
+            }
+            if (600 >= id && id < 700)
+            {
+                return "Transit.SubwayMetro";
+            }
+            if (700 >= id && id < 800)
+            {
+                return "Transit.Bus";
+            }
+            if (800 >= id && id < 900)
+            {
+                return "Transit.Bus";
+            }
+            if (900 >= id && id < 1000)
+            {
+                return "Transit.Tram";
+            }
+            if (1000 >= id && id < 1100)
+            {
+                return "Transit.Ferry";
+            }
+            if (1100 >= id && id < 1200)
+            {
+                return "Transit.Air";
+            }
+            if (1200 >= id && id < 1300)
+            {
+                return "Transit.Ferry";
+            }
+            if (1300 >= id && id < 1400)
+            {
+                return "Transit.CableCar";
+            }
+            if (1400 >= id && id < 1500)
+            {
+                return "Transit.Funicular";
+            }
+            if (1500 >= id && id < 1600)
+            {
+                return "Transit.Taxi";
+            }
+            if (1600 >= id && id < 1700)
+            {
+                return "Transit.Hire";
+            }
+            if (1700 >= id)
+            {
+                return "Transit.Miscellaneous";
+            }
+            throw new ArgumentOutOfRangeException();
+        }
+
+        /// <summary>
         /// Adds relevant tags to the given tags list for this entity.
         /// </summary>
-        /// <param name="agency"></param>
-        /// <param name="routeTags"></param>
         public static void AppendTagsTo(this Agency agency, List<RouteTags> routeTags)
         {
             if (agency == null) { return; }
@@ -82,8 +155,6 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds relevant tags to the given tags list for this entity.
         /// </summary>
-        /// <param name="stop"></param>
-        /// <param name="routeTags"></param>
         public static void AddTagsTo(this global::GTFS.Entities.Stop stop, List<RouteTags> routeTags)
         {
             if (stop == null) { return; }
@@ -113,8 +184,6 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds relevant tags to the given tags list for this entity.
         /// </summary>
-        /// <param name="trip"></param>
-        /// <param name="routeTags"></param>
         public static void AppendTagsTo(this Trip trip, List<RouteTags> routeTags)
         {
             if (trip == null) { return; }
@@ -139,8 +208,6 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds relevant tags to the given tags list for this entity.
         /// </summary>
-        /// <param name="route"></param>
-        /// <param name="routeTags"></param>
         public static void AppendTagsTo(this global::GTFS.Entities.Route route, List<RouteTags> routeTags)
         {
             if (route == null) { return; }

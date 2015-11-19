@@ -18,6 +18,7 @@
 
 using GTFS;
 using GTFS.Entities;
+using GTFS.Entities.Enumerations;
 using OsmSharp.Collections.Coordinates.Collections;
 
 namespace OsmSharp.Transit.Test.Data.GTFS
@@ -66,7 +67,8 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Trips.Add(new Trip()
             {
@@ -117,7 +119,8 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Trips.Add(new Trip()
             {
@@ -181,7 +184,8 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
@@ -267,7 +271,8 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "1",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Trips.Add(new Trip()
             {
@@ -350,12 +355,14 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
                 Id = "1",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
@@ -461,17 +468,20 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
                 Id = "1",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
                 Id = "2",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Trips.Add(new Trip()
             {
@@ -567,17 +577,20 @@ namespace OsmSharp.Transit.Test.Data.GTFS
             feed.Routes.Add(new Route()
             {
                 Id = "0",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
                 Id = "1",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Routes.Add(new Route()
             {
                 Id = "2",
-                AgencyId = "0"
+                AgencyId = "0",
+                Type = RouteTypeExtended.BusService
             });
             feed.Trips.Add(new Trip()
             {

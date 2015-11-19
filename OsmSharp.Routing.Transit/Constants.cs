@@ -66,11 +66,11 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the value to use for a stop id when no information is available.
         /// </summary>
-        public static int NoStopId = -1;
+        public const int NoStopId = -1;
 
         /// <summary>
         /// Holds the value to use for transfers when no information is available.
         /// </summary>
-        public static int NoTransfers = -1;
+        public const int NoTransfers = -1;
     }
 }

@@ -104,7 +104,8 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(3, route.Segments.Count);
             Assert.AreEqual(MockProfile.CarMock().Name, route.Segments[0].Profile);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitProfile, route.Segments[1].Profile);
-            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Profile);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteTypeExtended.BusService.ToProfileName(), 
+                route.Segments[2].Profile);
         }
 
         /// <summary>
@@ -182,8 +183,10 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(4, route.Segments.Count);
             Assert.AreEqual(MockProfile.CarMock().Name, route.Segments[0].Profile);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitProfile, route.Segments[1].Profile);
-            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[2].Profile);
-            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[3].Profile);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteTypeExtended.BusService.ToProfileName(), 
+                route.Segments[2].Profile);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteTypeExtended.BusService.ToProfileName(), 
+                route.Segments[3].Profile);
         }
 
         /// <summary>
@@ -199,19 +202,17 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             routerDb.Network.AddEdge(0, 1, new Routing.Network.Data.EdgeData()
             {
                 Distance = 500,
-                MetaId = 0,
-                Profile = 0
+                MetaId = 1,
+                Profile = 1
             }, null);
             routerDb.Network.AddVertex(2, 2.2f, 2.2f);
             routerDb.Network.AddVertex(3, 2.1f, 2.1f);
             routerDb.Network.AddEdge(2, 3, new Routing.Network.Data.EdgeData()
             {
                 Distance = 500,
-                MetaId = 0,
-                Profile = 0
+                MetaId = 1,
+                Profile = 1
             }, null);
-            routerDb.EdgeMeta.Add(new TagsCollection());
-            routerDb.EdgeProfiles.Add(new TagsCollection());
 
             // build dummy db.
             var connectionsDb = new MultimodalDb(
@@ -253,7 +254,8 @@ namespace OsmSharp.Transit.Test.Multimodal.Algorithms.OneToOne
             Assert.AreEqual(MockProfile.CarMock().Name, route.Segments[1].Profile);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.TransferProfile, route.Segments[2].Profile);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitProfile, route.Segments[3].Profile);
-            Assert.AreEqual(GTFS.Entities.Enumerations.RouteType.Tram.ToVehicleUniqueName(), route.Segments[4].Profile);
+            Assert.AreEqual(GTFS.Entities.Enumerations.RouteTypeExtended.BusService.ToProfileName(), 
+                route.Segments[4].Profile);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.TransferProfile, route.Segments[5].Profile);
             Assert.AreEqual(MockProfile.CarMock().Name, route.Segments[6].Profile);
         }

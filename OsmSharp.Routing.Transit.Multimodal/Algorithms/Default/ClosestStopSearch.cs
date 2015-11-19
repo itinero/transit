@@ -190,38 +190,58 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.Default
             while (pointLink != null)
             {
                 var point = pointLink.Item;
-                var paths = point.ToPaths(_routingDb, _profile, _backward);
-                Path visit;
-                if(_dykstra.TryGetVisit(paths[0].Vertex, out visit))
-                { // check if this one is better.
-                    if(visit.Weight + paths[0].Weight < bestWeight)
-                    { // concatenate paths and set best.
-                        if (paths[0].Weight == 0)
-                        { // just use the visit.
-                            best = visit;
-                        }
-                        else
-                        { // there is a distance/weight.
-                            best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
-                                paths[0].Weight + visit.Weight, visit);
-                        }
-                        bestWeight = best.Weight;
+                if (point.EdgeId == _source.EdgeId)
+                { // on the same edge.
+                    Path path;
+                    if(_backward)
+                    { // from stop -> source.
+                        path = point.PathTo(_routingDb, _profile, _source);
+                    }
+                    else
+                    { // from source -> stop.
+                        path = _source.PathTo(_routingDb, _profile, point);
+                    }
+                    if (path.Weight < bestWeight)
+                    { // set as best because improvement.
+                        best = path;
+                        bestWeight = path.Weight;
                     }
                 }
-                if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
-                { // check if this one is better.
-                    if (visit.Weight + paths[1].Weight < bestWeight)
-                    { // concatenate paths and set best.
-                        if (paths[1].Weight == 0)
-                        { // just use the visit.
-                            best = visit;
+                else
+                { // on different edge, to the usual.
+                    var paths = point.ToPaths(_routingDb, _profile, _backward);
+                    Path visit;
+                    if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[0].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            if (paths[0].Weight == 0)
+                            { // just use the visit.
+                                best = visit;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
+                                    paths[0].Weight + visit.Weight, visit);
+                            }
+                            bestWeight = best.Weight;
                         }
-                        else
-                        { // there is a distance/weight.
-                            best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
-                                paths[1].Weight + visit.Weight, visit);
+                    }
+                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[1].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            if (paths[1].Weight == 0)
+                            { // just use the visit.
+                                best = visit;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
+                                    paths[1].Weight + visit.Weight, visit);
+                            }
+                            bestWeight = best.Weight;
                         }
-                        bestWeight = best.Weight;
                     }
                 }
 
@@ -241,37 +261,57 @@ namespace OsmSharp.Routing.Transit.Multimodal.Algorithms.Default
             while (pointLink != null)
             {
                 var point = pointLink.Item;
-                var paths = point.ToPaths(_routingDb, _profile, _backward);
-                Path visit;
-                if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
-                { // check if this one is better.
-                    if (visit.Weight + paths[0].Weight < bestWeight)
-                    { // concatenate paths and set best.
-                        if (paths[0].Weight == 0)
-                        { // just use the visit.
-                            best = point;
-                            bestWeight = visit.Weight;
-                        }
-                        else
-                        { // there is a distance/weight.
-                            best = point;
-                            bestWeight = visit.Weight + paths[0].Weight;
-                        }
+                if (point.EdgeId == _source.EdgeId)
+                { // on the same edge.
+                    Path path;
+                    if (_backward)
+                    { // from stop -> source.
+                        path = point.PathTo(_routingDb, _profile, _source);
+                    }
+                    else
+                    { // from source -> stop.
+                        path = _source.PathTo(_routingDb, _profile, point);
+                    }
+                    if (path.Weight < bestWeight)
+                    { // set as best because improvement.
+                        best = point;
+                        bestWeight = path.Weight;
                     }
                 }
-                if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
-                { // check if this one is better.
-                    if (visit.Weight + paths[1].Weight < bestWeight)
-                    { // concatenate paths and set best.
-                        if (paths[1].Weight == 0)
-                        { // just use the visit.
-                            best = point;
-                            bestWeight = visit.Weight;
+                else
+                { // on different edge, to the usual.
+                    var paths = point.ToPaths(_routingDb, _profile, _backward);
+                    Path visit;
+                    if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[0].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            if (paths[0].Weight == 0)
+                            { // just use the visit.
+                                best = point;
+                                bestWeight = visit.Weight;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = point;
+                                bestWeight = paths[0].Weight + visit.Weight;
+                            }
                         }
-                        else
-                        { // there is a distance/weight.
-                            best = point;
-                            bestWeight = visit.Weight + paths[1].Weight;
+                    }
+                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[1].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            if (paths[1].Weight == 0)
+                            { // just use the visit.
+                                best = point;
+                                bestWeight = visit.Weight;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = point;
+                                bestWeight = paths[1].Weight + visit.Weight;
+                            }
                         }
                     }
                 }

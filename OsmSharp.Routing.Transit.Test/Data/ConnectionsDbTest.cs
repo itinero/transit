@@ -17,7 +17,11 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using NUnit.Framework;
+using OsmSharp.Math.Algorithms;
+using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Transit.Data;
+using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -35,7 +39,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb(3, 2048);
 
-            db.SetStop(0, 1.1f, 1.2f, 124);
+            Assert.AreEqual(0, db.AddStop(1.1f, 1.2f, 124));
 
             var enumerator = db.GetStopEnumerator();
             enumerator.MoveTo(0);
@@ -44,11 +48,11 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(1.2f, enumerator.Longitude);
             Assert.AreEqual(124, enumerator.MetaId);
 
-            db.SetStop(1, 2.1f, 2.2f, 128);
-            db.SetStop(2, 3.1f, 3.2f, 132);
-            db.SetStop(3, 4.1f, 4.2f, 136);
-            db.SetStop(4, 5.1f, 5.2f, 140);
-            db.SetStop(5, 6.1f, 6.2f, 144);
+            Assert.AreEqual(1, db.AddStop(2.1f, 2.2f, 128));
+            Assert.AreEqual(2, db.AddStop(3.1f, 3.2f, 132));
+            Assert.AreEqual(3, db.AddStop(4.1f, 4.2f, 136));
+            Assert.AreEqual(4, db.AddStop(5.1f, 5.2f, 140));
+            Assert.AreEqual(5, db.AddStop(6.1f, 6.2f, 144));
 
             enumerator = db.GetStopEnumerator();
 
@@ -91,12 +95,12 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
-            db.SetStop(0, 1.1f, 1.2f, 124);
-            db.SetStop(1, 2.1f, 2.2f, 128);
-            db.SetStop(2, 3.1f, 3.2f, 132);
-            db.SetStop(3, 4.1f, 4.2f, 136);
-            db.SetStop(4, 5.1f, 5.2f, 140);
-            db.SetStop(5, 6.1f, 6.2f, 144);
+            db.AddStop(1.1f, 1.2f, 124);
+            db.AddStop(2.1f, 2.2f, 128);
+            db.AddStop(3.1f, 3.2f, 132);
+            db.AddStop(4.1f, 4.2f, 136);
+            db.AddStop(5.1f, 5.2f, 140);
+            db.AddStop(6.1f, 6.2f, 144);
 
             db.SetConnection(0, 0, 1, 1234, 0, 100);
 
@@ -167,12 +171,12 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
-            db.SetStop(0, 1.1f, 1.2f, 124);
-            db.SetStop(1, 2.1f, 2.2f, 128);
-            db.SetStop(2, 3.1f, 3.2f, 132);
-            db.SetStop(3, 4.1f, 4.2f, 136);
-            db.SetStop(4, 5.1f, 5.2f, 140);
-            db.SetStop(5, 6.1f, 6.2f, 144);
+            db.AddStop(1.1f, 1.2f, 124);
+            db.AddStop(2.1f, 2.2f, 128);
+            db.AddStop(3.1f, 3.2f, 132);
+            db.AddStop(4.1f, 4.2f, 136);
+            db.AddStop(5.1f, 5.2f, 140);
+            db.AddStop(6.1f, 6.2f, 144);
 
             db.SetConnection(0, 0, 1, 1234, 0, 100);
             db.SetConnection(1, 0, 1, 1234, 100, 1000);
@@ -272,6 +276,75 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
 
             Assert.IsFalse(enumerator.MoveNext());
+        }
+
+        /// <summary>
+        /// Tests stop sorting.
+        /// </summary>
+        [Test]
+        public void TestStopSorting()
+        {
+            // build locations.
+            var locations = new List<GeoCoordinate>();
+            locations.Add(new GeoCoordinate(-90, -180));
+            locations.Add(new GeoCoordinate(-90, -60));
+            locations.Add(new GeoCoordinate(-90, 60));
+            locations.Add(new GeoCoordinate(-90, 180));
+            locations.Add(new GeoCoordinate(-30, -180));
+            locations.Add(new GeoCoordinate(-30, -60));
+            locations.Add(new GeoCoordinate(-30, 60));
+            locations.Add(new GeoCoordinate(-30, 180));
+            locations.Add(new GeoCoordinate(30, -180));
+            locations.Add(new GeoCoordinate(30, -60));
+            locations.Add(new GeoCoordinate(30, 60));
+            locations.Add(new GeoCoordinate(30, 180));
+            locations.Add(new GeoCoordinate(90, -180));
+            locations.Add(new GeoCoordinate(90, -60));
+            locations.Add(new GeoCoordinate(90, 60));
+            locations.Add(new GeoCoordinate(90, 180));
+
+            // build db.
+            var db = new ConnectionsDb(locations.Count, 1024);
+            for (var stop = 0; stop < locations.Count; stop++)
+            {
+                db.AddStop((float)locations[stop].Latitude,
+                    (float)locations[stop].Longitude, (uint)stop * 2);
+            }
+
+            // build a sorted version in-place.
+            db.SortStops(null);
+
+            // test if sorted.
+            var enumerator = db.GetStopEnumerator();
+            for (var stop = 1; stop < locations.Count; stop++)
+            {
+                enumerator.MoveTo((uint)stop - 1);
+                var latitude1 = enumerator.Latitude;
+                var longitude1 = enumerator.Longitude;
+                enumerator.MoveTo((uint)stop);
+                var latitude2 = enumerator.Latitude;
+                var longitude2 = enumerator.Longitude;
+
+                Assert.IsTrue(
+                    HilbertCurve.HilbertDistance(latitude1, longitude1, Hilbert.DefaultHilbertSteps) <=
+                    HilbertCurve.HilbertDistance(latitude2, longitude2, Hilbert.DefaultHilbertSteps));
+            }
+
+            // sort locations.
+            locations.Sort((x, y) =>
+            {
+                return HilbertCurve.HilbertDistance((float)x.Latitude, (float)x.Longitude, Hilbert.DefaultHilbertSteps).CompareTo(
+                     HilbertCurve.HilbertDistance((float)y.Latitude, (float)y.Longitude, Hilbert.DefaultHilbertSteps));
+            });
+
+            // confirm sort.
+            enumerator = db.GetStopEnumerator();
+            for (var stop = 0; stop < locations.Count; stop++)
+            {
+                enumerator.MoveTo((uint)stop);
+                Assert.AreEqual(enumerator.Latitude, locations[(int)stop].Latitude);
+                Assert.AreEqual(enumerator.Longitude, locations[(int)stop].Longitude);
+            }
         }
     }
 }

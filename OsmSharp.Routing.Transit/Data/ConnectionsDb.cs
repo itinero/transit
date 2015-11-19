@@ -16,6 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Collections.Sorting;
+using OsmSharp.Math.Algorithms;
+using OsmSharp.Routing.Algorithms.Search;
 using Reminiscence.Arrays;
 using System;
 using System.Collections.Generic;
@@ -64,13 +67,17 @@ namespace OsmSharp.Routing.Transit.Data
         }
         
         private DefaultSorting? _sorting; // hold the current sorting.
+        private uint _nextStopId = 0;
         private uint _maxConnectionId; // holds the maximum connection id.
 
         /// <summary>
         /// Adds a new stop.
         /// </summary>
-        public void SetStop(uint id, float latitude, float longitude, uint metaId)
+        public uint AddStop(float latitude, float longitude, uint metaId)
         {
+            var id = _nextStopId;
+            _nextStopId++;
+
             var size = _stops.Length;
             while ((id * STOP_SIZE + STOP_SIZE) > size)
             {
@@ -84,6 +91,52 @@ namespace OsmSharp.Routing.Transit.Data
             _stops[id * STOP_SIZE + 0] = ConnectionsDb.Encode(latitude);
             _stops[id * STOP_SIZE + 1] = ConnectionsDb.Encode(longitude);
             _stops[id * STOP_SIZE + 2] = metaId;
+
+            return id;
+        }
+
+        /// <summary>
+        /// Returns the number of stops.
+        /// </summary>
+        public uint StopCount
+        {
+            get
+            {
+                return _nextStopId;
+            }
+        }
+
+        /// <summary>
+        /// Sorts the stops.
+        /// </summary>
+        public void SortStops(Action<uint, uint> switchConnections)
+        {
+            if (_nextStopId > 0)
+            { // sort stops, assume all stops are filled-in.
+                QuickSort.Sort((stop) =>
+                    {
+                        var latitude = ConnectionsDb.DecodeSingle(_stops[stop * STOP_SIZE + 0]);
+                        var longitude = ConnectionsDb.DecodeSingle(_stops[stop * STOP_SIZE + 1]);
+                        return HilbertCurve.HilbertDistance(latitude, longitude, Hilbert.DefaultHilbertSteps);
+                    },
+                    (stop1, stop2) =>
+                    {
+                        var stop10 = _stops[stop1 * STOP_SIZE + 0];
+                        var stop11 = _stops[stop1 * STOP_SIZE + 1];
+                        var stop12 = _stops[stop1 * STOP_SIZE + 2];
+                        _stops[stop1 * STOP_SIZE + 0] = _stops[stop2 * STOP_SIZE + 0];
+                        _stops[stop1 * STOP_SIZE + 1] = _stops[stop2 * STOP_SIZE + 1];
+                        _stops[stop1 * STOP_SIZE + 2] = _stops[stop2 * STOP_SIZE + 2];
+                        _stops[stop2 * STOP_SIZE + 0] = stop10;
+                        _stops[stop2 * STOP_SIZE + 1] = stop11;
+                        _stops[stop2 * STOP_SIZE + 2] = stop12;
+
+                        if (switchConnections != null)
+                        {
+                            switchConnections((uint)stop1, (uint)stop2);
+                        }
+                    }, 0, _nextStopId - 1);
+            }
         }
 
         /// <summary>
@@ -133,7 +186,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Sorts the connections.
         /// </summary>
-        public void SortConnections(DefaultSorting sorting)
+        public void SortConnections(DefaultSorting sorting, Action<uint, uint> switchConnections)
         {
             _sorting = sorting;
 

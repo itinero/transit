@@ -102,7 +102,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
             db.AddStop(5.1f, 5.2f, 140);
             db.AddStop(6.1f, 6.2f, 144);
 
-            db.SetConnection(0, 0, 1, 1234, 0, 100);
+            Assert.AreEqual(0, db.AddConnection(0, 1, 1234, 0, 100));
 
             var enumerator = db.GetConnectionEnumerator();
 
@@ -113,11 +113,11 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(0, enumerator.DepartureTime);
             Assert.AreEqual(100, enumerator.ArrivalTime);
 
-            db.SetConnection(1, 0, 1, 1234, 100, 1000);
-            db.SetConnection(2, 0, 2, 1234, 100, 200);
-            db.SetConnection(3, 0, 3, 1234, 100, 200);
-            db.SetConnection(4, 0, 4, 1234, 100, 200);
-            db.SetConnection(5, 0, 5, 1234, 100, 100 + (1 << 15) - 1);
+            Assert.AreEqual(1, db.AddConnection(0, 1, 1234, 100, 1000));
+            Assert.AreEqual(2, db.AddConnection(0, 2, 1234, 100, 200));
+            Assert.AreEqual(3, db.AddConnection(0, 3, 1234, 100, 200));
+            Assert.AreEqual(4, db.AddConnection(0, 4, 1234, 100, 200));
+            Assert.AreEqual(5, db.AddConnection(0, 5, 1234, 100, 100 + (1 << 15) - 1));
 
             enumerator = db.GetConnectionEnumerator();
             Assert.IsTrue(enumerator.MoveTo(0));
@@ -178,12 +178,12 @@ namespace OsmSharp.Routing.Transit.Test.Data
             db.AddStop(5.1f, 5.2f, 140);
             db.AddStop(6.1f, 6.2f, 144);
 
-            db.SetConnection(0, 0, 1, 1234, 0, 100);
-            db.SetConnection(1, 0, 1, 1234, 100, 1000);
-            db.SetConnection(2, 0, 2, 1234, 100, 200);
-            db.SetConnection(3, 0, 3, 1234, 100, 200);
-            db.SetConnection(4, 0, 4, 1234, 100, 200);
-            db.SetConnection(5, 0, 5, 1234, 100, 100 + (1 << 15) - 1);
+            db.AddConnection(0, 1, 1234, 0, 100);
+            db.AddConnection(0, 1, 1234, 100, 1000);
+            db.AddConnection(0, 2, 1234, 100, 200);
+            db.AddConnection(0, 3, 1234, 100, 200);
+            db.AddConnection(0, 4, 1234, 100, 200);
+            db.AddConnection(0, 5, 1234, 100, 100 + (1 << 15) - 1);
 
             var enumerator = db.GetConnectionEnumerator();
 

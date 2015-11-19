@@ -68,7 +68,7 @@ namespace OsmSharp.Routing.Transit.Data
         
         private DefaultSorting? _sorting; // hold the current sorting.
         private uint _nextStopId = 0;
-        private uint _maxConnectionId; // holds the maximum connection id.
+        private uint _nextConnectionId; // holds the maximum connection id.
 
         /// <summary>
         /// Adds a new stop.
@@ -142,7 +142,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Sets the connection with the given id.
         /// </summary>
-        public void SetConnection(uint id, uint stop1, uint stop2, uint profileId, uint departureTime, uint arrivalTime)
+        public uint AddConnection(uint stop1, uint stop2, uint profileId, uint departureTime, uint arrivalTime)
         {
             if (stop1 > _stops.Length) { throw new ArgumentOutOfRangeException("stop1"); }
             if (stop2 > _stops.Length) { throw new ArgumentOutOfRangeException("stop2"); }
@@ -151,10 +151,8 @@ namespace OsmSharp.Routing.Transit.Data
             if (duration > CONNECTION_MAX_DURATION) { 
                 throw new ArgumentException(string.Format("A connection with a duration > {0}s cannot be stored.", CONNECTION_MAX_DURATION)); }
 
-            if(id > _maxConnectionId)
-            {
-                _maxConnectionId = id;
-            }
+            var id = _nextConnectionId;
+            _nextConnectionId++;
 
             var size = _connections.Length;
             while ((id * CONNECTION_SIZE + CONNECTION_SIZE) > size)
@@ -170,6 +168,8 @@ namespace OsmSharp.Routing.Transit.Data
             _connections[id * CONNECTION_SIZE + 1] = stop2;
             _connections[id * CONNECTION_SIZE + 2] = profileId;
             _connections[id * CONNECTION_SIZE + 3] = ConnectionsDb.Encode(departureTime, duration);
+
+            return id;
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace OsmSharp.Routing.Transit.Data
         {
             _sorting = sorting;
 
-            throw new NotImplementedException();
+            throw new Exception();
         }
 
         /// <summary>
@@ -265,7 +265,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <returns></returns>
         public ConnectionEnumerator GetConnectionEnumerator()
         {
-            return new ConnectionEnumerator(_connections, _maxConnectionId + 1);
+            return new ConnectionEnumerator(_connections, _nextConnectionId);
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace OsmSharp.Routing.Transit.Data
             {
                 throw new InvalidOperationException("Cannot get sorted enumerator, db is not sorted.");
             }
-            return new ConnectionEnumerator(_connections, _connectionsOrder, _maxConnectionId + 1);
+            return new ConnectionEnumerator(_connections, _connectionsOrder, _nextConnectionId + 1);
         }
 
         /// <summary>

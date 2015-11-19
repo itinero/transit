@@ -19,18 +19,17 @@
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// Represents a stop.
+    /// An enumeration representing the sorting options for a connections db.
     /// </summary>
-    public struct Stop
+    public enum DefaultSorting
     {
         /// <summary>
-        /// Gets or sets the latitude.
+        /// Sorted by departure time.
         /// </summary>
-        public float Latitude { get; set; }
-
+        DepatureTime,
         /// <summary>
-        /// Gets or sets the longitude.
+        /// Sorted by arrival time.
         /// </summary>
-        public float Longitude { get; set; }
+        ArrivalTime
     }
 }

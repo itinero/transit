@@ -5,9 +5,7 @@ VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmSharp.Routing.Transit", "OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj", "{293D8019-9E89-4BCB-A857-24B92F48C22C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmSharp.Transit.Test", "OsmSharp.Transit.Test\OsmSharp.Transit.Test.csproj", "{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmSharp.Routing.Transit.Multimodal", "OsmSharp.Routing.Transit.Multimodal\OsmSharp.Routing.Transit.Multimodal.csproj", "{6501AA4E-A536-4C97-9312-170FB4641AD0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmSharp.Routing.Transit.Test", "OsmSharp.Routing.Transit.Test\OsmSharp.Routing.Transit.Test.csproj", "{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +31,6 @@ Global
 		{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}.Release|x64.ActiveCfg = Release|x64
 		{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}.Release|x64.Build.0 = Release|x64
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Debug|x64.ActiveCfg = Debug|x64
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Debug|x64.Build.0 = Debug|x64
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Release|x64.ActiveCfg = Release|x64
-		{6501AA4E-A536-4C97-9312-170FB4641AD0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

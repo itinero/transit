@@ -7,8 +7,8 @@
     <ProjectGuid>{B5672D6F-0A53-4426-ABC4-CB21DC0E3B34}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OsmSharp.Transit.Test</RootNamespace>
-    <AssemblyName>OsmSharp.Transit.Test</AssemblyName>
+    <RootNamespace>OsmSharp.Routing.Transit.Test</RootNamespace>
+    <AssemblyName>OsmSharp.Routing.Transit.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Output\OsmSharp.Transit.Test.XML</DocumentationFile>
+    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.Test.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Output\OsmSharp.Transit.Test.XML</DocumentationFile>
+    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.Test.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -109,107 +109,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilderTests.cs" />
-    <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
-    <Compile Include="Data\GTFS\GTFSConnectionsDbBuilder.cs" />
-    <Compile Include="Data\GTFS\GTFSConnectionsDbTests.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\Default\ClosestStopSearchTests.cs" />
-    <Compile Include="Multimodal\Data\MultimodalDbTests.cs" />
-    <Compile Include="Multimodal\Data\StopLinksDbTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToAll\OneToAllProfileSearchTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyDykstraRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyProfileSearchRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToMany\OneToManyProfileSearchTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToOne\EarliestArrivalTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToOne\ProfileSearchRouteBuilderTests.cs" />
-    <Compile Include="Multimodal\Algorithms\OneToOne\ProfileSearchTests.cs" />
-    <Compile Include="Multimodal\Instructions\Modal\ModalAggregatorTests.cs" />
-    <Compile Include="Multimodal\Instructions\Modal\ModalInstructionsTests.cs" />
-    <Compile Include="MockProfile.cs" />
+    <Compile Include="Data\ConnectionsDbTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RealisticFeed.cs" />
-    <Compile Include="RouterBaseTests.cs" />
-    <Compile Include="RouterMock.cs" />
-    <Compile Include="RoutingAlgorithmBaseTests.cs" />
-    <Compile Include="RoutingAlgorithmMock.cs" />
-    <Compile Include="TestNetworkBuilder.cs" />
-    <Compile Include="TestNetworkBuilderTests.cs" />
-    <Compile Include="TestNetworkFeed.cs" />
-    <Compile Include="SampleFeed.cs" />
-    <Compile Include="Algorithms\OneToOne\EarliestArrivalSearchTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="test_network.osm" />
-    <EmbeddedResource Include="regression_test_1_network.osm" />
-    <EmbeddedResource Include="test_data\networks\network1.geojson" />
-    <EmbeddedResource Include="test_data\networks\network2.geojson" />
-    <None Include="test_data\routes\regression1.md" />
-    <EmbeddedResource Include="test_data\routes\regression1.route" />
-    <None Include="test_network_rail.osm" />
-    <EmbeddedResource Include="test_network_realistic.osm" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="sample-feed\agency.txt" />
-    <EmbeddedResource Include="sample-feed\calendar.txt" />
-    <EmbeddedResource Include="sample-feed\calendar_dates.txt" />
-    <EmbeddedResource Include="sample-feed\fare_attributes.txt" />
-    <EmbeddedResource Include="sample-feed\fare_rules.txt" />
-    <EmbeddedResource Include="sample-feed\frequencies.txt" />
-    <EmbeddedResource Include="sample-feed\routes.txt" />
-    <EmbeddedResource Include="sample-feed\shapes.txt" />
-    <EmbeddedResource Include="sample-feed\stops.txt" />
-    <EmbeddedResource Include="sample-feed\stop_times.txt" />
-    <EmbeddedResource Include="sample-feed\trips.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="realistic_feed\agency.txt" />
-    <EmbeddedResource Include="realistic_feed\calendar.txt" />
-    <EmbeddedResource Include="realistic_feed\calendar_dates.txt" />
-    <EmbeddedResource Include="realistic_feed\fare_attributes.txt" />
-    <EmbeddedResource Include="realistic_feed\fare_rules.txt" />
-    <EmbeddedResource Include="realistic_feed\frequencies.txt" />
-    <EmbeddedResource Include="realistic_feed\routes.txt" />
-    <EmbeddedResource Include="realistic_feed\shapes.txt" />
-    <EmbeddedResource Include="realistic_feed\stops.txt" />
-    <EmbeddedResource Include="realistic_feed\stop_times.txt" />
-    <EmbeddedResource Include="realistic_feed\trips.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\trips.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\agency.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\calendar.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\calendar_dates.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\fare_attributes.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\fare_rules.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\frequencies.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\routes.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\shapes.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\stop_times.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="test_network_feed\stops.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OsmSharp.Routing.Transit.Multimodal\OsmSharp.Routing.Transit.Multimodal.csproj">

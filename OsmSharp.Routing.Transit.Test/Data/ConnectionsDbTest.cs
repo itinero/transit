@@ -164,6 +164,90 @@ namespace OsmSharp.Routing.Transit.Test.Data
         }
 
         /// <summary>
+        /// Test stop enumerator.
+        /// </summary>
+        [Test]
+        public void TestStopEnumerator()
+        {
+            var db = new ConnectionsDb();
+
+            db.AddStop(1.1f, 1.2f, 124);
+            db.AddStop(2.1f, 2.2f, 128);
+            db.AddStop(3.1f, 3.2f, 132);
+            db.AddStop(4.1f, 4.2f, 136);
+            db.AddStop(5.1f, 5.2f, 140);
+            db.AddStop(6.1f, 6.2f, 144);
+
+            var enumerator = db.GetStopEnumerator();
+
+            enumerator.MoveNext();
+            Assert.AreEqual(1.1f, enumerator.Latitude);
+            Assert.AreEqual(1.2f, enumerator.Longitude);
+            Assert.AreEqual(124, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(2.1f, enumerator.Latitude);
+            Assert.AreEqual(2.2f, enumerator.Longitude);
+            Assert.AreEqual(128, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(3.1f, enumerator.Latitude);
+            Assert.AreEqual(3.2f, enumerator.Longitude);
+            Assert.AreEqual(132, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(4.1f, enumerator.Latitude);
+            Assert.AreEqual(4.2f, enumerator.Longitude);
+            Assert.AreEqual(136, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(5.1f, enumerator.Latitude);
+            Assert.AreEqual(5.2f, enumerator.Longitude);
+            Assert.AreEqual(140, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(6.1f, enumerator.Latitude);
+            Assert.AreEqual(6.2f, enumerator.Longitude);
+            Assert.AreEqual(144, enumerator.MetaId);
+
+            Assert.IsFalse(enumerator.MoveNext());
+
+            enumerator.Reset();
+
+            enumerator.MoveNext();
+            Assert.AreEqual(1.1f, enumerator.Latitude);
+            Assert.AreEqual(1.2f, enumerator.Longitude);
+            Assert.AreEqual(124, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(2.1f, enumerator.Latitude);
+            Assert.AreEqual(2.2f, enumerator.Longitude);
+            Assert.AreEqual(128, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(3.1f, enumerator.Latitude);
+            Assert.AreEqual(3.2f, enumerator.Longitude);
+            Assert.AreEqual(132, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(4.1f, enumerator.Latitude);
+            Assert.AreEqual(4.2f, enumerator.Longitude);
+            Assert.AreEqual(136, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(5.1f, enumerator.Latitude);
+            Assert.AreEqual(5.2f, enumerator.Longitude);
+            Assert.AreEqual(140, enumerator.MetaId);
+
+            enumerator.MoveNext();
+            Assert.AreEqual(6.1f, enumerator.Latitude);
+            Assert.AreEqual(6.2f, enumerator.Longitude);
+            Assert.AreEqual(144, enumerator.MetaId);
+
+            Assert.IsFalse(enumerator.MoveNext());
+        }
+
+        /// <summary>
         /// Test connection enumerator.
         /// </summary>
         [Test]

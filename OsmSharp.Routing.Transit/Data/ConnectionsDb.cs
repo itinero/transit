@@ -256,31 +256,43 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Gets a stops enumerator.
         /// </summary>
-        public StopsEnumerator GetStopEnumerator()
+        public StopEnumerator GetStopEnumerator()
         {
-            return new StopsEnumerator(_stops);
+            return new StopEnumerator(_stops, _nextStopId);
         }
 
         /// <summary>
         /// A stop enumerator.
         /// </summary>
-        public class StopsEnumerator
+        public class StopEnumerator
         {
             private readonly ArrayBase<uint> _stops; // holds the stops-array.
+            private readonly uint _count;
 
-            internal StopsEnumerator(ArrayBase<uint> stops)
+            internal StopEnumerator(ArrayBase<uint> stops, uint count)
             {
                 _stops = stops;
+                _count = count;
             }
 
             private uint _index = uint.MaxValue;
 
             /// <summary>
+            /// Resets the enumerator.
+            /// </summary>
+            public void Reset()
+            {
+                _index = uint.MaxValue;
+            }
+
+            /// <summary>
             /// Moves this enumerator to the given stop.
             /// </summary>
-            public void MoveTo(uint id)
+            public bool MoveTo(uint id)
             {
                 _index = id * STOP_SIZE;
+
+                return id < _count;
             }
 
             /// <summary>
@@ -316,6 +328,22 @@ namespace OsmSharp.Routing.Transit.Data
                 {
                     return _stops[_index + 2];
                 }
+            }
+
+            /// <summary>
+            /// Moves to the next stop.
+            /// </summary>
+            /// <returns></returns>
+            public bool MoveNext()
+            {
+                if(_index == uint.MaxValue)
+                {
+                    _index = 0;
+                    return _count > 0;
+                }
+                _index += STOP_SIZE;
+
+                return (_index / STOP_SIZE) < _count;
             }
         }
 

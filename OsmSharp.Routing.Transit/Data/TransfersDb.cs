@@ -47,9 +47,9 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds a new transfer.
         /// </summary>
-        public void AddTransfer(uint stop1, uint stop2, int seconds, uint profile)
+        public void AddTransfer(uint stop1, uint stop2, int seconds)
         {
-            _transfers.AddEdge(stop1, stop2, (uint)seconds, profile);
+            _transfers.AddEdge(stop1, stop2, (uint)seconds);
         }
 
         /// <summary>
@@ -115,13 +115,13 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             /// <summary>
-            /// Gets the profile.
+            /// Gets the other stop.
             /// </summary>
-            public uint Profile
+            public uint Stop
             {
                 get
                 {
-                    return _enumerator.Data1;
+                    return _enumerator.To;
                 }
             }
         }

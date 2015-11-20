@@ -113,6 +113,7 @@
     </Compile>
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Data\DefaultSorting.cs" />
+    <Compile Include="Data\TransfersDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

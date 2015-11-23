@@ -58,7 +58,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// A transfer enumerator.
         /// </summary>
-        public struct TransfersEnumerator
+        public class TransfersEnumerator
         {
             private readonly Graphs.Graph.EdgeEnumerator _enumerator;
 

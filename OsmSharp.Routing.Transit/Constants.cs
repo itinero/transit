@@ -31,7 +31,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the trip id a connection gets when it's just a pseudo-connection.
         /// </summary>
-        public const int PseudoConnectionTripId = -1;
+        public const uint TransferConnectionId = uint.MaxValue - 1;
 
         /// <summary>
         /// Holds the trip id in case there is no information available.
@@ -41,12 +41,12 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the connection id to set if there is no information available.
         /// </summary>
-        public const int NoConnectionId = -1;
+        public const uint NoConnectionId = uint.MaxValue;
 
         /// <summary>
         /// Holds the seconds to set if no seconds information available.
         /// </summary>
-        public const int NoSeconds = -1;
+        public const uint NoSeconds = uint.MaxValue;
 
         /// <summary>
         /// Holds the route id in case there is no information available.
@@ -66,7 +66,7 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Holds the value to use for a stop id when no information is available.
         /// </summary>
-        public const int NoStopId = -1;
+        public const uint NoStopId = uint.MaxValue;
 
         /// <summary>
         /// Holds the value to use for transfers when no information is available.

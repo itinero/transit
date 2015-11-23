@@ -29,7 +29,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// Moves the enumerator that is assumed to be sorted by departure time to the first connection with a departure time larger than or equal to the given departure time.
         /// </summary>
         public static bool MoveToDepartureTime(this ConnectionsDb.ConnectionEnumerator enumerator,
-            int departureTime)
+            uint departureTime)
         {
             if (enumerator == null) { throw new ArgumentNullException("enumerator"); }
 

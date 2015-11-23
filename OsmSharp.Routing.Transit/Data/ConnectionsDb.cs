@@ -33,7 +33,7 @@ namespace OsmSharp.Routing.Transit.Data
         // one connection is 4 uints
         // 0: stop1
         // 1: stop2
-        // 2: profileId
+        // 2: tripId
         // 4: 17-bit time-of-day and 15-bit duration: 
         //    - departure time is accurate to the second.
         //    - the maximum duration of a single connection is 32768 seconds or 9h6m.
@@ -142,14 +142,15 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Sets the connection with the given id.
         /// </summary>
-        public uint AddConnection(uint stop1, uint stop2, uint profileId, uint departureTime, uint arrivalTime)
+        public uint AddConnection(uint stop1, uint stop2, uint tripId, uint departureTime, uint arrivalTime)
         {
-            if (stop1 > _stops.Length) { throw new ArgumentOutOfRangeException("stop1"); }
-            if (stop2 > _stops.Length) { throw new ArgumentOutOfRangeException("stop2"); }
-            if (arrivalTime < departureTime) { throw new ArgumentException("Departure time must be smaller than or equal to arrival time."); }
+            if (stop1 >= _nextStopId) { throw new ArgumentOutOfRangeException("stop1"); }
+            if (stop2 >= _nextStopId) { throw new ArgumentOutOfRangeException("stop2"); }
+            if (arrivalTime <= departureTime) { throw new ArgumentException("Departure time must be smaller than arrival time."); }
             var duration = arrivalTime - departureTime;
-            if (duration > CONNECTION_MAX_DURATION) { 
-                throw new ArgumentException(string.Format("A connection with a duration > {0}s cannot be stored.", CONNECTION_MAX_DURATION)); }
+            if (duration > CONNECTION_MAX_DURATION) {
+                throw new ArgumentException(string.Format("A connection with a duration > {0}s cannot be stored.", CONNECTION_MAX_DURATION));
+            }
 
             var id = _nextConnectionId;
             _nextConnectionId++;
@@ -166,7 +167,7 @@ namespace OsmSharp.Routing.Transit.Data
 
             _connections[id * CONNECTION_SIZE + 0] = stop1;
             _connections[id * CONNECTION_SIZE + 1] = stop2;
-            _connections[id * CONNECTION_SIZE + 2] = profileId;
+            _connections[id * CONNECTION_SIZE + 2] = tripId;
             _connections[id * CONNECTION_SIZE + 3] = ConnectionsDb.Encode(departureTime, duration);
 
             return id;
@@ -475,7 +476,7 @@ namespace OsmSharp.Routing.Transit.Data
             /// <summary>
             /// Gets the departure stop.
             /// </summary>
-            public uint Stop1
+            public uint DepartureStop
             {
                 get
                 {
@@ -486,7 +487,7 @@ namespace OsmSharp.Routing.Transit.Data
             /// <summary>
             /// Gets the arrival stop.
             /// </summary>
-            public uint Stop2
+            public uint ArrivalStop
             {
                 get
                 {
@@ -497,7 +498,7 @@ namespace OsmSharp.Routing.Transit.Data
             /// <summary>
             /// Gets the profile id.
             /// </summary>
-            public uint ProfileId
+            public uint TripId
             {
                 get
                 {

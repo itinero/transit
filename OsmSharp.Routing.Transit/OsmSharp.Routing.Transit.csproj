@@ -112,6 +112,7 @@
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearchExtensions.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Data\ConnectionsDbExtensions.cs" />

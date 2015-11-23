@@ -54,6 +54,8 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(4, db.AddStop(5.1f, 5.2f, 140));
             Assert.AreEqual(5, db.AddStop(6.1f, 6.2f, 144));
 
+            Assert.AreEqual(6, db.StopCount);
+
             enumerator = db.GetStopEnumerator();
 
             enumerator.MoveTo(0);
@@ -439,6 +441,8 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
+            Assert.IsFalse(db.Sorting.HasValue);
+
             db.AddStop(1.1f, 1.2f, 124);
             db.AddStop(2.1f, 2.2f, 128);
             db.AddStop(3.1f, 3.2f, 132);
@@ -454,6 +458,8 @@ namespace OsmSharp.Routing.Transit.Test.Data
             db.AddConnection(0, 5, 1234, 102, 101 + (1 << 15) - 1);
 
             db.SortConnections(DefaultSorting.DepartureTime, null);
+            Assert.IsTrue(db.Sorting.HasValue);
+            Assert.AreEqual(DefaultSorting.DepartureTime, db.Sorting.Value);
 
             var enumerator = db.GetConnectionEnumerator(DefaultSorting.DepartureTime);
 

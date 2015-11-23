@@ -331,6 +331,17 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             /// <summary>
+            /// Gets the id.
+            /// </summary>
+            public uint Id
+            {
+                get
+                {
+                    return _index / STOP_SIZE;
+                }
+            }
+
+            /// <summary>
             /// Moves to the next stop.
             /// </summary>
             /// <returns></returns>

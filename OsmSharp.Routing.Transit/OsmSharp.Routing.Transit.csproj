@@ -111,7 +111,10 @@
     <Compile Include="..\SharedAssemblyVersion.cs">
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Data\ConnectionsDb.cs" />
+    <Compile Include="Data\ConnectionsDbExtensions.cs" />
     <Compile Include="Data\DefaultSorting.cs" />
     <Compile Include="Data\TransfersDb.cs" />
     <Compile Include="Data\TransitDb.cs" />

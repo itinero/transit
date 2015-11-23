@@ -534,6 +534,28 @@ namespace OsmSharp.Routing.Transit.Data
                     return departureTime + duration;
                 }
             }
+
+            /// <summary>
+            /// Gets the number of connections.
+            /// </summary>
+            public uint Count
+            {
+                get
+                {
+                    return _count;
+                }
+            }
+
+            /// <summary>
+            /// Gets the id.
+            /// </summary>
+            public uint Id
+            {
+                get
+                {
+                    return _id;
+                }
+            }
         }
 
         /// <summary>

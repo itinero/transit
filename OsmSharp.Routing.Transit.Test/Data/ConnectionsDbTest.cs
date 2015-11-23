@@ -549,5 +549,67 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(102, enumerator.DepartureTime);
             Assert.AreEqual(101 + (1 << 15) - 1, enumerator.ArrivalTime);
         }
+
+        /// <summary>
+        /// Tests binary searching connections.
+        /// </summary>
+        [Test]
+        public void TestConnectionBinarySearch()
+        {
+            var db = new ConnectionsDb();
+
+            db.AddStop(1.1f, 1.2f, 124);
+            db.AddStop(2.1f, 2.2f, 128);
+            db.AddStop(3.1f, 3.2f, 132);
+            db.AddStop(4.1f, 4.2f, 136);
+            db.AddStop(5.1f, 5.2f, 140);
+            db.AddStop(6.1f, 6.2f, 144);
+
+            var connection0 = db.AddConnection(0, 1, 1234, 0, 9);
+            var connection1 = db.AddConnection(0, 1, 1234, 10, 19);
+            var connection2 = db.AddConnection(0, 2, 1234, 20, 29);
+            var connection3 = db.AddConnection(0, 3, 1234, 30, 39);
+            var connection4 = db.AddConnection(0, 4, 1234, 40, 49);
+            var connection5 = db.AddConnection(0, 5, 1234, 50, 59);
+
+            db.SortConnections(DefaultSorting.DepartureTime, null);
+
+            var enumerator = db.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(5));
+            Assert.AreEqual(connection1, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(15));
+            Assert.AreEqual(connection2, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(25));
+            Assert.AreEqual(connection3, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(35));
+            Assert.AreEqual(connection4, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(45));
+            Assert.AreEqual(connection5, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(0));
+            Assert.AreEqual(connection0, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(10));
+            Assert.AreEqual(connection1, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(20));
+            Assert.AreEqual(connection2, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(30));
+            Assert.AreEqual(connection3, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(40));
+            Assert.AreEqual(connection4, enumerator.Id);
+
+            Assert.IsTrue(enumerator.MoveToDepartureTime(50));
+            Assert.AreEqual(connection5, enumerator.Id);
+
+            Assert.IsFalse(enumerator.MoveToDepartureTime(51));
+        }
     }
 }

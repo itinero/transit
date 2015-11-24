@@ -117,6 +117,7 @@
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Data\ConnectionsDbExtensions.cs" />
     <Compile Include="Data\DefaultSorting.cs" />
+    <Compile Include="Data\StopsDb.cs" />
     <Compile Include="Data\TransfersDb.cs" />
     <Compile Include="Data\TransitDb.cs" />
     <Compile Include="Data\TransitDbExtensions.cs" />

@@ -111,6 +111,7 @@
   <ItemGroup>
     <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
     <Compile Include="Data\ConnectionsDbTest.cs" />
+    <Compile Include="Data\StopsDbTests.cs" />
     <Compile Include="Data\TransfersDbTest.cs" />
     <Compile Include="Data\TransitDbTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -120,10 +121,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OsmSharp.Routing.Transit.Multimodal\OsmSharp.Routing.Transit.Multimodal.csproj">
-      <Project>{6501aa4e-a536-4c97-9312-170fb4641ad0}</Project>
-      <Name>OsmSharp.Routing.Transit.Multimodal</Name>
-    </ProjectReference>
     <ProjectReference Include="..\OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj">
       <Project>{293d8019-9e89-4bcb-a857-24b92f48c22c}</Project>
       <Name>OsmSharp.Routing.Transit</Name>

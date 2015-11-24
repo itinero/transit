@@ -73,7 +73,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
         public ProfileSearch(TransitDb db, uint sourceStop, uint targetStop, DateTime departureTime,
-            TransfersDb transfersDb,  int minimumTransferTime, int maxmumSearchTime, Func<uint, DateTime, bool> isTripPossible)
+            TransfersDb transfersDb, int minimumTransferTime, int maxmumSearchTime, Func<uint, DateTime, bool> isTripPossible)
         {
             _db = db;
             _transfersDb = transfersDb;
@@ -155,9 +155,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             var targetProfilesTime = double.MaxValue;
 
             // get enumerators.
-            var enumerator = _db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var enumerator = _db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
             TransfersDb.TransfersEnumerator transferEnumerator = null;
-            if(_transfersDb != null) 
+            if (_transfersDb != null)
             {
                 transferEnumerator = _transfersDb.GetTransferEnumerator();
 
@@ -286,7 +286,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
                             // ok, there is an actual move possible here.
                             var transfers = 2;
-                            if(sourceProfile.PreviousConnectionId == Constants.TransferConnectionId)
+                            if (sourceProfile.PreviousConnectionId == Constants.TransferConnectionId)
                             {
                                 transfers = 1;
                             }
@@ -327,7 +327,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                     _profiles.Add(transferEnumerator.Stop, transferTargetProfiles);
                                 }
 
-                                for (var t = arrivalProfiles.Count - 1; t >=0; t--)
+                                for (var t = arrivalProfiles.Count - 1; t >= 0; t--)
                                 {
                                     var sourceProfile = arrivalProfiles[t];
                                     if (sourceProfile.Seconds == Constants.NoSeconds)

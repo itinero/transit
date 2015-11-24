@@ -33,64 +33,6 @@ namespace OsmSharp.Routing.Transit.Test.Data
     public class ConnectionsDbTest
     {
         /// <summary>
-        /// Tests setting stops.
-        /// </summary>
-        [Test]
-        public void TestSetStop()
-        {
-            var db = new ConnectionsDb(3, 2048);
-
-            Assert.AreEqual(0, db.AddStop(1.1f, 1.2f, 124));
-
-            var enumerator = db.GetStopEnumerator();
-            enumerator.MoveTo(0);
-
-            Assert.AreEqual(1.1f, enumerator.Latitude);
-            Assert.AreEqual(1.2f, enumerator.Longitude);
-            Assert.AreEqual(124, enumerator.MetaId);
-
-            Assert.AreEqual(1, db.AddStop(2.1f, 2.2f, 128));
-            Assert.AreEqual(2, db.AddStop(3.1f, 3.2f, 132));
-            Assert.AreEqual(3, db.AddStop(4.1f, 4.2f, 136));
-            Assert.AreEqual(4, db.AddStop(5.1f, 5.2f, 140));
-            Assert.AreEqual(5, db.AddStop(6.1f, 6.2f, 144));
-
-            Assert.AreEqual(6, db.StopCount);
-
-            enumerator = db.GetStopEnumerator();
-
-            enumerator.MoveTo(0);
-            Assert.AreEqual(1.1f, enumerator.Latitude);
-            Assert.AreEqual(1.2f, enumerator.Longitude);
-            Assert.AreEqual(124, enumerator.MetaId);
-
-            enumerator.MoveTo(1);
-            Assert.AreEqual(2.1f, enumerator.Latitude);
-            Assert.AreEqual(2.2f, enumerator.Longitude);
-            Assert.AreEqual(128, enumerator.MetaId);
-
-            enumerator.MoveTo(2);
-            Assert.AreEqual(3.1f, enumerator.Latitude);
-            Assert.AreEqual(3.2f, enumerator.Longitude);
-            Assert.AreEqual(132, enumerator.MetaId);
-
-            enumerator.MoveTo(3);
-            Assert.AreEqual(4.1f, enumerator.Latitude);
-            Assert.AreEqual(4.2f, enumerator.Longitude);
-            Assert.AreEqual(136, enumerator.MetaId);
-
-            enumerator.MoveTo(4);
-            Assert.AreEqual(5.1f, enumerator.Latitude);
-            Assert.AreEqual(5.2f, enumerator.Longitude);
-            Assert.AreEqual(140, enumerator.MetaId);
-
-            enumerator.MoveTo(5);
-            Assert.AreEqual(6.1f, enumerator.Latitude);
-            Assert.AreEqual(6.2f, enumerator.Longitude);
-            Assert.AreEqual(144, enumerator.MetaId);
-        }
-
-        /// <summary>
         /// Test setting connections.
         /// </summary>
         [Test]
@@ -98,16 +40,9 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
-            db.AddStop(1.1f, 1.2f, 124);
-            db.AddStop(2.1f, 2.2f, 128);
-            db.AddStop(3.1f, 3.2f, 132);
-            db.AddStop(4.1f, 4.2f, 136);
-            db.AddStop(5.1f, 5.2f, 140);
-            db.AddStop(6.1f, 6.2f, 144);
+            Assert.AreEqual(0, db.Add(0, 1, 1234, 0, 100));
 
-            Assert.AreEqual(0, db.AddConnection(0, 1, 1234, 0, 100));
-
-            var enumerator = db.GetConnectionEnumerator();
+            var enumerator = db.GetEnumerator();
 
             Assert.IsTrue(enumerator.MoveTo(0));
             Assert.AreEqual(0, enumerator.DepartureStop);
@@ -116,13 +51,13 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(0, enumerator.DepartureTime);
             Assert.AreEqual(100, enumerator.ArrivalTime);
 
-            Assert.AreEqual(1, db.AddConnection(0, 1, 1234, 100, 1000));
-            Assert.AreEqual(2, db.AddConnection(0, 2, 1234, 100, 200));
-            Assert.AreEqual(3, db.AddConnection(0, 3, 1234, 100, 200));
-            Assert.AreEqual(4, db.AddConnection(0, 4, 1234, 100, 200));
-            Assert.AreEqual(5, db.AddConnection(0, 5, 1234, 100, 100 + (1 << 15) - 1));
+            Assert.AreEqual(1, db.Add(0, 1, 1234, 100, 1000));
+            Assert.AreEqual(2, db.Add(0, 2, 1234, 100, 200));
+            Assert.AreEqual(3, db.Add(0, 3, 1234, 100, 200));
+            Assert.AreEqual(4, db.Add(0, 4, 1234, 100, 200));
+            Assert.AreEqual(5, db.Add(0, 5, 1234, 100, 100 + (1 << 15) - 1));
 
-            enumerator = db.GetConnectionEnumerator();
+            enumerator = db.GetEnumerator();
             Assert.IsTrue(enumerator.MoveTo(0));
             Assert.AreEqual(0, enumerator.DepartureStop);
             Assert.AreEqual(1, enumerator.ArrivalStop);
@@ -166,93 +101,9 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
 
             Assert.Catch<ArgumentException>(() =>
-                db.AddConnection(0, 1, 1234, 100, 100));
+                db.Add(0, 1, 1234, 100, 100));
             Assert.Catch<ArgumentException>(() =>
-                db.AddConnection(0, 1, 1234, 100, 99));
-        }
-
-        /// <summary>
-        /// Test stop enumerator.
-        /// </summary>
-        [Test]
-        public void TestStopEnumerator()
-        {
-            var db = new ConnectionsDb();
-
-            db.AddStop(1.1f, 1.2f, 124);
-            db.AddStop(2.1f, 2.2f, 128);
-            db.AddStop(3.1f, 3.2f, 132);
-            db.AddStop(4.1f, 4.2f, 136);
-            db.AddStop(5.1f, 5.2f, 140);
-            db.AddStop(6.1f, 6.2f, 144);
-
-            var enumerator = db.GetStopEnumerator();
-
-            enumerator.MoveNext();
-            Assert.AreEqual(1.1f, enumerator.Latitude);
-            Assert.AreEqual(1.2f, enumerator.Longitude);
-            Assert.AreEqual(124, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(2.1f, enumerator.Latitude);
-            Assert.AreEqual(2.2f, enumerator.Longitude);
-            Assert.AreEqual(128, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(3.1f, enumerator.Latitude);
-            Assert.AreEqual(3.2f, enumerator.Longitude);
-            Assert.AreEqual(132, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(4.1f, enumerator.Latitude);
-            Assert.AreEqual(4.2f, enumerator.Longitude);
-            Assert.AreEqual(136, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(5.1f, enumerator.Latitude);
-            Assert.AreEqual(5.2f, enumerator.Longitude);
-            Assert.AreEqual(140, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(6.1f, enumerator.Latitude);
-            Assert.AreEqual(6.2f, enumerator.Longitude);
-            Assert.AreEqual(144, enumerator.MetaId);
-
-            Assert.IsFalse(enumerator.MoveNext());
-
-            enumerator.Reset();
-
-            enumerator.MoveNext();
-            Assert.AreEqual(1.1f, enumerator.Latitude);
-            Assert.AreEqual(1.2f, enumerator.Longitude);
-            Assert.AreEqual(124, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(2.1f, enumerator.Latitude);
-            Assert.AreEqual(2.2f, enumerator.Longitude);
-            Assert.AreEqual(128, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(3.1f, enumerator.Latitude);
-            Assert.AreEqual(3.2f, enumerator.Longitude);
-            Assert.AreEqual(132, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(4.1f, enumerator.Latitude);
-            Assert.AreEqual(4.2f, enumerator.Longitude);
-            Assert.AreEqual(136, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(5.1f, enumerator.Latitude);
-            Assert.AreEqual(5.2f, enumerator.Longitude);
-            Assert.AreEqual(140, enumerator.MetaId);
-
-            enumerator.MoveNext();
-            Assert.AreEqual(6.1f, enumerator.Latitude);
-            Assert.AreEqual(6.2f, enumerator.Longitude);
-            Assert.AreEqual(144, enumerator.MetaId);
-
-            Assert.IsFalse(enumerator.MoveNext());
+                db.Add(0, 1, 1234, 100, 99));
         }
 
         /// <summary>
@@ -263,21 +114,14 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
-            db.AddStop(1.1f, 1.2f, 124);
-            db.AddStop(2.1f, 2.2f, 128);
-            db.AddStop(3.1f, 3.2f, 132);
-            db.AddStop(4.1f, 4.2f, 136);
-            db.AddStop(5.1f, 5.2f, 140);
-            db.AddStop(6.1f, 6.2f, 144);
+            db.Add(0, 1, 1234, 0, 100);
+            db.Add(0, 1, 1234, 100, 1000);
+            db.Add(0, 2, 1234, 100, 200);
+            db.Add(0, 3, 1234, 100, 200);
+            db.Add(0, 4, 1234, 100, 200);
+            db.Add(0, 5, 1234, 100, 100 + (1 << 15) - 1);
 
-            db.AddConnection(0, 1, 1234, 0, 100);
-            db.AddConnection(0, 1, 1234, 100, 1000);
-            db.AddConnection(0, 2, 1234, 100, 200);
-            db.AddConnection(0, 3, 1234, 100, 200);
-            db.AddConnection(0, 4, 1234, 100, 200);
-            db.AddConnection(0, 5, 1234, 100, 100 + (1 << 15) - 1);
-
-            var enumerator = db.GetConnectionEnumerator();
+            var enumerator = db.GetEnumerator();
 
             Assert.IsTrue(enumerator.MoveNext());
             Assert.AreEqual(0, enumerator.DepartureStop);
@@ -368,75 +212,6 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
 
             Assert.IsFalse(enumerator.MoveNext());
-        }
-
-        /// <summary>
-        /// Tests stop sorting.
-        /// </summary>
-        [Test]
-        public void TestStopSorting()
-        {
-            // build locations.
-            var locations = new List<GeoCoordinate>();
-            locations.Add(new GeoCoordinate(-90, -180));
-            locations.Add(new GeoCoordinate(-90, -60));
-            locations.Add(new GeoCoordinate(-90, 60));
-            locations.Add(new GeoCoordinate(-90, 180));
-            locations.Add(new GeoCoordinate(-30, -180));
-            locations.Add(new GeoCoordinate(-30, -60));
-            locations.Add(new GeoCoordinate(-30, 60));
-            locations.Add(new GeoCoordinate(-30, 180));
-            locations.Add(new GeoCoordinate(30, -180));
-            locations.Add(new GeoCoordinate(30, -60));
-            locations.Add(new GeoCoordinate(30, 60));
-            locations.Add(new GeoCoordinate(30, 180));
-            locations.Add(new GeoCoordinate(90, -180));
-            locations.Add(new GeoCoordinate(90, -60));
-            locations.Add(new GeoCoordinate(90, 60));
-            locations.Add(new GeoCoordinate(90, 180));
-
-            // build db.
-            var db = new ConnectionsDb(locations.Count, 1024);
-            for (var stop = 0; stop < locations.Count; stop++)
-            {
-                db.AddStop((float)locations[stop].Latitude,
-                    (float)locations[stop].Longitude, (uint)stop * 2);
-            }
-
-            // build a sorted version in-place.
-            db.SortStops(null);
-
-            // test if sorted.
-            var enumerator = db.GetStopEnumerator();
-            for (var stop = 1; stop < locations.Count; stop++)
-            {
-                enumerator.MoveTo((uint)stop - 1);
-                var latitude1 = enumerator.Latitude;
-                var longitude1 = enumerator.Longitude;
-                enumerator.MoveTo((uint)stop);
-                var latitude2 = enumerator.Latitude;
-                var longitude2 = enumerator.Longitude;
-
-                Assert.IsTrue(
-                    HilbertCurve.HilbertDistance(latitude1, longitude1, Hilbert.DefaultHilbertSteps) <=
-                    HilbertCurve.HilbertDistance(latitude2, longitude2, Hilbert.DefaultHilbertSteps));
-            }
-
-            // sort locations.
-            locations.Sort((x, y) =>
-            {
-                return HilbertCurve.HilbertDistance((float)x.Latitude, (float)x.Longitude, Hilbert.DefaultHilbertSteps).CompareTo(
-                     HilbertCurve.HilbertDistance((float)y.Latitude, (float)y.Longitude, Hilbert.DefaultHilbertSteps));
-            });
-
-            // confirm sort.
-            enumerator = db.GetStopEnumerator();
-            for (var stop = 0; stop < locations.Count; stop++)
-            {
-                enumerator.MoveTo((uint)stop);
-                Assert.AreEqual(enumerator.Latitude, locations[(int)stop].Latitude);
-                Assert.AreEqual(enumerator.Longitude, locations[(int)stop].Longitude);
-            }
         }
 
         /// <summary>
@@ -449,25 +224,18 @@ namespace OsmSharp.Routing.Transit.Test.Data
 
             Assert.IsFalse(db.Sorting.HasValue);
 
-            db.AddStop(1.1f, 1.2f, 124);
-            db.AddStop(2.1f, 2.2f, 128);
-            db.AddStop(3.1f, 3.2f, 132);
-            db.AddStop(4.1f, 4.2f, 136);
-            db.AddStop(5.1f, 5.2f, 140);
-            db.AddStop(6.1f, 6.2f, 144);
+            db.Add(0, 1, 1234, 0, 100);
+            db.Add(0, 1, 1234, 100, 1000);
+            db.Add(0, 2, 1234, 10, 200);
+            db.Add(0, 3, 1234, 1000, 2000);
+            db.Add(0, 4, 1234, 101, 201);
+            db.Add(0, 5, 1234, 102, 101 + (1 << 15) - 1);
 
-            db.AddConnection(0, 1, 1234, 0, 100);
-            db.AddConnection(0, 1, 1234, 100, 1000);
-            db.AddConnection(0, 2, 1234, 10, 200);
-            db.AddConnection(0, 3, 1234, 1000, 2000);
-            db.AddConnection(0, 4, 1234, 101, 201);
-            db.AddConnection(0, 5, 1234, 102, 101 + (1 << 15) - 1);
-
-            db.SortConnections(DefaultSorting.DepartureTime, null);
+            db.Sort(DefaultSorting.DepartureTime, null);
             Assert.IsTrue(db.Sorting.HasValue);
             Assert.AreEqual(DefaultSorting.DepartureTime, db.Sorting.Value);
 
-            var enumerator = db.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var enumerator = db.GetEnumerator(DefaultSorting.DepartureTime);
 
             Assert.IsTrue(enumerator.MoveTo(0));
             Assert.AreEqual(0, enumerator.DepartureStop);
@@ -511,7 +279,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(1000, enumerator.DepartureTime);
             Assert.AreEqual(2000, enumerator.ArrivalTime);
 
-            enumerator = db.GetConnectionEnumerator(DefaultSorting.ArrivalTime);
+            enumerator = db.GetEnumerator(DefaultSorting.ArrivalTime);
 
             Assert.IsTrue(enumerator.MoveTo(0));
             Assert.AreEqual(0, enumerator.DepartureStop);
@@ -564,23 +332,16 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new ConnectionsDb();
 
-            db.AddStop(1.1f, 1.2f, 124);
-            db.AddStop(2.1f, 2.2f, 128);
-            db.AddStop(3.1f, 3.2f, 132);
-            db.AddStop(4.1f, 4.2f, 136);
-            db.AddStop(5.1f, 5.2f, 140);
-            db.AddStop(6.1f, 6.2f, 144);
+            var connection0 = db.Add(0, 1, 1234, 0, 9);
+            var connection1 = db.Add(0, 1, 1234, 10, 19);
+            var connection2 = db.Add(0, 2, 1234, 20, 29);
+            var connection3 = db.Add(0, 3, 1234, 30, 39);
+            var connection4 = db.Add(0, 4, 1234, 40, 49);
+            var connection5 = db.Add(0, 5, 1234, 50, 59);
 
-            var connection0 = db.AddConnection(0, 1, 1234, 0, 9);
-            var connection1 = db.AddConnection(0, 1, 1234, 10, 19);
-            var connection2 = db.AddConnection(0, 2, 1234, 20, 29);
-            var connection3 = db.AddConnection(0, 3, 1234, 30, 39);
-            var connection4 = db.AddConnection(0, 4, 1234, 40, 49);
-            var connection5 = db.AddConnection(0, 5, 1234, 50, 59);
+            db.Sort(DefaultSorting.DepartureTime, null);
 
-            db.SortConnections(DefaultSorting.DepartureTime, null);
-
-            var enumerator = db.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var enumerator = db.GetEnumerator(DefaultSorting.DepartureTime);
 
             Assert.IsTrue(enumerator.MoveToDepartureTime(5));
             Assert.AreEqual(connection1, enumerator.Id);

@@ -29,18 +29,18 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds a transfers db.
         /// </summary>
-        public static void AddTransfersDb(this TransitDb db, Profiles.Profile profile, TagsCollectionBase defaultProfile, 
+        public static void AddTransfersDb(this TransitDb db, Profiles.Profile profile, TagsCollectionBase defaultProfile,
             float maxTimeInSeconds)
         {
             var transfersDb = new TransfersDb(1024);
             var factor = profile.Factor(defaultProfile);
 
             // add all transfers.
-            var enumerator1 = db.ConnectionsDb.GetStopEnumerator();
-            while(enumerator1.MoveNext())
+            var enumerator1 = db.GetStopsEnumerator();
+            while (enumerator1.MoveNext())
             {
-                var enumerator2 = db.ConnectionsDb.GetStopEnumerator();
-                while(enumerator2.MoveNext())
+                var enumerator2 = db.GetStopsEnumerator();
+                while (enumerator2.MoveNext())
                 {
                     if (enumerator1.Id < enumerator2.Id)
                     {

@@ -41,17 +41,14 @@ namespace OsmSharp.Routing.Transit.Data
         private const int CONNECTION_MAX_DEPARTURETIME = 131072 - 1;
         private const int CONNECTION_MAX_DURATION = 32768 - 1;
         private const int CONNECTIONS_BLOCK_SIZE = 1000; // the connections block size.
-        private const int STOP_SIZE = 3; // one connection is 3 uints.
-        private const int STOP_BLOCK_SIZE = 1000; // the stop block size.
         private readonly ArrayBase<uint> _connections; // holds all connection data.
         private readonly ArrayBase<uint> _connectionsOrder; // hold the connections-order for the other sorting.
-        private readonly ArrayBase<uint> _stops; // holds all hilbert-sorted stops.
         
         /// <summary>
         /// Creates new connections db.
         /// </summary>
         public ConnectionsDb()
-            : this(256, 2048)
+            : this(2048)
         {
 
         }
@@ -59,93 +56,20 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Creates new connections db.
         /// </summary>
-        public ConnectionsDb(int stops, int connections)
+        public ConnectionsDb(int connections)
         {
             _connections = new MemoryArray<uint>(connections * CONNECTION_SIZE);
             _connectionsOrder = new MemoryArray<uint>(connections);
-            _stops = new MemoryArray<uint>(stops);
         }
         
         private DefaultSorting? _sorting; // hold the current sorting.
-        private uint _nextStopId = 0;
         private uint _nextConnectionId; // holds the maximum connection id.
 
         /// <summary>
-        /// Adds a new stop.
+        /// Adds a connection.
         /// </summary>
-        public uint AddStop(float latitude, float longitude, uint metaId)
+        public uint Add(uint stop1, uint stop2, uint tripId, uint departureTime, uint arrivalTime)
         {
-            var id = _nextStopId;
-            _nextStopId++;
-
-            var size = _stops.Length;
-            while ((id * STOP_SIZE + STOP_SIZE) > size)
-            {
-                size += STOP_BLOCK_SIZE;
-            }
-            if(size != _stops.Length)
-            {
-                _stops.Resize(size);
-            }
-
-            _stops[id * STOP_SIZE + 0] = ConnectionsDb.Encode(latitude);
-            _stops[id * STOP_SIZE + 1] = ConnectionsDb.Encode(longitude);
-            _stops[id * STOP_SIZE + 2] = metaId;
-
-            return id;
-        }
-
-        /// <summary>
-        /// Returns the number of stops.
-        /// </summary>
-        public uint StopCount
-        {
-            get
-            {
-                return _nextStopId;
-            }
-        }
-
-        /// <summary>
-        /// Sorts the stops.
-        /// </summary>
-        public void SortStops(Action<uint, uint> switchConnections)
-        {
-            if (_nextStopId > 0)
-            { // sort stops, assume all stops are filled-in.
-                QuickSort.Sort((stop) =>
-                    {
-                        var latitude = ConnectionsDb.DecodeSingle(_stops[stop * STOP_SIZE + 0]);
-                        var longitude = ConnectionsDb.DecodeSingle(_stops[stop * STOP_SIZE + 1]);
-                        return HilbertCurve.HilbertDistance(latitude, longitude, Hilbert.DefaultHilbertSteps);
-                    },
-                    (stop1, stop2) =>
-                    {
-                        var stop10 = _stops[stop1 * STOP_SIZE + 0];
-                        var stop11 = _stops[stop1 * STOP_SIZE + 1];
-                        var stop12 = _stops[stop1 * STOP_SIZE + 2];
-                        _stops[stop1 * STOP_SIZE + 0] = _stops[stop2 * STOP_SIZE + 0];
-                        _stops[stop1 * STOP_SIZE + 1] = _stops[stop2 * STOP_SIZE + 1];
-                        _stops[stop1 * STOP_SIZE + 2] = _stops[stop2 * STOP_SIZE + 2];
-                        _stops[stop2 * STOP_SIZE + 0] = stop10;
-                        _stops[stop2 * STOP_SIZE + 1] = stop11;
-                        _stops[stop2 * STOP_SIZE + 2] = stop12;
-
-                        if (switchConnections != null)
-                        {
-                            switchConnections((uint)stop1, (uint)stop2);
-                        }
-                    }, 0, _nextStopId - 1);
-            }
-        }
-
-        /// <summary>
-        /// Sets the connection with the given id.
-        /// </summary>
-        public uint AddConnection(uint stop1, uint stop2, uint tripId, uint departureTime, uint arrivalTime)
-        {
-            if (stop1 >= _nextStopId) { throw new ArgumentOutOfRangeException("stop1"); }
-            if (stop2 >= _nextStopId) { throw new ArgumentOutOfRangeException("stop2"); }
             if (arrivalTime <= departureTime) { throw new ArgumentException("Departure time must be smaller than arrival time."); }
             var duration = arrivalTime - departureTime;
             if (duration > CONNECTION_MAX_DURATION) {
@@ -158,7 +82,7 @@ namespace OsmSharp.Routing.Transit.Data
             var size = _connections.Length;
             while ((id * CONNECTION_SIZE + CONNECTION_SIZE) > size)
             {
-                size += STOP_BLOCK_SIZE;
+                size += CONNECTIONS_BLOCK_SIZE;
             }
             if (size != _connections.Length)
             {
@@ -187,7 +111,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Sorts the connections.
         /// </summary>
-        public void SortConnections(DefaultSorting sorting, Action<uint, uint> switchConnections)
+        public void Sort(DefaultSorting sorting, Action<uint, uint> switchConnections)
         {
             _sorting = sorting;
 
@@ -255,163 +179,58 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
-        /// Gets a stops enumerator.
-        /// </summary>
-        public StopEnumerator GetStopEnumerator()
-        {
-            return new StopEnumerator(_stops, _nextStopId);
-        }
-
-        /// <summary>
-        /// A stop enumerator.
-        /// </summary>
-        public class StopEnumerator
-        {
-            private readonly ArrayBase<uint> _stops; // holds the stops-array.
-            private readonly uint _count;
-
-            internal StopEnumerator(ArrayBase<uint> stops, uint count)
-            {
-                _stops = stops;
-                _count = count;
-            }
-
-            private uint _index = uint.MaxValue;
-
-            /// <summary>
-            /// Resets the enumerator.
-            /// </summary>
-            public void Reset()
-            {
-                _index = uint.MaxValue;
-            }
-
-            /// <summary>
-            /// Moves this enumerator to the given stop.
-            /// </summary>
-            public bool MoveTo(uint id)
-            {
-                _index = id * STOP_SIZE;
-
-                return id < _count;
-            }
-
-            /// <summary>
-            /// Gets the latitude.
-            /// </summary>
-            public float Latitude
-            {
-                get
-                {
-                    return ConnectionsDb.DecodeSingle(
-                        _stops[_index + 0]);
-                }
-            }
-
-            /// <summary>
-            /// Gets the longitude.
-            /// </summary>
-            public float Longitude
-            {
-                get
-                {
-                    return ConnectionsDb.DecodeSingle(
-                        _stops[_index + 1]);
-                }
-            }
-
-            /// <summary>
-            /// Gets the meta-id.
-            /// </summary>
-            public uint MetaId
-            {
-                get
-                {
-                    return _stops[_index + 2];
-                }
-            }
-
-            /// <summary>
-            /// Gets the id.
-            /// </summary>
-            public uint Id
-            {
-                get
-                {
-                    return _index / STOP_SIZE;
-                }
-            }
-
-            /// <summary>
-            /// Moves to the next stop.
-            /// </summary>
-            /// <returns></returns>
-            public bool MoveNext()
-            {
-                if(_index == uint.MaxValue)
-                {
-                    _index = 0;
-                    return _count > 0;
-                }
-                _index += STOP_SIZE;
-
-                return (_index / STOP_SIZE) < _count;
-            }
-        }
-
-        /// <summary>
         /// Gets a connection enumerator.
         /// </summary>
         /// <returns></returns>
-        public ConnectionEnumerator GetConnectionEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return new ConnectionEnumerator(_connections, _nextConnectionId);
+            return new Enumerator(_connections, _nextConnectionId);
         }
 
         /// <summary>
-        /// Gets a connection enumerator.
+        /// Gets a connection enumerator but sorted in the non-default way.
         /// </summary>
         /// <returns></returns>
-        public ConnectionEnumerator GetConnectionOrderEnumerator()
+        public Enumerator GetOrderEnumerator()
         {
             if (_connectionsOrder.Length == 0 && _connections.Length != 0)
             {
                 throw new InvalidOperationException("Cannot get sorted enumerator, db is not sorted.");
             }
-            return new ConnectionEnumerator(_connections, _connectionsOrder, _nextConnectionId);
+            return new Enumerator(_connections, _connectionsOrder, _nextConnectionId);
         }
 
         /// <summary>
         /// Gets the connection enumerator with the given sorting.
         /// </summary>
         /// <returns></returns>
-        public ConnectionEnumerator GetConnectionEnumerator(DefaultSorting sorting)
+        public Enumerator GetEnumerator(DefaultSorting sorting)
         {
             if (_sorting == null) { throw new InvalidOperationException("Cannot get sorted enumerator, db is not sorted."); }
             if(_sorting == sorting)
             {
-                return this.GetConnectionEnumerator();
+                return this.GetEnumerator();
             }
-            return this.GetConnectionOrderEnumerator();
+            return this.GetOrderEnumerator();
         }
 
         /// <summary>
         /// A connection enumerator.
         /// </summary>
-        public class ConnectionEnumerator
+        public class Enumerator
         {
             private readonly ArrayBase<uint> _connections;
             private readonly ArrayBase<uint> _connectionsOrder;
             private readonly uint _count;
 
-            internal ConnectionEnumerator(ArrayBase<uint> connections, uint count)
+            internal Enumerator(ArrayBase<uint> connections, uint count)
             {
                 _connections = connections;
                 _connectionsOrder = null;
                 _count = count;
             }
 
-            internal ConnectionEnumerator(ArrayBase<uint> connections,
+            internal Enumerator(ArrayBase<uint> connections,
                 ArrayBase<uint> connectionsOrder, uint count)
             {
                 _connections = connections;
@@ -578,28 +397,10 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Encodes a departure time and duration.
         /// </summary>
-        private static void DecodeDepartureTimeAndDuration(uint value , out uint departureTime, out uint duration)
+        private static void DecodeDepartureTimeAndDuration(uint value, out uint departureTime, out uint duration)
         {
             departureTime = value << 15 >> 15;
             duration = value >> 17;
-        }
-
-        /// <summary>
-        /// Encodes a float into a uint.
-        /// </summary>
-        private static uint Encode(float latitude)
-        {
-            return System.BitConverter.ToUInt32(
-                System.BitConverter.GetBytes(latitude), 0);
-        }
-
-        /// <summary>
-        /// Encodes a float into a uint.
-        /// </summary>
-        private static float DecodeSingle(uint value)
-        {
-            return System.BitConverter.ToSingle(
-                System.BitConverter.GetBytes(value), 0);
         }
     }
 }

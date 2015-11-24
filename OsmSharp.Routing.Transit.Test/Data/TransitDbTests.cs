@@ -39,7 +39,6 @@ namespace OsmSharp.Routing.Transit.Test.Data
         {
             var db = new TransitDb();
 
-            Assert.IsNotNull(db.ConnectionsDb);
             db.AddTransfersDb(Routing.Osm.Vehicles.Vehicle.Pedestrian.Fastest(), new TransfersDb(1024));
         }
 
@@ -83,8 +82,8 @@ namespace OsmSharp.Routing.Transit.Test.Data
         public void TestAddTransfersDbExtension()
         {
             var db = new TransitDb();
-            var stop1 = db.ConnectionsDb.AddStop(51.10700473650233f, 3.9084237813949585f, 1);
-            var stop2 = db.ConnectionsDb.AddStop(51.10700473650233f, 3.9091318845748897f, 1);
+            var stop1 = db.AddStop(51.10700473650233f, 3.9084237813949585f, 1);
+            var stop2 = db.AddStop(51.10700473650233f, 3.9091318845748897f, 1);
 
             db.AddTransfersDbForPedestrians(5 * 60);
 

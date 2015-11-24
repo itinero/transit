@@ -44,14 +44,14 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 3600, 3600 + 40 * 60);
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddConnection(0, 1, 0, 3600, 3600 + 40 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 00, 50, 00);
-            var algorithm = new ProfileSearch(db, 0, 1, departureTime, 
+            var algorithm = new ProfileSearch(db, 0, 1, departureTime,
                 (profileId, day) => true);
             algorithm.Run();
 
@@ -61,7 +61,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(50 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 01, 40, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
             var profiles = algorithm.GetStopProfiles(1);
             var profile = profiles[0];
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
@@ -95,10 +95,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // run algorithm.
             var algorithm = new ProfileSearch(db, 0, 1, new DateTime(2017, 05, 10, 08, 30, 00),
@@ -124,12 +124,12 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddStop(2, 2, 2);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600,           8 * 3600 + 10 * 60);
-            db.ConnectionsDb.AddConnection(1, 2, 0, 8 * 3600 + 11 * 60, 8 * 3600 + 20 * 60);
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddStop(2, 2, 2);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(1, 2, 0, 8 * 3600 + 11 * 60, 8 * 3600 + 20 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -143,7 +143,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(50 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 20, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             var precedingStop = OsmSharp.Routing.Transit.Constants.NoStopId;
             var transfers = OsmSharp.Routing.Transit.Constants.NoTransfers;
@@ -201,12 +201,12 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddStop(2, 2, 2);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600,           8 * 3600 + 10 * 60);
-            db.ConnectionsDb.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddStop(2, 2, 2);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -220,7 +220,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(55 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             var precedingStop = OsmSharp.Routing.Transit.Constants.NoStopId;
             var transfers = OsmSharp.Routing.Transit.Constants.NoTransfers;
@@ -285,14 +285,14 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddStop(2, 2, 2);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
-            db.ConnectionsDb.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
-            db.ConnectionsDb.AddConnection(0, 2, 2, 8 * 3600 + 16 * 60, 8 * 3600 + 25 * 60);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddStop(2, 2, 2);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
+            db.AddConnection(0, 2, 2, 8 * 3600 + 16 * 60, 8 * 3600 + 25 * 60);
 
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -306,7 +306,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(55 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             var precedingStop = OsmSharp.Routing.Transit.Constants.NoStopId;
             var transfers = OsmSharp.Routing.Transit.Constants.NoTransfers;
@@ -365,14 +365,14 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddStop(2, 2, 2);
-            db.ConnectionsDb.AddStop(3, 3, 3);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
-            db.ConnectionsDb.AddConnection(2, 3, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddStop(2, 2, 2);
+            db.AddStop(3, 3, 3);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(2, 3, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
 
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // build dummy transfers db.
             var transfersDb = new TransfersDb(1024);
@@ -390,7 +390,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(55 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             var profiles = algorithm.GetStopProfiles(3);
             var profile = profiles[0];
@@ -456,15 +456,15 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         {
             // build dummy db.
             var db = new TransitDb();
-            db.ConnectionsDb.AddStop(0, 0, 0);
-            db.ConnectionsDb.AddStop(1, 1, 1);
-            db.ConnectionsDb.AddStop(2, 2, 2);
-            db.ConnectionsDb.AddStop(3, 3, 3);
-            db.ConnectionsDb.AddConnection(0, 1, 0, 8 * 3600,           8 * 3600 + 10 * 60);
-            db.ConnectionsDb.AddConnection(1, 2, 0, 8 * 3600 + 10 * 60, 8 * 3600 + 15 * 60);
-            db.ConnectionsDb.AddConnection(2, 3, 0, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddStop(2, 2, 2);
+            db.AddStop(3, 3, 3);
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(1, 2, 0, 8 * 3600 + 10 * 60, 8 * 3600 + 15 * 60);
+            db.AddConnection(2, 3, 0, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
 
-            db.ConnectionsDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
 
             // build dummy transfers db.
             var transfersDb = new TransfersDb(1024);
@@ -482,7 +482,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(55 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
-            var connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             var profiles = algorithm.GetStopProfiles(3);
             Assert.AreEqual(3, profiles.Count);
@@ -531,7 +531,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // build dummy transfers db.
             transfersDb = new TransfersDb(1024);
-            transfersDb.AddTransfer(1, 2,  6 * 60); // this leads to a transfer time slower than the actual connection.
+            transfersDb.AddTransfer(1, 2, 6 * 60); // this leads to a transfer time slower than the actual connection.
 
             // run algorithm.
             departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
@@ -545,7 +545,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(55 * 60, algorithm.Duration());
             Assert.AreEqual(new DateTime(2017, 05, 10, 08, 25, 00), algorithm.ArrivalTime());
 
-            connections = db.ConnectionsDb.GetConnectionEnumerator(DefaultSorting.DepartureTime);
+            connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
 
             profiles = algorithm.GetStopProfiles(3);
             Assert.AreEqual(3, profiles.Count);

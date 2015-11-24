@@ -40,7 +40,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             }
 
             // get preceding connection.
-            var connections = algorithm.Db.ConnectionsDb.GetConnectionEnumerator(Data.DefaultSorting.DepartureTime);
+            var connections = algorithm.Db.GetConnectionsEnumerator(Data.DefaultSorting.DepartureTime);
             connections.MoveTo(profile.PreviousConnectionId);
             stopId = connections.DepartureStop;
             var departureTime = connections.DepartureTime;
@@ -66,11 +66,11 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             for (var c = 0; c < i; c++)
             {
                 candidate = profileCandidates[c];
-                if(candidate.Seconds < 0)
+                if (candidate.Seconds < 0)
                 { // empty.
                     continue;
                 }
-                if(candidate.Seconds < departureTime)
+                if (candidate.Seconds < departureTime)
                 {
                     tranfers = c;
                     return candidate;

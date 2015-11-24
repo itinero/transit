@@ -26,6 +26,7 @@ namespace OsmSharp.Routing.Transit.Data
     /// </summary>
     public class TransitDb
     {
+        private readonly StopsDb _stopsDb;
         private readonly ConnectionsDb _connectionsDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
 
@@ -35,18 +36,72 @@ namespace OsmSharp.Routing.Transit.Data
         public TransitDb()
         {
             _connectionsDb = new ConnectionsDb();
+            _stopsDb = new StopsDb();
             _transfersDbs = new Dictionary<string, TransfersDb>();
+        }
+        
+        /// <summary>
+        /// Adds a new stop.
+        /// </summary>
+        public uint AddStop(float latitude, float longitude, uint metaId)
+        {
+            return _stopsDb.Add(latitude, longitude, metaId);
         }
 
         /// <summary>
-        /// Gets the connections db.
+        /// Sorts the stops.
         /// </summary>
-        public ConnectionsDb ConnectionsDb
+        public void SortStops(Action<uint, uint> switchStops)
+        {
+            _stopsDb.Sort(switchStops);
+        }
+
+        /// <summary>
+        /// Gets the stops enumerator.
+        /// </summary>
+        /// <returns></returns>
+        public StopsDb.Enumerator GetStopsEnumerator()
+        {
+            return _stopsDb.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Adds a connection.
+        /// </summary>
+        public uint AddConnection(uint stop1, uint stop2, uint tripId, uint departureTime, uint arrivalTime)
+        {
+            if (stop1 >= _stopsDb.Count) { throw new ArgumentOutOfRangeException("stop1"); }
+            if (stop2 >= _stopsDb.Count) { throw new ArgumentOutOfRangeException("stop2"); }
+
+            return _connectionsDb.Add(stop1, stop2, tripId, departureTime, arrivalTime);
+        }
+
+        /// <summary>
+        /// Gets the sorting.
+        /// </summary>
+        public DefaultSorting? ConnectionSorting
         {
             get
             {
-                return _connectionsDb;
+                return _connectionsDb.Sorting;
             }
+        }
+
+        /// <summary>
+        /// Sorts the connections.
+        /// </summary>
+        public void SortConnections(DefaultSorting sorting, Action<uint, uint> switchConnections)
+        {
+            _connectionsDb.Sort(sorting, switchConnections);
+        }
+
+        /// <summary>
+        /// Gets the connection enumerator with the given sorting.
+        /// </summary>
+        /// <returns></returns>
+        public ConnectionsDb.Enumerator GetConnectionsEnumerator(DefaultSorting sorting)
+        {
+            return _connectionsDb.GetEnumerator(sorting);
         }
 
         /// <summary>

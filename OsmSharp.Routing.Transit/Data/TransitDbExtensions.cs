@@ -18,6 +18,7 @@
 
 using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
+using System;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -56,6 +57,25 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             db.AddTransfersDb(profile, transfersDb);
+        }
+
+        /// <summary>
+        /// Adds a new schedule entry.
+        /// </summary>
+        public static void AddScheduleEntry(this TransitDb db, uint id, DateTime day)
+        {
+            db.AddScheduleEntry(id, day, day, day.Weekmask());
+        }
+
+        /// <summary>
+        /// Adds a new schedule entry.
+        /// </summary>
+        public static void AddScheduleEntry(this TransitDb db, uint id, DateTime start, DateTime end,
+            params DayOfWeek[] days)
+        {
+            if (days == null || days.Length == 0) { throw new ArgumentOutOfRangeException("days", "Cannot add empty week patterns."); }
+
+            db.AddScheduleEntry(id, start, end, SchedulesDbExtensions.Weekmask(days));
         }
     }
 }

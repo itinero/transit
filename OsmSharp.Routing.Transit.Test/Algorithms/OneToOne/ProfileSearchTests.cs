@@ -46,6 +46,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             var db = new TransitDb();
             db.AddStop(0, 0, 0);
             db.AddStop(1, 1, 1);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 3600, 3600 + 40 * 60);
             db.SortConnections(DefaultSorting.DepartureTime, null);
 
@@ -97,6 +98,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             var db = new TransitDb();
             db.AddStop(0, 0, 0);
             db.AddStop(1, 1, 1);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.SortConnections(DefaultSorting.DepartureTime, null);
 
@@ -127,6 +129,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             db.AddStop(0, 0, 0);
             db.AddStop(1, 1, 1);
             db.AddStop(2, 2, 2);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.AddConnection(1, 2, 0, 8 * 3600 + 11 * 60, 8 * 3600 + 20 * 60);
             db.SortConnections(DefaultSorting.DepartureTime, null);
@@ -204,6 +207,8 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             db.AddStop(0, 0, 0);
             db.AddStop(1, 1, 1);
             db.AddStop(2, 2, 2);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
             db.SortConnections(DefaultSorting.DepartureTime, null);
@@ -288,6 +293,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             db.AddStop(0, 0, 0);
             db.AddStop(1, 1, 1);
             db.AddStop(2, 2, 2);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.AddConnection(1, 2, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
             db.AddConnection(0, 2, 2, 8 * 3600 + 16 * 60, 8 * 3600 + 25 * 60);
@@ -369,6 +377,8 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             db.AddStop(1, 1, 1);
             db.AddStop(2, 2, 2);
             db.AddStop(3, 3, 3);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.AddConnection(2, 3, 1, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);
 
@@ -460,6 +470,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             db.AddStop(1, 1, 1);
             db.AddStop(2, 2, 2);
             db.AddStop(3, 3, 3);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
+            db.AddTrip(0, 0, 0);
             db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
             db.AddConnection(1, 2, 0, 8 * 3600 + 10 * 60, 8 * 3600 + 15 * 60);
             db.AddConnection(2, 3, 0, 8 * 3600 + 15 * 60, 8 * 3600 + 25 * 60);

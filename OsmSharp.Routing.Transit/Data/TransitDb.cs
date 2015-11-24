@@ -29,6 +29,7 @@ namespace OsmSharp.Routing.Transit.Data
         private readonly StopsDb _stopsDb;
         private readonly ConnectionsDb _connectionsDb;
         private readonly TripsDb _tripsDb;
+        private readonly SchedulesDb _schedulesDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
 
         /// <summary>
@@ -122,6 +123,22 @@ namespace OsmSharp.Routing.Transit.Data
         public TripsDb.Enumerator GetTripsEnumerator()
         {
             return _tripsDb.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Adds a new schedule.
+        /// </summary>
+        public uint AddSchedule()
+        {
+            return _schedulesDb.Add();
+        }
+
+        /// <summary>
+        /// Adds a new schedule entry.
+        /// </summary>
+        public void AddScheduleEntry(uint id, DateTime start, DateTime end, byte weekMask)
+        {
+            _schedulesDb.AddEntry(id, start, end, weekMask);
         }
 
         /// <summary>

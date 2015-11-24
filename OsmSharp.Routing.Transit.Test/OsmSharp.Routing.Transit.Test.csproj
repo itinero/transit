@@ -114,6 +114,7 @@
     <Compile Include="Data\StopsDbTests.cs" />
     <Compile Include="Data\TransfersDbTest.cs" />
     <Compile Include="Data\TransitDbTests.cs" />
+    <Compile Include="Data\TripDbTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

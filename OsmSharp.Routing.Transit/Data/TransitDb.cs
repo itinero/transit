@@ -28,6 +28,7 @@ namespace OsmSharp.Routing.Transit.Data
     {
         private readonly StopsDb _stopsDb;
         private readonly ConnectionsDb _connectionsDb;
+        private readonly TripsDb _tripsDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace OsmSharp.Routing.Transit.Data
         {
             _connectionsDb = new ConnectionsDb();
             _stopsDb = new StopsDb();
+            _tripsDb = new TripsDb();
             _transfersDbs = new Dictionary<string, TransfersDb>();
         }
         
@@ -72,6 +74,7 @@ namespace OsmSharp.Routing.Transit.Data
         {
             if (stop1 >= _stopsDb.Count) { throw new ArgumentOutOfRangeException("stop1"); }
             if (stop2 >= _stopsDb.Count) { throw new ArgumentOutOfRangeException("stop2"); }
+            if (tripId >= _tripsDb.Count) { throw new ArgumentOutOfRangeException("tripId"); }
 
             return _connectionsDb.Add(stop1, stop2, tripId, departureTime, arrivalTime);
         }
@@ -102,6 +105,23 @@ namespace OsmSharp.Routing.Transit.Data
         public ConnectionsDb.Enumerator GetConnectionsEnumerator(DefaultSorting sorting)
         {
             return _connectionsDb.GetEnumerator(sorting);
+        }
+
+        /// <summary>
+        /// Adds a new trip.
+        /// </summary>
+        public uint AddTrip(uint scheduleId, uint agencyId, uint metaId)
+        {
+            return _tripsDb.Add(scheduleId, agencyId, metaId);
+        }
+
+        /// <summary>
+        /// Gets the trips enumerator.
+        /// </summary>
+        /// <returns></returns>
+        public TripsDb.Enumerator GetTripsEnumerator()
+        {
+            return _tripsDb.GetEnumerator();
         }
 
         /// <summary>

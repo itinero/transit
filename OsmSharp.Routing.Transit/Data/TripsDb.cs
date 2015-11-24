@@ -16,36 +16,37 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using OsmSharp.Collections.Sorting;
-using OsmSharp.Math.Algorithms;
-using OsmSharp.Routing.Algorithms.Search;
 using Reminiscence.Arrays;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
-    /// Represents a stops db.
+    /// Represents a trip db.
     /// </summary>
-    public class StopsDb
+    public class TripsDb
     {
-        private const int SIZE = 3; // one stop is 3 uints.
-        private const int BLOCK_SIZE = 1000; // the stop block size.
-        private readonly ArrayBase<uint> _data; // holds all hilbert-sorted stops.
+        private const int SIZE = 3; // one trip is 3 uints.
+        private const int BLOCK_SIZE = 1000; // the block size.
+        private readonly ArrayBase<uint> _data; 
 
         /// <summary>
-        /// Creates a new stops db.
+        /// Creates a new trips db.
         /// </summary>
-        public StopsDb()
+        public TripsDb()
             : this(1024)
         {
 
         }
 
         /// <summary>
-        /// Creates a new stops db.
+        /// Creates a new trips db.
         /// </summary>
-        public StopsDb(int size)
+        public TripsDb(int size)
         {
             _data = new MemoryArray<uint>(size);
         }
@@ -53,9 +54,9 @@ namespace OsmSharp.Routing.Transit.Data
         private uint _nextId = 0;
 
         /// <summary>
-        /// Adds a new stop.
+        /// Adds a new trip.
         /// </summary>
-        public uint Add(float latitude, float longitude, uint metaId)
+        public uint Add(uint scheduleId, uint agencyId, uint metaId)
         {
             var id = _nextId;
             _nextId++;
@@ -70,48 +71,15 @@ namespace OsmSharp.Routing.Transit.Data
                 _data.Resize(size);
             }
 
-            _data[id * SIZE + 0] = StopsDb.Encode(latitude);
-            _data[id * SIZE + 1] = StopsDb.Encode(longitude);
+            _data[id * SIZE + 0] = scheduleId;
+            _data[id * SIZE + 1] = agencyId;
             _data[id * SIZE + 2] = metaId;
 
             return id;
         }
 
         /// <summary>
-        /// Sorts the stops.
-        /// </summary>
-        public void Sort(Action<uint, uint> switchConnections)
-        {
-            if (_nextId > 0)
-            { // sort stops, assume all stops are filled-in.
-                QuickSort.Sort((stop) =>
-                {
-                    var latitude = StopsDb.DecodeSingle(_data[stop * SIZE + 0]);
-                    var longitude = StopsDb.DecodeSingle(_data[stop * SIZE + 1]);
-                    return HilbertCurve.HilbertDistance(latitude, longitude, Hilbert.DefaultHilbertSteps);
-                },
-                    (stop1, stop2) =>
-                    {
-                        var stop10 = _data[stop1 * SIZE + 0];
-                        var stop11 = _data[stop1 * SIZE + 1];
-                        var stop12 = _data[stop1 * SIZE + 2];
-                        _data[stop1 * SIZE + 0] = _data[stop2 * SIZE + 0];
-                        _data[stop1 * SIZE + 1] = _data[stop2 * SIZE + 1];
-                        _data[stop1 * SIZE + 2] = _data[stop2 * SIZE + 2];
-                        _data[stop2 * SIZE + 0] = stop10;
-                        _data[stop2 * SIZE + 1] = stop11;
-                        _data[stop2 * SIZE + 2] = stop12;
-
-                        if (switchConnections != null)
-                        {
-                            switchConnections((uint)stop1, (uint)stop2);
-                        }
-                    }, 0, _nextId - 1);
-            }
-        }
-
-        /// <summary>
-        /// Returns the number of stops.
+        /// Returns the number of trips.
         /// </summary>
         public uint Count
         {
@@ -122,7 +90,7 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
-        /// Gets a stops enumerator.
+        /// Gets an enumerator.
         /// </summary>
         public Enumerator GetEnumerator()
         {
@@ -130,16 +98,16 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
-        /// A stop enumerator.
+        /// An enumerator.
         /// </summary>
         public class Enumerator
         {
-            private readonly ArrayBase<uint> _stops; // holds the stops-array.
+            private readonly ArrayBase<uint> _data;
             private readonly uint _count;
 
-            internal Enumerator(ArrayBase<uint> stops, uint count)
+            internal Enumerator(ArrayBase<uint> data, uint count)
             {
-                _stops = stops;
+                _data = data;
                 _count = count;
             }
 
@@ -154,7 +122,7 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             /// <summary>
-            /// Moves this enumerator to the given stop.
+            /// Moves this enumerator to the given trip.
             /// </summary>
             public bool MoveTo(uint id)
             {
@@ -164,37 +132,35 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             /// <summary>
-            /// Gets the latitude.
+            /// Gets the scheduleId.
             /// </summary>
-            public float Latitude
+            public uint ScheduleId
             {
                 get
                 {
-                    return StopsDb.DecodeSingle(
-                        _stops[_index + 0]);
+                    return _data[_index + 0];
                 }
             }
 
             /// <summary>
-            /// Gets the longitude.
+            /// Gets the agencyId.
             /// </summary>
-            public float Longitude
+            public uint AgencyId
             {
                 get
                 {
-                    return StopsDb.DecodeSingle(
-                        _stops[_index + 1]);
+                    return _data[_index + 1];
                 }
             }
 
             /// <summary>
-            /// Gets the meta-id.
+            /// Gets the metaId.
             /// </summary>
             public uint MetaId
             {
                 get
                 {
-                    return _stops[_index + 2];
+                    return _data[_index + 2];
                 }
             }
 
@@ -224,24 +190,6 @@ namespace OsmSharp.Routing.Transit.Data
 
                 return (_index / SIZE) < _count;
             }
-        }
-
-        /// <summary>
-        /// Encodes a float into a uint.
-        /// </summary>
-        private static uint Encode(float latitude)
-        {
-            return System.BitConverter.ToUInt32(
-                System.BitConverter.GetBytes(latitude), 0);
-        }
-
-        /// <summary>
-        /// Encodes a float into a uint.
-        /// </summary>
-        private static float DecodeSingle(uint value)
-        {
-            return System.BitConverter.ToSingle(
-                System.BitConverter.GetBytes(value), 0);
         }
     }
 }

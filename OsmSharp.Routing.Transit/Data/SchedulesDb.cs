@@ -171,7 +171,7 @@ namespace OsmSharp.Routing.Transit.Data
             if (intervalSize >= (1 << 10))
             {
                 throw new ArgumentException(
-                    string.Format("Cannot store ranges bigger or equal to {0} days.", (2 ^ 10)));
+                    string.Format("Cannot store ranges bigger or equal to {0} days.", (1 << 10)));
             }
 
             return (uint)(weekMask << 25) + (intervalSize << 15) + startDays;

@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Routing.Attributes;
 using System;
 using System.Collections.Generic;
 
@@ -26,9 +27,12 @@ namespace OsmSharp.Routing.Transit.Data
     /// </summary>
     public class TransitDb
     {
+        private readonly AttributesIndex _agencyAttributes;
         private readonly StopsDb _stopsDb;
+        private readonly AttributesIndex _stopAttributes;
         private readonly ConnectionsDb _connectionsDb;
         private readonly TripsDb _tripsDb;
+        private readonly AttributesIndex _tripAttributes;
         private readonly SchedulesDb _schedulesDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
 
@@ -37,10 +41,25 @@ namespace OsmSharp.Routing.Transit.Data
         /// </summary>
         public TransitDb()
         {
+            _agencyAttributes = new AttributesIndex();
             _connectionsDb = new ConnectionsDb();
             _stopsDb = new StopsDb();
+            _stopAttributes = new AttributesIndex();
             _tripsDb = new TripsDb();
+            _tripAttributes = new AttributesIndex();
             _transfersDbs = new Dictionary<string, TransfersDb>();
+            _schedulesDb = new SchedulesDb();
+        }
+
+        /// <summary>
+        /// Gets the agency attributes.
+        /// </summary>
+        public AttributesIndex AgencyAttributes
+        {
+            get
+            {
+                return _agencyAttributes;
+            }
         }
         
         /// <summary>
@@ -66,6 +85,28 @@ namespace OsmSharp.Routing.Transit.Data
         public StopsDb.Enumerator GetStopsEnumerator()
         {
             return _stopsDb.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets the stop count.
+        /// </summary>
+        public uint StopsCount
+        {
+            get
+            {
+                return _stopsDb.Count;
+            }
+        }
+
+        /// <summary>
+        /// Gets the stop attributes.
+        /// </summary>
+        public AttributesIndex StopAttributes
+        {
+            get
+            {
+                return _stopAttributes;
+            }
         }
 
         /// <summary>
@@ -126,6 +167,28 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Gets the trip attributes.
+        /// </summary>
+        public AttributesIndex TripAttributes
+        {
+            get
+            {
+                return _tripAttributes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the trip count.
+        /// </summary>
+        public uint TripsCount
+        {
+            get
+            {
+                return _tripsDb.Count;
+            }
+        }
+
+        /// <summary>
         /// Adds a new schedule.
         /// </summary>
         public uint AddSchedule()
@@ -139,6 +202,17 @@ namespace OsmSharp.Routing.Transit.Data
         public void AddScheduleEntry(uint id, DateTime start, DateTime end, byte weekMask)
         {
             _schedulesDb.AddEntry(id, start, end, weekMask);
+        }
+
+        /// <summary>
+        /// Gets the trip count.
+        /// </summary>
+        public uint ConnectionsCount
+        {
+            get
+            {
+                return _connectionsDb.Count;
+            }
         }
 
         /// <summary>

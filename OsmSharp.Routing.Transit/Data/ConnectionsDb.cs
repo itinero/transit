@@ -215,6 +215,17 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Returns the number of connections.
+        /// </summary>
+        public uint Count
+        {
+            get
+            {
+                return _nextConnectionId;
+            }
+        }
+
+        /// <summary>
         /// A connection enumerator.
         /// </summary>
         public class Enumerator

@@ -146,7 +146,6 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             _profiles = new Dictionary<uint, StopProfileCollection>();
             _profiles.Add(_sourceStop, new StopProfileCollection(new StopProfile()
             {
-                PreviousConnectionId = Constants.NoConnectionId,
                 Seconds = startTime
             }));
             StopProfileCollection targetProfiles = null;
@@ -174,7 +173,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
                         transferTargetProfiles.UpdateStatus(1, new StopProfile()
                         {
-                            PreviousConnectionId = Constants.TransferConnectionId,
+                            PreviousStopId = _sourceStop,
                             Seconds = startTime + transferEnumerator.Seconds
                         });
                     }
@@ -273,7 +272,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         for (var i = departureProfiles.Count - 1; i >= 0; i--)
                         {
                             var sourceProfile = departureProfiles[i];
-                            if (sourceProfile.Seconds == Constants.NoSeconds)
+                            if (sourceProfile.IsEmpty)
                             { // no source at this transfer count.
                                 continue;
                             }
@@ -286,8 +285,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
                             // ok, there is an actual move possible here.
                             var transfers = 2;
-                            if (sourceProfile.PreviousConnectionId == Constants.TransferConnectionId)
-                            {
+                            if (sourceProfile.IsTransfer)
+                            { // only increase by one, the previous profile was a transfer.
                                 transfers = 1;
                             }
                             arrivalProfiles.UpdateStatus(i + transfers, new StopProfile()
@@ -337,7 +336,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
                                     transferTargetProfiles.UpdateStatus(t + 1, new StopProfile()
                                     {
-                                        PreviousConnectionId = Constants.TransferConnectionId,
+                                        PreviousStopId = enumerator.ArrivalStop,
                                         Seconds = enumerator.ArrivalTime + transferEnumerator.Seconds
                                     });
                                 }
@@ -447,10 +446,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 { // yes, there is a profile, compare it and remove dominated entries if needed.
                     for (var i = this.Count - 1; i > transfers; i--)
                     {
-                        if ((this[i].PreviousConnectionId != Constants.NoConnectionId &&
-                             this[i].Seconds >= profile.Seconds) ||
-                            (this[i].PreviousConnectionId == Constants.NoConnectionId &&
-                             this[i].Seconds == Constants.NoSeconds))
+                        if ((this[i].Seconds >= profile.Seconds) ||
+                             this[i].IsEmpty)
                         {
                             if (i == this.Count - 1)
                             { // remove last if it would be set to empty.
@@ -463,12 +460,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         }
                     }
 
-                    if (this[transfers].PreviousConnectionId == Constants.NoConnectionId)
-                    {
-                        this[transfers] = profile;
-                        return true;
-                    }
-                    else if (this[transfers].Seconds > profile.Seconds)
+                    if (this[transfers].Seconds > profile.Seconds)
                     {
                         this[transfers] = profile;
                         return true;
@@ -524,10 +516,91 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// <remarks>A stop status represents information about how the current stop was reached.</remarks>
     public struct StopProfile
     {
+        private int _previousId;
+
         /// <summary>
-        /// Gets or sets the previous connection id.
+        /// Gets or sets the stop id.
         /// </summary>
-        public uint PreviousConnectionId { get; set; }
+        public uint PreviousStopId
+        { 
+            get
+            {
+                if (_previousId >= 0)
+                {
+                    return Constants.NoStopId;
+                }
+                return ((uint)-_previousId) - 1;
+            }
+            set
+            {
+                _previousId = (int)-(value + 1);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the connection id.
+        /// </summary>
+        public uint PreviousConnectionId
+        {
+            get
+            {
+                if (_previousId <= 0)
+                {
+                    return Constants.NoConnectionId;
+                }
+                return ((uint)_previousId) - 1;
+            }
+            set
+            {
+                _previousId = (int)(value + 1);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this profile is empty.
+        /// </summary>
+        public bool IsEmpty
+        {
+            get
+            {
+                return _previousId == 0 &&
+                    this.Seconds == Constants.NoSeconds;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this profile has a previous connection.
+        /// </summary>
+        public bool IsConnection
+        {
+            get
+            {
+                return _previousId > 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this profile has a previous stop.
+        /// </summary>
+        public bool IsTransfer
+        {
+            get
+            {
+                return _previousId < 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this profile has no previous stop or connection.
+        /// </summary>
+        public bool IsFirst
+        {
+            get
+            {
+                return _previousId == 0 &&
+                    this.Seconds != Constants.NoSeconds;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the second.
@@ -540,7 +613,19 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("{0}@{1}", this.PreviousConnectionId, this.Seconds);
+            if (this.IsConnection)
+            {
+                return string.Format("C{0}@{1}s", this.PreviousConnectionId, this.Seconds);
+            }
+            else if (this.IsTransfer)
+            {
+                return string.Format("S{0}@{1}s", this.PreviousStopId, this.Seconds);
+            }
+            else if(this.Seconds != Constants.NoSeconds)
+            {
+                return string.Format("{0}s", this.Seconds);
+            }
+            return "empty";
         }
 
         /// <summary>
@@ -548,7 +633,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         public static StopProfile Empty = new StopProfile()
         {
-            PreviousConnectionId = Constants.NoConnectionId,
+            _previousId = 0,
             Seconds = Constants.NoSeconds
         };
     }

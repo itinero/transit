@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using GTFS.Entities;
 using NUnit.Framework;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
@@ -65,11 +64,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
             var profiles = algorithm.GetStopProfiles(1);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
@@ -154,11 +151,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             // get stop 2 profiles.
             var profiles = algorithm.GetStopProfiles(2);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
@@ -233,17 +228,13 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             // get stop 2 profiles.
             var profiles = algorithm.GetStopProfiles(2);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[3];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[4];
             Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
@@ -322,11 +313,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             // get profiles at stop 2.
             var profiles = algorithm.GetStopProfiles(2);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(2, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
@@ -344,11 +333,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             // check the profiles at stop 1.
             profiles = algorithm.GetStopProfiles(1);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
@@ -404,42 +391,34 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             var profiles = algorithm.GetStopProfiles(3);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[3];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[4];
             Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
 
             profiles = algorithm.GetStopProfiles(2);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[3];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.TransferConnectionId, profile.PreviousConnectionId);
+            Assert.IsTrue(profile.IsTransfer);
+            Assert.AreEqual(1, profile.PreviousStopId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60 + 100, profile.Seconds);
 
             profiles = algorithm.GetStopProfiles(1);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
@@ -500,11 +479,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             var profiles = algorithm.GetStopProfiles(3);
             Assert.AreEqual(3, profiles.Count);
             var profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(2, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
@@ -512,26 +489,23 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(2);
             Assert.AreEqual(4, profiles.Count);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 45 * 60, profile.Seconds);
             profile = profiles[3];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.TransferConnectionId, profile.PreviousConnectionId);
+            Assert.IsTrue(profile.IsTransfer);
+            Assert.AreEqual(1, profile.PreviousStopId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60 + 60, profile.Seconds);
 
             profiles = algorithm.GetStopProfiles(1);
             Assert.AreEqual(3, profiles.Count);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);
@@ -563,11 +537,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(3);
             Assert.AreEqual(3, profiles.Count);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(2, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 55 * 60, profile.Seconds);
@@ -575,11 +547,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(2);
             Assert.AreEqual(3, profiles.Count);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(1, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 45 * 60, profile.Seconds);
@@ -587,11 +557,9 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(1);
             Assert.AreEqual(3, profiles.Count);
             profile = profiles[0];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[1];
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
-            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoSeconds, profile.Seconds);
+            Assert.IsTrue(profile.IsEmpty);
             profile = profiles[2];
             Assert.AreEqual(0, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 40 * 60, profile.Seconds);

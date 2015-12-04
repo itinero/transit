@@ -93,7 +93,7 @@ namespace OsmSharp.Routing.Transit.Test.GTFS
                 TimeOfDay.FromTotalSeconds(3900), TimeOfDay.FromTotalSeconds(7200));
             transitDb.LoadFrom(feed);
 
-            Assert.AreEqual(1, transitDb.TripsCount);
+            Assert.AreEqual(2, transitDb.TripsCount);
             var tripEnumerator = transitDb.GetTripsEnumerator();
             Assert.IsTrue(tripEnumerator.MoveTo(0));
             Assert.AreEqual(0, tripEnumerator.Id);
@@ -104,8 +104,17 @@ namespace OsmSharp.Routing.Transit.Test.GTFS
             Assert.IsTrue(tripMeta.ContainsKeyValue("service_id", "0"));
             var agencyMeta = new TagsCollection(transitDb.AgencyAttributes.Get(tripEnumerator.AgencyId));
             Assert.IsTrue(agencyMeta.ContainsKeyValue("id", "0"));
+            Assert.IsTrue(tripEnumerator.MoveTo(1));
+            Assert.AreEqual(1, tripEnumerator.Id);
+            Assert.AreEqual(0, tripEnumerator.ScheduleId);
+            tripMeta = new TagsCollection(transitDb.TripAttributes.Get(tripEnumerator.MetaId));
+            Assert.IsTrue(tripMeta.ContainsKeyValue("id", "1"));
+            Assert.IsTrue(tripMeta.ContainsKeyValue("route_id", "1"));
+            Assert.IsTrue(tripMeta.ContainsKeyValue("service_id", "0"));
+            agencyMeta = new TagsCollection(transitDb.AgencyAttributes.Get(tripEnumerator.AgencyId));
+            Assert.IsTrue(agencyMeta.ContainsKeyValue("id", "0"));
 
-            Assert.AreEqual(2, transitDb.StopsCount);
+            Assert.AreEqual(3, transitDb.StopsCount);
             var stopEnumerator = transitDb.GetStopsEnumerator();
             Assert.IsTrue(stopEnumerator.MoveTo(0));
             Assert.AreEqual(0, stopEnumerator.Id);
@@ -119,8 +128,14 @@ namespace OsmSharp.Routing.Transit.Test.GTFS
             Assert.AreEqual(1, stopEnumerator.Longitude);
             stopMeta = new TagsCollection(transitDb.StopAttributes.Get(stopEnumerator.MetaId));
             Assert.IsTrue(stopMeta.ContainsKeyValue("id", "1"));
+            Assert.IsTrue(stopEnumerator.MoveTo(2));
+            Assert.AreEqual(2, stopEnumerator.Id);
+            Assert.AreEqual(2, stopEnumerator.Latitude);
+            Assert.AreEqual(2, stopEnumerator.Longitude);
+            stopMeta = new TagsCollection(transitDb.StopAttributes.Get(stopEnumerator.MetaId));
+            Assert.IsTrue(stopMeta.ContainsKeyValue("id", "2"));
 
-            Assert.AreEqual(1, transitDb.ConnectionsCount);
+            Assert.AreEqual(2, transitDb.ConnectionsCount);
             transitDb.SortConnections(DefaultSorting.DepartureTime, null);
             var connectionEnumerator = transitDb.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
             Assert.IsTrue(connectionEnumerator.MoveTo(0));
@@ -130,6 +145,13 @@ namespace OsmSharp.Routing.Transit.Test.GTFS
             Assert.AreEqual(1, connectionEnumerator.ArrivalStop);
             Assert.AreEqual(3600, connectionEnumerator.ArrivalTime);
             Assert.AreEqual(0, connectionEnumerator.TripId);
+            Assert.IsTrue(connectionEnumerator.MoveTo(1));
+            Assert.AreEqual(1, connectionEnumerator.Id);
+            Assert.AreEqual(1, connectionEnumerator.DepartureStop);
+            Assert.AreEqual(3900, connectionEnumerator.DepartureTime);
+            Assert.AreEqual(2, connectionEnumerator.ArrivalStop);
+            Assert.AreEqual(7200, connectionEnumerator.ArrivalTime);
+            Assert.AreEqual(1, connectionEnumerator.TripId);
         }
 
         /// <summary>

@@ -101,8 +101,6 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
 
             Assert.Catch<ArgumentException>(() =>
-                db.Add(0, 1, 1234, 100, 100));
-            Assert.Catch<ArgumentException>(() =>
                 db.Add(0, 1, 1234, 100, 99));
         }
 

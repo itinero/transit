@@ -33,7 +33,7 @@ namespace OsmSharp.Routing.Transit.Data
         public static void AddTransfersDb(this TransitDb db, Profiles.Profile profile, TagsCollectionBase defaultProfile,
             float maxTimeInSeconds)
         {
-            var transfersDb = new TransfersDb(1024);
+            var transfersDb = new TransfersDb(db.StopsCount);
             var factor = profile.Factor(defaultProfile);
 
             // add all transfers.

@@ -198,28 +198,32 @@ namespace OsmSharp.Routing.Transit.Test.GTFS
                 ArrivalTime = departureTime1,
                 StopId = "0",
                 TripId = "0",
-                DepartureTime = departureTime1
+                DepartureTime = departureTime1,
+                StopSequence = 0
             });
             feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = arrivalTime1,
                 StopId = "1",
                 TripId = "0",
-                DepartureTime = arrivalTime1
+                DepartureTime = arrivalTime1,
+                StopSequence = 1
             });
             feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = departureTime2,
                 StopId = "1",
                 TripId = "1",
-                DepartureTime = departureTime2
+                DepartureTime = departureTime2,
+                StopSequence = 0
             });
             feed.StopTimes.Add(new StopTime()
             {
                 ArrivalTime = arrivalTime2,
                 StopId = "2",
                 TripId = "1",
-                DepartureTime = arrivalTime2
+                DepartureTime = arrivalTime2,
+                StopSequence = 1
             });
             feed.Calendars.Add(new Calendar()
             {

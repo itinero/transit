@@ -64,6 +64,16 @@ namespace OsmSharp.Routing.Transit
         public static string TransferProfile = "Transit.Transfer";
 
         /// <summary>
+        /// Holds the value to use as a vehicle profile when a segment in a route represents travelling on a transit vehicle.
+        /// </summary>
+        public static string VehicleProfile = "Transit.Vehicle";
+
+        /// <summary>
+        /// Holds the key to use when setting a time of day on a route.
+        /// </summary>
+        public static string TimeOfDayKey = "transit.timeofday";
+
+        /// <summary>
         /// Holds the value to use for a stop id when no information is available.
         /// </summary>
         public const uint NoStopId = uint.MaxValue;

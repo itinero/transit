@@ -113,6 +113,7 @@
     </Compile>
     <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
     <Compile Include="Algorithms\OneToOne\ProfileSearchExtensions.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Data\ConnectionsDbExtensions.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Data\TransitDb.cs" />
     <Compile Include="Data\TransitDbExtensions.cs" />
     <Compile Include="Data\TripsDb.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GTFS\TransitDbExtensions.cs" />
     <Compile Include="Osm\Data\TransitDbExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

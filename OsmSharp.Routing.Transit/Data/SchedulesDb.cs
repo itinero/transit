@@ -81,6 +81,11 @@ namespace OsmSharp.Routing.Transit.Data
 
             var pointer = _nextPointer;
             _nextPointer++;
+            var size = _data.Length;
+            if (pointer >= size)
+            {
+                _data.Resize(pointer + BLOCK_SIZE);
+            }
 
             _data[pointer] = this.Encode(start, end, weekMask);
             _data[id] = count + 1;

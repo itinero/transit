@@ -77,6 +77,11 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profile = profiles[0];
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(3600, tripStatus.DepartureTime);
         }
 
         /// <summary>
@@ -179,6 +184,11 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(precedingStop);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600, tripStatus.DepartureTime);
         }
 
         /// <summary>
@@ -260,6 +270,16 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profiles = algorithm.GetStopProfiles(precedingStop);
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 00 * 60, tripStatus.DepartureTime);
+
+            tripStatus = algorithm.GetTripStatus(1);
+            Assert.AreEqual(4, tripStatus.Transfers);
+            Assert.AreEqual(1, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 15 * 60, tripStatus.DepartureTime);
         }
 
         /// <summary>
@@ -273,7 +293,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
         ///                   (1)-->---1--->--(2)
         ///                 @08:15          @08:25   
         ///   (0)------2------->-------2------(2)
-        /// @08:15                          @08:25
+        /// @08:16                          @08:25
         /// 
         /// </summary>
         [Test]
@@ -342,6 +362,21 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             connections.MoveTo(profile.PreviousConnectionId);
             Assert.AreEqual(0, connections.DepartureStop);
             Assert.AreEqual(0, connections.TripId);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 00 * 60, tripStatus.DepartureTime);
+
+            tripStatus = algorithm.GetTripStatus(1);
+            Assert.AreEqual(4, tripStatus.Transfers);
+            Assert.AreEqual(1, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 15 * 60, tripStatus.DepartureTime);
+
+            tripStatus = algorithm.GetTripStatus(2);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 16 * 60, tripStatus.DepartureTime);
         }
 
         /// <summary>
@@ -427,6 +462,16 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profile = profiles[0];
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 00 * 60, tripStatus.DepartureTime);
+
+            tripStatus = algorithm.GetTripStatus(1);
+            Assert.AreEqual(4, tripStatus.Transfers);
+            Assert.AreEqual(2, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 15 * 60, tripStatus.DepartureTime);
         }
 
         /// <summary>
@@ -569,6 +614,11 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             profile = profiles[0];
             Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
             Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(08 * 3600 + 00 * 60, tripStatus.DepartureTime);
         }
     }
 }

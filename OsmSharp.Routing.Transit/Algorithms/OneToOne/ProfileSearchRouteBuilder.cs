@@ -51,7 +51,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             if (!_search.HasSucceeded) { throw new InvalidOperationException("Cannot build a route when the search did not succeed."); }
 
             var stops = new List<Tuple<uint, StopProfile>>();
-            var connections = new List<uint?>();
+            var trips = new List<uint?>();
 
             var connectionEnumerator = _search.Db.GetConnectionsEnumerator(Data.DefaultSorting.DepartureTime);
             var stopEnumerator = _search.Db.GetStopsEnumerator();
@@ -64,31 +64,28 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             {
                 var previousStopId = uint.MaxValue;
                 if (profiles[profileIdx].IsConnection)
-                { // this profile represent an arrival via a connection, add connection.
-                    connections.Add(profiles[profileIdx].PreviousConnectionId);
+                { // this profile represent an arrival via a connection, add the trip and move down to where
+                    // the trip was boarded.
                     connectionEnumerator.MoveTo(profiles[profileIdx].PreviousConnectionId);
-                    previousStopId = connectionEnumerator.DepartureStop;
-                    var previousTripId = connectionEnumerator.TripId;
-                    var previousDepartureTime = connectionEnumerator.DepartureTime;
+                    trips.Add(connectionEnumerator.TripId);
+
+                    // get trip status.
+                    var tripStatus = _search.GetTripStatus(connectionEnumerator.TripId);
+                    previousStopId = tripStatus.StopId;
 
                     // get next profiles.
                     profiles = _search.GetStopProfiles(previousStopId);
                     profileIdx = profiles.GetLeastTransfers();
 
-                    // when the next also has a connection, check for a transfer.
-                    // if there is a transfer insert it.
-                    if(profiles[profileIdx].IsConnection)
+                    // when the next also has a connection this is a transfer.
+                    if (profiles[profileIdx].IsConnection)
                     { // move to connection and check it out.
-                        connectionEnumerator.MoveTo(profiles[profileIdx].PreviousConnectionId);
-                        if (connectionEnumerator.TripId != previousTripId)
-                        { // there is a transfer.
-                            stops.Add(new Tuple<uint, StopProfile>(previousStopId, new StopProfile()
-                            {
-                                PreviousStopId = previousStopId,
-                                Seconds = previousDepartureTime
-                            }));
-                            connections.Add(null);
-                        }
+                        stops.Add(new Tuple<uint, StopProfile>(previousStopId, new StopProfile()
+                        {
+                            PreviousStopId = previousStopId,
+                            Seconds = tripStatus.DepartureTime
+                        }));
+                        trips.Add(null);
                     }
 
                     // check for a difference in departure time and arrival time of the profile.
@@ -99,9 +96,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         stops.Add(new Tuple<uint,StopProfile>(previousStopId, new StopProfile()
                             {
                                 PreviousStopId = previousStopId,
-                                Seconds = connectionEnumerator.DepartureTime
+                                Seconds = tripStatus.DepartureTime
                             }));
-                        connections.Add(null);
+                        trips.Add(null);
                     }
 
                     // add stop.
@@ -109,7 +106,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
                 else if (profiles[profileIdx].IsTransfer)
                 { // this profile respresent an arrival via a transfers from a given stop.
-                    connections.Add(null);
+                    trips.Add(null);
                     previousStopId = profiles[profileIdx].PreviousStopId;
 
                     // get next profiles.
@@ -127,7 +124,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
             // reverse stops/connections.
             stops.Reverse();
-            connections.Reverse();
+            trips.Reverse();
 
             // convert the stop and connection sequences into an actual route.
             _route = new Route();
@@ -156,8 +153,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             });
             for (int idx = 1; idx < stops.Count; idx++)
             {
-                // get the next ...->connection->stop->... pair.
-                var connection = connections[idx - 1];
+                // get the next ...->trip->stop->... pair.
+                var trip = trips[idx - 1];
                 if (!stopEnumerator.MoveTo(stops[idx].Item1))
                 {
                     throw new Exception(string.Format("Stop {0} not found.", stops[0].Item1));
@@ -173,10 +170,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 });
 
                 // get route information.
-                if (connection == null)
+                if (trip == null)
                 {
                     if (idx == 1)
-                    { // first connection null is waiting period.
+                    { // first trip null is waiting period.
                         _route.Segments.Add(new RouteSegment()
                         {
                             Distance = -1,
@@ -214,11 +211,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
                 else
                 {
-                    if (!connectionEnumerator.MoveTo(connection.Value))
-                    {
-                        throw new Exception(string.Format("Connection {0} not found.", connection.Value));
-                    }
-                    if (!tripEnumerator.MoveTo(connectionEnumerator.TripId))
+                    if (!tripEnumerator.MoveTo(trip.Value))
                     {
                         throw new Exception(string.Format("Trip {0} not found.", connectionEnumerator.TripId));
                     }

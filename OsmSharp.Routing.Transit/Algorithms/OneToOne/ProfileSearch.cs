@@ -120,6 +120,17 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
+        /// Gets the departure time.
+        /// </summary>
+        public uint DepartureTime
+        {
+            get
+            {
+                return (uint)(_departureTime - _departureTime.Date).TotalSeconds;
+            }
+        }
+
+        /// <summary>
         /// Holds all the statuses of all stops that have been touched.
         /// </summary>
         private Dictionary<uint, StopProfileCollection> _profiles;
@@ -261,7 +272,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             _tripStatuses[enumerator.TripId] = new TripStatus()
                             {
                                 Transfers = i + 2,
-                                StopId = enumerator.DepartureStop
+                                StopId = enumerator.DepartureStop,
+                                DepartureTime = enumerator.DepartureTime
                             };
                             break;
                         }
@@ -305,7 +317,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             _tripStatuses[enumerator.TripId] = new TripStatus()
                             {
                                 StopId = enumerator.DepartureStop,
-                                Transfers = tripTransfers
+                                Transfers = tripTransfers,
+                                DepartureTime = enumerator.DepartureTime
                             };
                         }
                     }
@@ -389,6 +402,21 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 return new StopProfileCollection();
             }
             return profiles;
+        }
+
+        /// <summary>
+        /// Gets the trip status for the given trip.
+        /// </summary>
+        public TripStatus GetTripStatus(uint tripId)
+        {
+            this.CheckHasRunAndHasSucceeded();
+
+            TripStatus tripStatus;
+            if (!_tripStatuses.TryGetValue(tripId, out tripStatus))
+            { // status not found.
+                throw new Exception(string.Format("Trip with id {0} not found.", tripId));
+            }
+            return tripStatus;
         }
 
         /// <summary>
@@ -496,7 +524,12 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         public uint StopId { get; set; }
 
         /// <summary>
-        /// Gets or sets the transfer count.
+        /// Gets or sets the departure time.
+        /// </summary>
+        public uint DepartureTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of transfers.
         /// </summary>
         public int Transfers { get; set; }
 

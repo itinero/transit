@@ -54,8 +54,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 00, 50, 00);
-            var algorithm = new ProfileSearch(db, 0, 1, departureTime,
+            var algorithm = new ProfileSearch(db, departureTime,
                 (profileId, day) => true);
+            algorithm.SetSourceStop(0, 50 * 60);
+            algorithm.SetTargetStop(1, 0);
             algorithm.Run();
 
             // build route.
@@ -127,8 +129,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new ProfileSearch(db, 0, 2, departureTime,
+            var algorithm = new ProfileSearch(db, departureTime,
                 (profileId, day) => true);
+            algorithm.SetSourceStop(0, 07 * 3600 + 30 * 60);
+            algorithm.SetTargetStop(2, 0);
             algorithm.Run();
 
             // build route.
@@ -150,7 +154,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             var tags = segment.Tags.ConvertToTagsCollection();
             Assert.AreEqual(2, tags.Count);
             Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop1"));
-            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey, 
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
                 ((07 * 3600) + (30 * 60)).ToInvariantString()));
 
             segment = route.Segments[1];
@@ -208,8 +212,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new ProfileSearch(db, 0, 2, departureTime,
+            var algorithm = new ProfileSearch(db, departureTime,
                 (profileId, day) => true);
+            algorithm.SetSourceStop(0, 07 * 3600 + 30 * 60);
+            algorithm.SetTargetStop(2, 0);
             algorithm.Run();
 
             // build route.
@@ -318,8 +324,10 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 
             // run algorithm.
             var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
-            var algorithm = new ProfileSearch(db, 0, 3, departureTime, transfersDb,
+            var algorithm = new ProfileSearch(db, departureTime, transfersDb,
                 (profileId, day) => true);
+            algorithm.SetSourceStop(0, 07 * 3600 + 30 * 60);
+            algorithm.SetTargetStop(3, 0);
             algorithm.Run();
 
             // build route.

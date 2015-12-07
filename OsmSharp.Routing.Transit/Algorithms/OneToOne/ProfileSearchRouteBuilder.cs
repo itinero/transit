@@ -57,9 +57,15 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             var stopEnumerator = _search.Db.GetStopsEnumerator();
             var tripEnumerator = _search.Db.GetTripsEnumerator();
 
-            var profiles = _search.GetStopProfiles(_search.TargetStop);
+            // get best target stop.
+            var targetProfiles = _search.ArrivalProfiles;
+            var targetProfileIdx = targetProfiles.GetLeastTransfers();
+            var targetStop = _search.ArrivalStops[targetProfileIdx];
+
+            // build route along that target.
+            var profiles = _search.GetStopProfiles(targetStop);
             var profileIdx = profiles.GetLeastTransfers();
-            stops.Add(new Tuple<uint, StopProfile>(_search.TargetStop, profiles[profileIdx]));
+            stops.Add(new Tuple<uint, StopProfile>(targetStop, profiles[profileIdx]));
             while (!profiles[profileIdx].IsFirst)
             {
                 var previousStopId = uint.MaxValue;
@@ -93,7 +99,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                     if (!profiles[profileIdx].IsConnection &&
                          profiles[profileIdx].Seconds != connectionEnumerator.DepartureTime)
                     { // this is a waiting period.
-                        stops.Add(new Tuple<uint,StopProfile>(previousStopId, new StopProfile()
+                        stops.Add(new Tuple<uint, StopProfile>(previousStopId, new StopProfile()
                             {
                                 PreviousStopId = previousStopId,
                                 Seconds = tripStatus.DepartureTime
@@ -131,7 +137,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             _route.Segments = new List<RouteSegment>();
 
             // get the first stop.
-            if(!stopEnumerator.MoveTo(stops[0].Item1))
+            if (!stopEnumerator.MoveTo(stops[0].Item1))
             {
                 throw new Exception(string.Format("Stop {0} not found.", stops[0].Item1));
             }
@@ -231,7 +237,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 }
             }
 
-            if(_route.Segments.Count > 0)
+            if (_route.Segments.Count > 0)
             {
                 _route.TotalDistance = _route.Segments[_route.Segments.Count - 1].Distance;
                 _route.TotalTime = _route.Segments[_route.Segments.Count - 1].Time;
@@ -258,11 +264,11 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// </summary>
         private List<RouteTags> AddToRouteTags(List<RouteTags> routeTags, TagsCollectionBase tags, string prefix)
         {
-            if(tags == null)
+            if (tags == null)
             {
                 return routeTags;
             }
-            foreach(var tag in tags)
+            foreach (var tag in tags)
             {
                 routeTags.Add(new RouteTags()
                     {

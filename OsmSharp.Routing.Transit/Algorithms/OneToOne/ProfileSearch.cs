@@ -30,25 +30,24 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     {
         private readonly TransitDb _db;
         private readonly TransfersDb _transfersDb;
-        private readonly uint _sourceStop;
-        private readonly uint _targetStop;
+        private readonly Dictionary<uint, uint> _sources;
+        private readonly Dictionary<uint, uint> _targets;
         private readonly DateTime _departureTime;
         private readonly int _maximumSearchTime = Constants.OneDayInSeconds;
         private readonly int _minimumTransferTime = 3 * 60;
         private readonly Func<uint, DateTime, bool> _isTripPossible;
         private readonly uint _defaultTransferPentaly = 3 * 60;
-        private Dictionary<uint, TripStatus> _tripStatuses;
 
         /// <summary>
         /// Creates a new instance of the profile search algorithm.
         /// </summary>
-        public ProfileSearch(TransitDb db, uint sourceStop, uint targetStop, DateTime departureTime,
+        public ProfileSearch(TransitDb db, DateTime departureTime,
             Func<uint, DateTime, bool> isTripPossible)
         {
             _db = db;
             _transfersDb = null;
-            _sourceStop = sourceStop;
-            _targetStop = targetStop;
+            _sources = new Dictionary<uint, uint>();
+            _targets = new Dictionary<uint, uint>();
             _departureTime = departureTime;
 
             _isTripPossible = isTripPossible;
@@ -57,13 +56,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of the profile search algorithm.
         /// </summary>
-        public ProfileSearch(TransitDb db, uint sourceStop, uint targetStop, DateTime departureTime,
+        public ProfileSearch(TransitDb db, DateTime departureTime,
             TransfersDb transfersDb, Func<uint, DateTime, bool> isTripPossible)
         {
             _db = db;
             _transfersDb = transfersDb;
-            _sourceStop = sourceStop;
-            _targetStop = targetStop;
+            _sources = new Dictionary<uint, uint>();
+            _targets = new Dictionary<uint, uint>();
             _departureTime = departureTime;
 
             _isTripPossible = isTripPossible;
@@ -72,13 +71,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// <summary>
         /// Creates a new instance of earliest arrival algorithm.
         /// </summary>
-        public ProfileSearch(TransitDb db, uint sourceStop, uint targetStop, DateTime departureTime,
+        public ProfileSearch(TransitDb db, DateTime departureTime,
             TransfersDb transfersDb, int minimumTransferTime, int maxmumSearchTime, Func<uint, DateTime, bool> isTripPossible)
         {
             _db = db;
             _transfersDb = transfersDb;
-            _sourceStop = sourceStop;
-            _targetStop = targetStop;
+            _sources = new Dictionary<uint, uint>();
+            _targets = new Dictionary<uint, uint>();
             _departureTime = departureTime;
 
             _isTripPossible = isTripPossible;
@@ -98,24 +97,44 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
-        /// Gets the source stop.
+        /// Sets a source stop.
         /// </summary>
-        public uint SourceStop
+        public void SetSourceStop(uint stopId, uint seconds)
         {
-            get
-            {
-                return _sourceStop;
-            }
+            if(this.HasRun) { throw new InvalidOperationException("Cannot set source stops after search has run."); }
+
+            _sources[stopId] = seconds;
         }
 
         /// <summary>
-        /// Gets the target stop.
+        /// Gets the sources.
         /// </summary>
-        public uint TargetStop
+        public IReadOnlyDictionary<uint, uint> Sources
         {
             get
             {
-                return _targetStop;
+                return _sources;
+            }
+        }
+        
+        /// <summary>
+        /// Sets a target stop.
+        /// </summary>
+        public void SetTargetStop(uint stopId, uint seconds)
+        {
+            if (this.HasRun) { throw new InvalidOperationException("Cannot set target stops after search has run."); }
+
+            _targets[stopId] = seconds;
+        }
+
+        /// <summary>
+        /// Gets the targets.
+        /// </summary>
+        public IReadOnlyDictionary<uint, uint> TargetStop
+        {
+            get
+            {
+                return _targets;
             }
         }
 
@@ -134,6 +153,21 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         /// Holds all the statuses of all stops that have been touched.
         /// </summary>
         private Dictionary<uint, StopProfileCollection> _profiles;
+        
+        /// <summary>
+        /// Holds the status of all trips.
+        /// </summary>
+        private Dictionary<uint, TripStatus> _tripStatuses;
+
+        /// <summary>
+        /// Holds the best target stops per transfer count.
+        /// </summary>
+        private List<uint> _targetStops;
+
+        /// <summary>
+        /// Holds the target profiles per transfer count.
+        /// </summary>
+        private StopProfileCollection _targetProfiles;
 
         /// <summary>
         /// Executes the algorithm.
@@ -148,18 +182,31 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             var day = 0;
             var startTime = (uint)(_departureTime - _departureTime.Date).TotalSeconds;
 
+            if (_sources.Count == 0)
+            { // no sources.
+                return;
+            }
+            if (_targets.Count == 0)
+            { // no targets.
+                return;
+            }
+
             // initialize data structures.
             var tripPossibilities = new Dictionary<int, bool>();
             var tripPerRoute = new Dictionary<int, int>(100);
             _tripStatuses = new Dictionary<uint, TripStatus>();
+            _targetProfiles = new StopProfileCollection();
+            _targetStops = new List<uint>();
 
             // initialize stops status.
             _profiles = new Dictionary<uint, StopProfileCollection>();
-            _profiles.Add(_sourceStop, new StopProfileCollection(new StopProfile()
+            foreach(var source in _sources)
             {
-                Seconds = startTime
-            }));
-            StopProfileCollection targetProfiles = null;
+                _profiles.Add(source.Key, new StopProfileCollection(new StopProfile()
+                {
+                    Seconds = source.Value
+                }));
+            }
 
             // keep a list of possible target stops.
             var targetProfilesTime = double.MaxValue;
@@ -171,22 +218,25 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             {
                 transferEnumerator = _transfersDb.GetTransferEnumerator();
 
-                if (transferEnumerator.MoveTo(_sourceStop))
-                { // there may be transfers from the source-stop.
-                    while (transferEnumerator.MoveNext())
-                    {
-                        StopProfileCollection transferTargetProfiles = null;
-                        if (!_profiles.TryGetValue(transferEnumerator.Stop, out transferTargetProfiles))
-                        { // create new empty transfer target profile collection.
-                            transferTargetProfiles = new StopProfileCollection();
-                            _profiles.Add(transferEnumerator.Stop, transferTargetProfiles);
-                        }
-
-                        transferTargetProfiles.UpdateStatus(1, new StopProfile()
+                foreach (var source in _sources)
+                {
+                    if (transferEnumerator.MoveTo(source.Key))
+                    { // there may be transfers from the source-stop.
+                        while (transferEnumerator.MoveNext())
                         {
-                            PreviousStopId = _sourceStop,
-                            Seconds = startTime + transferEnumerator.Seconds
-                        });
+                            StopProfileCollection transferTargetProfiles = null;
+                            if (!_profiles.TryGetValue(transferEnumerator.Stop, out transferTargetProfiles))
+                            { // create new empty transfer target profile collection.
+                                transferTargetProfiles = new StopProfileCollection();
+                                _profiles.Add(transferEnumerator.Stop, transferTargetProfiles);
+                            }
+
+                            transferTargetProfiles.UpdateStatus(1, new StopProfile()
+                            {
+                                PreviousStopId = source.Key,
+                                Seconds = startTime + transferEnumerator.Seconds
+                            });
+                        }
                     }
                 }
             }
@@ -357,10 +407,50 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         }
 
                         // check target.
-                        if (enumerator.ArrivalStop == _targetStop)
-                        { // update target status.
-                            targetProfiles = _profiles[enumerator.ArrivalStop];
-                            this.HasSucceeded = true;
+                        uint targetSeconds;
+                        if (_targets.TryGetValue(enumerator.ArrivalStop, out targetSeconds))
+                        {
+                            // build new target statuses per transfer count at this target stop.
+                            var targetprofiles = _profiles[enumerator.ArrivalStop];
+                            for(var i = 0; i < targetprofiles.Count; i++)
+                            {
+                                var targetProfile = targetprofiles[i];
+                                if (!targetProfile.IsEmpty &&
+                                    !targetProfile.IsFirst)
+                                {
+                                    var newTargetProfile = new StopProfile();
+                                    newTargetProfile.Seconds = targetProfile.Seconds + targetSeconds;
+                                    if(targetProfile.IsConnection)
+                                    {
+                                        newTargetProfile.PreviousConnectionId = targetProfile.PreviousConnectionId;
+                                    }
+                                    else if(targetProfile.IsTransfer)
+                                    {
+                                        newTargetProfile.PreviousStopId = targetProfile.PreviousStopId;
+                                    }
+
+                                    // try to update.
+                                    if (_targetProfiles.UpdateStatus(i, newTargetProfile, t =>
+                                        {
+                                            if(_targetStops.Count - 1 == t)
+                                            {
+                                                _targetStops.RemoveAt(t);
+                                            }
+                                            else
+                                            {
+                                                _targetStops[t] = Constants.NoStopId;
+                                            }
+                                        }))
+                                    {
+                                        while (i >= _targetStops.Count)
+                                        {
+                                            _targetStops.Add(Constants.NoStopId);
+                                        }
+                                        _targetStops[i] = enumerator.ArrivalStop;
+                                        this.HasSucceeded = true;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -368,25 +458,47 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         /// <summary>
-        /// Gets the calculated arrival time.
+        /// Gets the arrival profiles.
+        /// </summary>
+        public StopProfileCollection ArrivalProfiles
+        {
+            get
+            {
+                return _targetProfiles;
+            }
+        }
+
+        /// <summary>
+        /// Gets the arrival stops.
+        /// </summary>
+        public List<uint> ArrivalStops
+        {
+            get
+            {
+                return _targetStops;
+            }
+        }
+
+        /// <summary>
+        /// Gets the calculated arrival time for the given transfer count.
         /// </summary>
         /// <returns></returns>
-        public DateTime ArrivalTime()
+        public DateTime ArrivalTime(int transfers)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _departureTime.Date.AddSeconds(_profiles[_targetStop].Seconds);
+            return _departureTime.Date.AddSeconds(_targetProfiles[transfers].Seconds);
         }
 
         /// <summary>
         /// Gets the duration is seconds.
         /// </summary>
         /// <returns></returns>
-        public long Duration()
+        public long Duration(int transfers)
         {
             this.CheckHasRunAndHasSucceeded();
 
-            return _profiles[_targetStop].Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
+            return _targetProfiles[transfers].Seconds - (int)(_departureTime - _departureTime.Date).TotalSeconds;
         }
 
         /// <summary>
@@ -453,6 +565,14 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             /// </summary>
             public bool UpdateStatus(int transfers, StopProfile profile)
             {
+                return this.UpdateStatus(transfers, profile, null);
+            }
+
+            /// <summary>
+            /// Updates a profile for the given number of transfers.
+            /// </summary>
+            public bool UpdateStatus(int transfers, StopProfile profile, Action<int> remove)
+            {
                 if (this.Count > 0)
                 { // check if dominated by latest entry.
                     if (this.Count - 1 <= transfers &&
@@ -484,6 +604,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             else
                             { // ... or empty out if not the last entry.
                                 this[i] = StopProfile.Empty;
+                            }
+                            if (remove != null)
+                            {
+                                remove(i);
                             }
                         }
                     }

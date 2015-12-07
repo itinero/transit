@@ -35,6 +35,7 @@ namespace OsmSharp.Routing.Transit.Data
         private readonly AttributesIndex _tripAttributes;
         private readonly SchedulesDb _schedulesDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
+        private readonly Dictionary<string, StopLinksDb> _stoplinksDbs;
 
         /// <summary>
         /// Creates a new transit db.
@@ -48,6 +49,7 @@ namespace OsmSharp.Routing.Transit.Data
             _tripsDb = new TripsDb();
             _tripAttributes = new AttributesIndex();
             _transfersDbs = new Dictionary<string, TransfersDb>();
+            _stoplinksDbs = new Dictionary<string, StopLinksDb>();
             _schedulesDb = new SchedulesDb();
         }
 
@@ -244,6 +246,37 @@ namespace OsmSharp.Routing.Transit.Data
             if (profile == null) { throw new ArgumentNullException("profile"); }
 
             return _transfersDbs[profile.Name];
+        }
+
+        /// <summary>
+        /// Adds a stop links db.
+        /// </summary>
+        public void AddStopLinksDb(Profiles.Profile profile, StopLinksDb db)
+        {
+            if (profile == null) { throw new ArgumentNullException("profile"); }
+            if (db == null) { throw new ArgumentNullException("db"); }
+
+            _stoplinksDbs[profile.Name] = db;
+        }
+
+        /// <summary>
+        /// Returns true if there is a stop links db for the given profile.
+        /// </summary>
+        public bool HasStopLinksDb(Profiles.Profile profile)
+        {
+            if (profile == null) { throw new ArgumentNullException("profile"); }
+
+            return _stoplinksDbs.ContainsKey(profile.Name);
+        }
+
+        /// <summary>
+        /// Gets the stop links db.
+        /// </summary>
+        public StopLinksDb GetStopLinksDb(Profiles.Profile profile)
+        {
+            if (profile == null) { throw new ArgumentNullException("profile"); }
+
+            return _stoplinksDbs[profile.Name];
         }
     }
 }

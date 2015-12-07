@@ -113,6 +113,7 @@
     <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
     <Compile Include="Data\ConnectionsDbTest.cs" />
     <Compile Include="Data\SchedulesDbTests.cs" />
+    <Compile Include="Data\StopLinksDbTests.cs" />
     <Compile Include="Data\StopsDbTests.cs" />
     <Compile Include="Data\TransfersDbTest.cs" />
     <Compile Include="Data\TransitDbTests.cs" />

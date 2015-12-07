@@ -178,11 +178,27 @@ namespace OsmSharp.Routing.Transit.GTFS
             }
 
             // load stops.
-            var stopsIndex = new Dictionary<string, uint>();
+            var stopsReverseIndex = new string[feed.Stops.Count];
             for (var i = 0; i < feed.Stops.Count; i++)
             {
                 var stop = feed.Stops.Get(i);
-                stopsIndex[stop.Id] = db.AddStop(stop);
+                var stopId = db.AddStop(stop);
+                stopsReverseIndex[stopId] = stop.Id;
+            }
+
+            // sort stops.
+            db.SortStops((i, j) =>
+                {
+                    var temp = stopsReverseIndex[i];
+                    stopsReverseIndex[i] = stopsReverseIndex[j];
+                    stopsReverseIndex[j] = temp;
+                });
+
+            // re-index stops.
+            var stopsIndex = new Dictionary<string, uint>();
+            for(uint i = 0; i < stopsReverseIndex.Length; i++)
+            {
+                stopsIndex[stopsReverseIndex[i]] = i;
             }
 
             // load connections.

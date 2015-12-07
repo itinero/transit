@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
-using GTFS.Entities;
-using OsmSharp.Routing.Transit.GTFS;
-using NUnit.Framework;
-using OsmSharp.Routing.Transit.Data;
-using OsmSharp.Collections.Tags;
 using GTFS;
+using GTFS.Entities;
+using NUnit.Framework;
+using OsmSharp.Collections.Tags;
+using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Transit.GTFS;
 
 namespace OsmSharp.Routing.Transit.Test.GTFS
 {

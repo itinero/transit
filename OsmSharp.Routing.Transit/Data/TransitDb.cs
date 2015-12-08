@@ -245,7 +245,12 @@ namespace OsmSharp.Routing.Transit.Data
         {
             if (profile == null) { throw new ArgumentNullException("profile"); }
 
-            return _transfersDbs[profile.Name];
+            TransfersDb transfersDb = null;
+            if(_transfersDbs.TryGetValue(profile.Name, out transfersDb))
+            {
+                return transfersDb;
+            }
+            return null;
         }
 
         /// <summary>

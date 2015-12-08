@@ -80,9 +80,9 @@
       <HintPath>..\packages\OsmSharp.Core.0.0.0.67-beta\lib\net45\OsmSharp.Osm.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp.Routing, Version=0.1.0.75, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\routing\Output\OsmSharp.Routing.dll</HintPath>
+    <Reference Include="OsmSharp.Routing, Version=0.1.0.78, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.Routing.0.1.0.78-beta\lib\net45\OsmSharp.Routing.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="OsmSharp.UI, Version=0.0.0.1084, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OsmSharp.UI.0.0.0.1084-beta\lib\net45\OsmSharp.UI.dll</HintPath>
@@ -127,6 +127,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestNetworkBuilder.cs" />
     <Compile Include="TestNetworkBuilderTests.cs" />
+    <Compile Include="TransitRouterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

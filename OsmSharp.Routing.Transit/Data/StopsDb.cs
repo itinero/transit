@@ -224,6 +224,17 @@ namespace OsmSharp.Routing.Transit.Data
 
                 return (_index / SIZE) < _count;
             }
+
+            /// <summary>
+            /// Returns the number of stops.
+            /// </summary>
+            public uint Count
+            {
+                get
+                {
+                    return _count;
+                }
+            }
         }
 
         /// <summary>

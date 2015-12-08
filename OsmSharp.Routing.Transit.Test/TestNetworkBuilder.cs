@@ -17,16 +17,16 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Collections.Tags;
+using OsmSharp.Geo;
 using OsmSharp.Geo.Geometries;
 using OsmSharp.Geo.Streams.GeoJson;
-using OsmSharp.Routing.Network;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing;
+using OsmSharp.Routing.Network;
 using System.Collections.Generic;
 using System.IO;
-using OsmSharp.Collections.Coordinates.Collections;
 
-namespace OsmSharp.Transit.Test
+namespace OsmSharp.Routing.Transit.Test
 {
     /// <summary>
     /// Builds test networks based on geojson files.

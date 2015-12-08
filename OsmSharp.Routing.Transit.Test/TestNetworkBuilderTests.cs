@@ -17,12 +17,12 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using NUnit.Framework;
-using OsmSharp.Routing;
-using System.Reflection;
-using System.Linq;
 using OsmSharp.Math.Geo;
+using OsmSharp.Routing;
+using System.Linq;
+using System.Reflection;
 
-namespace OsmSharp.Transit.Test
+namespace OsmSharp.Routing.Transit.Test
 {
     /// <summary>
     /// Contains tests for the test network builder.
@@ -39,7 +39,7 @@ namespace OsmSharp.Transit.Test
             var routerDb = new RouterDb();
             routerDb.LoadTestNetwork(
                 Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                    "OsmSharp.Transit.Test.test_data.networks.network1.geojson"));
+                    "OsmSharp.Routing.Transit.Test.test_data.networks.network1.geojson"));
 
             Assert.AreEqual(2, routerDb.Network.VertexCount);
             Assert.AreEqual(1, routerDb.Network.EdgeCount);
@@ -65,7 +65,7 @@ namespace OsmSharp.Transit.Test
             var routerDb = new RouterDb();
             routerDb.LoadTestNetwork(
                 Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                    "OsmSharp.Transit.Test.test_data.networks.network2.geojson"));
+                    "OsmSharp.Routing.Transit.Test.test_data.networks.network2.geojson"));
 
             Assert.AreEqual(4, routerDb.Network.VertexCount);
             Assert.AreEqual(3, routerDb.Network.EdgeCount);

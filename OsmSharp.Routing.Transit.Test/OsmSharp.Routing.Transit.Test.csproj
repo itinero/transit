@@ -81,8 +81,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="OsmSharp.Routing, Version=0.1.0.75, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Routing.0.1.0.75-beta\lib\net45\OsmSharp.Routing.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\routing\Output\OsmSharp.Routing.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.UI, Version=0.0.0.1084, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OsmSharp.UI.0.0.0.1084-beta\lib\net45\OsmSharp.UI.dll</HintPath>
@@ -120,7 +120,7 @@
     <Compile Include="Data\TransfersDbTest.cs" />
     <Compile Include="Data\TransitDbTests.cs" />
     <Compile Include="Data\TripDbTests.cs" />
-    <Compile Include="GTFS\GTFSConnectionsDbBuilder.cs" />
+    <Compile Include="GTFS\DummyGTFSFeedBuilder.cs" />
     <Compile Include="GTFS\sample-feed\SampleFeed.cs" />
     <Compile Include="GTFS\TransitDbExtensionsTests.cs" />
     <Compile Include="Profiles\MockProfile.cs" />

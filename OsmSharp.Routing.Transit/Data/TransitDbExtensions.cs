@@ -18,6 +18,8 @@
 
 using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Algorithms.Search;
+using OsmSharp.Routing.Profiles;
 using System;
 
 namespace OsmSharp.Routing.Transit.Data
@@ -76,6 +78,73 @@ namespace OsmSharp.Routing.Transit.Data
             if (days == null || days.Length == 0) { throw new ArgumentOutOfRangeException("days", "Cannot add empty week patterns."); }
 
             db.AddScheduleEntry(id, start, end, SchedulesDbExtensions.Weekmask(days));
+        }
+
+        /// <summary>
+        /// The default search offset when linking stops.
+        /// </summary>
+        public const float DefaultSearchOffset = .01f;
+
+        /// <summary>
+        /// The default max distance when linking stops.
+        /// </summary>
+        public const float DefaultMaxDistance = 50;
+
+        /// <summary>
+        /// The default number of closest edges to use when linking stops.
+        /// </summary>
+        public const int DefaultMaxRouterPoints = 3;
+
+        /// <summary>
+        /// Adds a new stop links db for the given profile.
+        /// </summary>
+        public static void AddStopLinksDb(this TransitDb db, RouterDb routerDb, Profile profile, float searchOffset = DefaultSearchOffset,
+            float maxDistance = DefaultMaxDistance, int maxRouterPoints = DefaultMaxRouterPoints)
+        {
+            var stopsDbEnumerator = db.GetStopsEnumerator();
+            var linksDb = new StopLinksDb();
+
+            while(stopsDbEnumerator.MoveNext())
+            {
+                var stopId = stopsDbEnumerator.Id;
+                var multiResolver = new ResolveMultipleAlgorithm(routerDb.Network.GeometricGraph,
+                    stopsDbEnumerator.Latitude, stopsDbEnumerator.Longitude, searchOffset, maxDistance, (edge) =>
+                    {
+                        // get profile.
+                        float distance;
+                        ushort edgeProfileId;
+                        OsmSharp.Routing.Data.EdgeDataSerializer.Deserialize(edge.Data[0],
+                            out distance, out edgeProfileId);
+                        var edgeProfile = routerDb.EdgeProfiles.Get(edgeProfileId);
+                        // get factor from profile.
+                        if (profile.Factor(edgeProfile).Value <= 0)
+                        { // cannot be traversed by this profile.
+                            return false;
+                        }
+                        // verify stoppable.
+                        if (!profile.CanStopOn(edgeProfile))
+                        { // this profile cannot stop on this edge.
+                            return false;
+                        }
+                        return true;
+                    });
+                multiResolver.Run();
+                if (multiResolver.HasSucceeded)
+                {
+                    // get the n-closest.
+                    var closest = multiResolver.Results.GetLowestN(maxRouterPoints,
+                        (p) => (float)OsmSharp.Math.Geo.GeoCoordinate.DistanceEstimateInMeter(stopsDbEnumerator.Latitude, stopsDbEnumerator.Longitude,
+                            p.Latitude, p.Longitude));
+
+                    // add them as new links.
+                    for (var i = 0; i < closest.Count; i++)
+                    {
+                        linksDb.Add((uint)stopId, closest[i]);
+                    }
+                }
+            }
+
+            db.AddStopLinksDb(profile, linksDb);
         }
     }
 }

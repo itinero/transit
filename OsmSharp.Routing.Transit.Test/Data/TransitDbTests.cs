@@ -16,12 +16,17 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using GTFS.Entities;
 using NUnit.Framework;
 using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Transit.GTFS;
 using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Transit.Osm.Data;
+using OsmSharp.Routing.Transit.Test.GTFS;
+using OsmSharp.Routing.Transit.Test.Profiles;
 using System;
+using System.Linq;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -97,6 +102,47 @@ namespace OsmSharp.Routing.Transit.Test.Data
                 51.10700473650233f, 3.9084237813949585f, 51.10700473650233f, 3.9091318845748897f) *
                     profile.Factor(Osm.Data.TransitDbExtensions.DefaultEdgeProfile).Value, transferEnumerator.Seconds, 1);
             Assert.AreEqual(stop2, transferEnumerator.Stop);
+        }
+
+        /// <summary>
+        /// Tests adding stop links db.
+        /// </summary>
+        [Test]
+        public void TestAddStopLinksDb()
+        {
+            // build a simple network and connections db.
+            var routerDb = new RouterDb();
+            routerDb.LoadTestNetwork(
+                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                    "OsmSharp.Routing.Transit.Test.test_data.networks.network1.geojson"));
+
+            var db = new TransitDb();
+            var feed = DummyGTFSFeedBuilder.OneConnection(
+                TimeOfDay.FromTotalSeconds(0), TimeOfDay.FromTotalSeconds(3600));
+            feed.Stops.Get(0).Latitude = 51.22965768754021f;
+            feed.Stops.Get(0).Longitude = 4.460974931716918f;
+            feed.Stops.Get(1).Latitude = 51.229617377118906f;
+            feed.Stops.Get(1).Longitude = 4.463152885437011f;
+            db.LoadFrom(feed);
+
+            // add stop links.
+            var profile = MockProfile.CarMock();
+            db.AddStopLinksDb(routerDb, profile);
+
+            // check result.
+            var stopLinksDb = db.GetStopLinksDb(profile);
+            Assert.IsNotNull(stopLinksDb);
+            var stopLinksDbEnumerator = stopLinksDb.GetEnumerator();
+            stopLinksDbEnumerator.MoveTo(0);
+            Assert.AreEqual(1, stopLinksDbEnumerator.Count);
+            Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
+            Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);
+            Assert.AreEqual(0, stopLinksDbEnumerator.Offset);
+            stopLinksDbEnumerator.MoveTo(1);
+            Assert.AreEqual(1, stopLinksDbEnumerator.Count);
+            Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
+            Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);
+            Assert.AreEqual(ushort.MaxValue, stopLinksDbEnumerator.Offset);
         }
     }
 }

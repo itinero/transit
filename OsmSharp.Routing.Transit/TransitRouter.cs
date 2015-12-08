@@ -20,6 +20,7 @@ using OsmSharp.Routing.Exceptions;
 using OsmSharp.Routing.Profiles;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
 using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Transit.Algorithms.Search;
 using System;
 using System.Collections.Generic;
 
@@ -106,6 +107,27 @@ namespace OsmSharp.Routing.Transit
                 }
             }
             return new Result<HashSet<uint>>(stops);
+        }
+
+        /// <summary>
+        /// Tries to search for the closest stop.
+        /// </summary>
+        public Result<uint> TrySearchClosestStop(float latitude, float longitude)
+        {            
+            // calculate moffset in degrees.
+            var offsettedLocation = (new OsmSharp.Math.Geo.GeoCoordinate(latitude, longitude)).OffsetWithDistances(
+                Constants.SearchOffsetInMeter);
+            var maxOffset = (float)System.Math.Max(
+                System.Math.Abs(latitude - offsettedLocation[1]),
+                System.Math.Abs(longitude - offsettedLocation[0]));
+
+            var stopsDbEnumerator = _transitDb.GetStopsEnumerator();
+            var stop = stopsDbEnumerator.SearchClosest(latitude, longitude, maxOffset);
+            if(stop == Constants.NoStopId)
+            {
+                return new Result<uint>("No stop found close enough to the given location.");
+            }
+            return new Result<uint>(stop);
         }
     }
 }

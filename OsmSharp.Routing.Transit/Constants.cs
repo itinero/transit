@@ -82,5 +82,15 @@ namespace OsmSharp.Routing.Transit
         /// Holds the value to use for transfers when no information is available.
         /// </summary>
         public const int NoTransfers = -1;
+
+        /// <summary>
+        /// A default search offset.
+        /// </summary>
+        public static float SearchOffsetInMeter = 7500;
+
+        /// <summary>
+        /// A maximum search distance.
+        /// </summary>
+        public const float SearchDistanceInMeter = 50;
     }
 }

@@ -35,5 +35,10 @@ namespace OsmSharp.Routing.Transit
         /// Searches for stops with the given name.
         /// </summary>
         Result<HashSet<uint>> TrySearchStop(string name);
+
+        /// <summary>
+        /// Searches for the closest stop.
+        /// </summary>
+        Result<uint> TrySearchClosestStop(float latitude, float longitude);
     }
 }

@@ -295,67 +295,87 @@ namespace OsmSharp.Routing.Transit.Algorithms
         {
             RouterPoint best = null;
             var bestWeight = float.MaxValue;
-            _stopLinksDbEnumerator.MoveTo(stop);
-            while (_stopLinksDbEnumerator.MoveNext())
+            var stopEnumerator = _db.GetStopsEnumerator();
+            if (stopEnumerator.MoveTo(stop))
             {
-                var point = new RouterPoint(0, 0, _stopLinksDbEnumerator.EdgeId,
-                    _stopLinksDbEnumerator.Offset);
-                if (point.EdgeId == _routerPoint.EdgeId)
-                { // on the same edge.
-                    Path path;
-                    if (_backward)
-                    { // from stop -> source.
-                        path = point.PathTo(_routerDb, _profile, _routerPoint);
-                    }
-                    else
-                    { // from source -> stop.
-                        path = _routerPoint.PathTo(_routerDb, _profile, point);
-                    }
-                    if (path.Weight < bestWeight)
-                    { // set as best because improvement.
-                        best = point;
-                        bestWeight = path.Weight;
-                    }
-                }
-                else
-                { // on different edge, to the usual.
-                    var paths = point.ToPaths(_routerDb, _profile, _backward);
-                    Path visit;
-                    if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
-                    { // check if this one is better.
-                        if (visit.Weight + paths[0].Weight < bestWeight)
-                        { // concatenate paths and set best.
-                            if (paths[0].Weight == 0)
-                            { // just use the visit.
-                                best = point;
-                                bestWeight = visit.Weight;
-                            }
-                            else
-                            { // there is a distance/weight.
-                                best = point;
-                                bestWeight = paths[0].Weight + visit.Weight;
-                            }
+                _stopLinksDbEnumerator.MoveTo(stop);
+                while (_stopLinksDbEnumerator.MoveNext())
+                {
+                    var point = new RouterPoint(stopEnumerator.Latitude, stopEnumerator.Longitude, _stopLinksDbEnumerator.EdgeId,
+                        _stopLinksDbEnumerator.Offset);
+                    if (point.EdgeId == _routerPoint.EdgeId)
+                    { // on the same edge.
+                        Path path;
+                        if (_backward)
+                        { // from stop -> source.
+                            path = point.PathTo(_routerDb, _profile, _routerPoint);
+                        }
+                        else
+                        { // from source -> stop.
+                            path = _routerPoint.PathTo(_routerDb, _profile, point);
+                        }
+                        if (path.Weight < bestWeight)
+                        { // set as best because improvement.
+                            best = point;
+                            bestWeight = path.Weight;
                         }
                     }
-                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
-                    { // check if this one is better.
-                        if (visit.Weight + paths[1].Weight < bestWeight)
-                        { // concatenate paths and set best.
-                            if (paths[1].Weight == 0)
-                            { // just use the visit.
-                                best = point;
-                                bestWeight = visit.Weight;
+                    else
+                    { // on different edge, to the usual.
+                        var paths = point.ToPaths(_routerDb, _profile, _backward);
+                        Path visit;
+                        if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
+                        { // check if this one is better.
+                            if (visit.Weight + paths[0].Weight < bestWeight)
+                            { // concatenate paths and set best.
+                                if (paths[0].Weight == 0)
+                                { // just use the visit.
+                                    best = point;
+                                    bestWeight = visit.Weight;
+                                }
+                                else
+                                { // there is a distance/weight.
+                                    best = point;
+                                    bestWeight = paths[0].Weight + visit.Weight;
+                                }
                             }
-                            else
-                            { // there is a distance/weight.
-                                best = point;
-                                bestWeight = paths[1].Weight + visit.Weight;
+                        }
+                        if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                        { // check if this one is better.
+                            if (visit.Weight + paths[1].Weight < bestWeight)
+                            { // concatenate paths and set best.
+                                if (paths[1].Weight == 0)
+                                { // just use the visit.
+                                    best = point;
+                                    bestWeight = visit.Weight;
+                                }
+                                else
+                                { // there is a distance/weight.
+                                    best = point;
+                                    bestWeight = paths[1].Weight + visit.Weight;
+                                }
                             }
                         }
                     }
                 }
             }
             return best;
+        }
+
+        /// <summary>
+        /// Gets the route to the given stop.
+        /// </summary>
+        public Route GetRoute(uint stop)
+        {
+            var path = this.GetPath(stop);
+            var point = this.GetTargetPoint(stop);
+
+            if (_backward)
+            {
+                path = path.Reverse();
+                return RouteBuilder.Build(_routerDb, _profile, point, _routerPoint, path);
+            }
+            return RouteBuilder.Build(_routerDb, _profile, _routerPoint, point, path);
         }
 
         /// <summary>

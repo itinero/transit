@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Routing.Profiles;
 using System;
 
 namespace OsmSharp.Routing.Transit
@@ -28,8 +29,9 @@ namespace OsmSharp.Routing.Transit
         /// <summary>
         /// Tries to calculate an earliest arrival route from stop1 to stop2.
         /// </summary>
-        Result<Route> TryEarliestArrival(DateTime departureTime, 
-            RouterPoint point1, RouterPoint point2, EarliestArrivalSettings settings);
+        Result<Route> TryEarliestArrival(DateTime departureTime,
+            RouterPoint sourcePoint, Profile sourceProfile, RouterPoint targetPoint, Profile targetProfile, 
+                EarliestArrivalSettings settings);
     }
 
     /// <summary>

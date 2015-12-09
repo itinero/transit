@@ -40,6 +40,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
         }
 
         private Route _route;
+        private List<uint> _stops;
 
         /// <summary>
         /// Executes the route build step.
@@ -131,6 +132,13 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             // reverse stops/connections.
             stops.Reverse();
             trips.Reverse();
+
+            // keep stops.
+            _stops = new List<uint>();
+            for (var i = 0; i < stops.Count; i++)
+            {
+                _stops.Add(stops[i].Item1);
+            }
 
             // convert the stop and connection sequences into an actual route.
             _route = new Route();
@@ -256,6 +264,19 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 this.CheckHasRunAndHasSucceeded();
 
                 return _route;
+            }
+        }
+
+        /// <summary>
+        /// Returns the stops.
+        /// </summary>
+        public List<uint> Stops
+        {
+            get
+            {
+                this.CheckHasRunAndHasSucceeded();
+
+                return _stops;
             }
         }
 

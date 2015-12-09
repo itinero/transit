@@ -130,6 +130,7 @@
     <Compile Include="Data\TripsDb.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GTFS\TransitDbExtensions.cs" />
+    <Compile Include="IMultimodalRouter.cs" />
     <Compile Include="ITransitRouter.cs" />
     <Compile Include="Osm\Data\TransitDbExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

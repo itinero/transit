@@ -21,6 +21,7 @@ using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Profiles;
 using System;
+using System.Collections.Generic;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -145,6 +146,46 @@ namespace OsmSharp.Routing.Transit.Data
             }
 
             db.AddStopLinksDb(profile, linksDb);
+        }
+
+        /// <summary>
+        /// Searches for the first stop with some tags or based on some condition.
+        /// </summary>
+        public static uint SearchFirstStopsWithTags(this TransitDb db,
+            Func<TagsCollectionBase, bool> condition)
+        {
+            var stops = new HashSet<uint>();
+            var enumerator = db.GetStopsEnumerator();
+            enumerator.Reset();
+            while (enumerator.MoveNext())
+            {
+                var stopTags = db.StopAttributes.Get(enumerator.MetaId);
+                if (condition(stopTags))
+                {
+                    return enumerator.Id;
+                }
+            }
+            return Constants.NoStopId;
+        }
+
+        /// <summary>
+        /// Searches the stops with some tags or based on some condition.
+        /// </summary>
+        public static HashSet<uint> SearchStopsWithTags(this TransitDb db,
+            Func<TagsCollectionBase, bool> condition)
+        {
+            var stops = new HashSet<uint>();
+            var enumerator = db.GetStopsEnumerator();
+            enumerator.Reset();
+            while (enumerator.MoveNext())
+            {
+                var stopTags = db.StopAttributes.Get(enumerator.MetaId);
+                if(condition(stopTags))
+                {
+                    stops.Add(enumerator.Id);
+                }
+            }
+            return stops;
         }
     }
 }

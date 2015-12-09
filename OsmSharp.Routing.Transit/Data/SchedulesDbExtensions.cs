@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>

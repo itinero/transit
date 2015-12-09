@@ -132,13 +132,22 @@ namespace OsmSharp.Routing.Transit.Test.Data
             // check result.
             var stopLinksDb = db.GetStopLinksDb(profile);
             Assert.IsNotNull(stopLinksDb);
+            var stop0 = db.SearchFirstStopsWithTags((t) =>
+            {
+                return t.ContainsKeyValue("id", "0");
+            });
+            var stop1 = db.SearchFirstStopsWithTags((t) =>
+            {
+                return t.ContainsKeyValue("id", "1");
+            });
+
             var stopLinksDbEnumerator = stopLinksDb.GetEnumerator();
-            stopLinksDbEnumerator.MoveTo(0);
+            stopLinksDbEnumerator.MoveTo(stop0);
             Assert.AreEqual(1, stopLinksDbEnumerator.Count);
             Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
             Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);
             Assert.AreEqual(0, stopLinksDbEnumerator.Offset);
-            stopLinksDbEnumerator.MoveTo(1);
+            stopLinksDbEnumerator.MoveTo(stop1);
             Assert.AreEqual(1, stopLinksDbEnumerator.Count);
             Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
             Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);

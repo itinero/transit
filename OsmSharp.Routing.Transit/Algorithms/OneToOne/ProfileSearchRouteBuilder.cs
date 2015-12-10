@@ -41,6 +41,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
         private Route _route;
         private List<uint> _stops;
+        private uint _duration;
 
         /// <summary>
         /// Executes the route build step.
@@ -132,6 +133,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             // reverse stops/connections.
             stops.Reverse();
             trips.Reverse();
+
+            // set the duration.
+            _duration = stops[stops.Count - 1].Item2.Seconds -
+                stops[0].Item2.Seconds;
 
             // keep stops.
             _stops = new List<uint>();
@@ -264,6 +269,19 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 this.CheckHasRunAndHasSucceeded();
 
                 return _route;
+            }
+        }
+
+        /// <summary>
+        /// Gets the duration.
+        /// </summary>
+        public uint Duration
+        {
+            get
+            {
+                this.CheckHasRunAndHasSucceeded();
+
+                return _duration;
             }
         }
 

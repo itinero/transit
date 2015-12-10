@@ -56,6 +56,13 @@ namespace OsmSharp.Routing.Transit.Algorithms
             _routerPoint = routerPoint;
             _maxSeconds = maxSeconds;
             _backward = backward;
+
+            // build search.
+            _dykstra = new Dykstra(_routerDb.Network.GeometricGraph.Graph, (profileId) =>
+            {
+                var profileTags = _routerDb.EdgeProfiles.Get(profileId);
+                return _profile.Factor(profileTags);
+            }, _routerPoint.ToPaths(_routerDb, _profile, !_backward), _maxSeconds, _backward);
         }
 
         private System.Collections.Generic.Dictionary<uint, LinkedStopRouterPoint> _stopsPerEdge;
@@ -107,13 +114,10 @@ namespace OsmSharp.Routing.Transit.Algorithms
             }
 
             // report on source edges and build source paths.
-            var sourcePaths = new System.Collections.Generic.List<Path>();
             var paths = _routerPoint.ToPaths(_routerDb, _profile, !_backward);
             for (var p = 0; p < paths.Length; p++)
             {
-                sourcePaths.Add(paths[p]);
-
-                if (this.WasEdgeFound(paths[p].Vertex, _routerPoint.EdgeId, paths[p].Weight))
+                if (this.WasEdgeFoundInternal(paths[p].Vertex, _routerPoint.EdgeId, paths[p].Weight))
                 { // report this edge was found.
                     this.HasSucceeded = true;
                     return;
@@ -121,12 +125,8 @@ namespace OsmSharp.Routing.Transit.Algorithms
             }
 
             // execute dykstra search from all sources.
-            _dykstra = new Dykstra(_routerDb.Network.GeometricGraph.Graph, (profileId) =>
-            {
-                var profileTags = _routerDb.EdgeProfiles.Get(profileId);
-                return _profile.Factor(profileTags);
-            }, sourcePaths, _maxSeconds, _backward);
-            _dykstra.WasEdgeFound = this.WasEdgeFound;
+            _dykstra.WasEdgeFound = this.WasEdgeFoundInternal;
+            _dykstra.WasFound = this.WasFoundInternal;
             _dykstra.Run();
 
             this.HasSucceeded = true;
@@ -147,10 +147,32 @@ namespace OsmSharp.Routing.Transit.Algorithms
         }
 
         /// <summary>
+        /// Gets the dykstra search.
+        /// </summary>
+        public Dykstra Search
+        {
+            get
+            {
+                return _dykstra;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the wasfound function to be called when a new vertex is found.
+        /// </summary>
+        public Dykstra.WasEdgeFoundDelegate WasEdgeFound { get; set; }
+
+        /// <summary>
         /// Called when a new edge was found.
         /// </summary>
-        private bool WasEdgeFound(uint vertex, uint edgeId, float weight)
+        private bool WasEdgeFoundInternal(uint vertex, uint edgeId, float weight)
         {
+            if(this.WasEdgeFound != null &&
+               this.WasEdgeFound(vertex, edgeId, weight))
+            { // somewhere else the descision was made to stop the search here.
+                return true;
+            }
+
             LinkedStopRouterPoint stopRouterPoint;
             if(_stopsPerEdge.TryGetValue(edgeId, out stopRouterPoint))
             { // ok, there is a link, get the router points and calculate weights.
@@ -216,6 +238,93 @@ namespace OsmSharp.Routing.Transit.Algorithms
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        ///  Gets or sets the wasfound function to be called when a new vertex is found.
+        /// </summary>
+        public Dykstra.WasFoundDelegate WasFound { get; set; }
+
+        /// <summary>
+        /// Called when a new vertex was found.
+        /// </summary>
+        private bool WasFoundInternal(uint vertex, float weight)
+        {
+            if (this.WasFound != null)
+            {
+                return this.WasFound(vertex, weight);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the weight to the given stop.
+        /// </summary>
+        public float GetWeight(uint stop)
+        {
+            var bestWeight = float.MaxValue;
+            _stopLinksDbEnumerator.MoveTo(stop);
+            while (_stopLinksDbEnumerator.MoveNext())
+            {
+                var point = new RouterPoint(0, 0, _stopLinksDbEnumerator.EdgeId,
+                    _stopLinksDbEnumerator.Offset);
+                if (point.EdgeId == _routerPoint.EdgeId)
+                { // on the same edge.
+                    Path path;
+                    if (_backward)
+                    { // from stop -> source.
+                        path = point.PathTo(_routerDb, _profile, _routerPoint);
+                    }
+                    else
+                    { // from source -> stop.
+                        path = _routerPoint.PathTo(_routerDb, _profile, point);
+                    }
+                    if (path.Weight < bestWeight)
+                    { // set as best because improvement.
+                        bestWeight = path.Weight;
+                    }
+                }
+                else
+                { // on different edge, to the usual.
+                    var paths = point.ToPaths(_routerDb, _profile, _backward);
+                    Path visit;
+                    if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[0].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            Path best;
+                            if (paths[0].Weight == 0)
+                            { // just use the visit.
+                                best = visit;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
+                                    paths[0].Weight + visit.Weight, visit);
+                            }
+                            bestWeight = best.Weight;
+                        }
+                    }
+                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                    { // check if this one is better.
+                        if (visit.Weight + paths[1].Weight < bestWeight)
+                        { // concatenate paths and set best.
+                            Path best;
+                            if (paths[1].Weight == 0)
+                            { // just use the visit.
+                                best = visit;
+                            }
+                            else
+                            { // there is a distance/weight.
+                                best = new Path(OsmSharp.Routing.Constants.NO_VERTEX,
+                                    paths[1].Weight + visit.Weight, visit);
+                            }
+                            bestWeight = best.Weight;
+                        }
+                    }
+                }
+            }
+            return bestWeight;
         }
 
         /// <summary>

@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Routing.Algorithms;
 using OsmSharp.Routing.Profiles;
 using OsmSharp.Routing.Transit.Algorithms;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
@@ -74,12 +75,6 @@ namespace OsmSharp.Routing.Transit
                     profileSearch.SetSourceStop(s, departureTimeSeconds + (uint)t);
                     return false;
                 };
-            sourceSearch.Run();
-            if(!sourceSearch.HasRun ||
-               !sourceSearch.HasSucceeded)
-            {
-                return new Result<Route>("Searching for source stops failed.");
-            }
 
             // search for targets.
             var targetSearch = new ClosestStopsSearch(this.Db, _db, targetProfile, targetPoint,
@@ -89,6 +84,31 @@ namespace OsmSharp.Routing.Transit
                 profileSearch.SetTargetStop(s, (uint)t);
                 return false;
             };
+
+            // create bidirectional helper if possible.
+            SearchHelper helper = null;
+            BidirectionalSearchHelper bidirectionalHelper = null;
+            if (sourceProfile.Name == targetProfile.Name)
+            { // profiles are the same.
+                bidirectionalHelper = new BidirectionalSearchHelper(
+                    sourceSearch.Search, targetSearch.Search);
+                targetSearch.WasFound = bidirectionalHelper.TargetWasFound;
+            }
+            else
+            { // profiles are different but the source can still reach the destination.
+                helper = new SearchHelper(this.Db, sourceSearch.Search, sourceProfile, targetPoint);
+                sourceSearch.WasFound = helper.SourceWasFound;
+            }
+
+            // run source search.
+            sourceSearch.Run();
+            if (!sourceSearch.HasRun ||
+                !sourceSearch.HasSucceeded)
+            {
+                return new Result<Route>("Searching for source stops failed.");
+            }
+
+            // run target search.
             targetSearch.Run();
             if (!targetSearch.HasRun ||
                 !targetSearch.HasSucceeded)
@@ -113,12 +133,38 @@ namespace OsmSharp.Routing.Transit
                 return new Result<Route>(string.Format("Route could not be built: {0}.", profileSearchRouteBuilder.ErrorMessage));
             }
 
-            // build source route.
-            var sourceRoute = sourceSearch.GetRoute(profileSearchRouteBuilder.Stops[0]);
+            if (bidirectionalHelper != null &&
+                bidirectionalHelper.HasSucceeded)
+            { // there is a direct route to the target.
+                var sourceWeight = sourceSearch.GetWeight(profileSearchRouteBuilder.Stops[0]);
+                var targetWeight = targetSearch.GetWeight(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
+                var transitWeight = sourceWeight + profileSearchRouteBuilder.Duration + targetWeight;
+                if(transitWeight > bidirectionalHelper.BestWeight)
+                {
+                    var path = bidirectionalHelper.GetPath();
+                    return new Result<Route>(
+                        RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                }
+            }
+            else if(helper != null &&
+                helper.HasSucceeded)
+            { // there is a direct route to the target.
+                var sourceWeight = sourceSearch.GetWeight(profileSearchRouteBuilder.Stops[0]);
+                var targetWeight = targetSearch.GetWeight(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
+                var transitWeight = sourceWeight + profileSearchRouteBuilder.Duration + targetWeight;
+                if (transitWeight > helper.BestWeight)
+                {
+                    var path = helper.GetPath();
+                    return new Result<Route>(
+                        RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                }
+            }           
 
-            // build target route.
+            // build source/target routes.
+            var sourceRoute = sourceSearch.GetRoute(profileSearchRouteBuilder.Stops[0]);
             var targetRoute = targetSearch.GetRoute(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
 
+            // concatenate it all.
             var route = sourceRoute.Concatenate(profileSearchRouteBuilder.Route);
             route = route.Concatenate(targetRoute);
 

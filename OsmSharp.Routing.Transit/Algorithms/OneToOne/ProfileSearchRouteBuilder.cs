@@ -61,7 +61,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
             // get best target stop.
             var targetProfiles = _search.ArrivalProfiles;
-            var targetProfileIdx = targetProfiles.GetLeastTransfers();
+            var targetProfileIdx = _search.GetBest(targetProfiles, 10 * 60);
             var targetStop = _search.ArrivalStops[targetProfileIdx];
 
             // build route along that target.

@@ -16,6 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using OsmSharp.Collections.Tags;
+using OsmSharp.Geo.Features;
+using OsmSharp.Geo.Geometries;
+using OsmSharp.Math.Geo;
+using OsmSharp.Routing.Profiles;
+using OsmSharp.Routing.Transit.Data;
 using System;
 using System.Collections.Generic;
 
@@ -72,6 +78,49 @@ namespace OsmSharp.Routing.Transit
                 }
             }
             return lowest;
+        }
+
+        /// <summary>
+        /// Gets a feature collection with features representing the stop links.
+        /// </summary>
+        /// <returns></returns>
+        public static FeatureCollection GetStopLinks(this TransitDb db, RouterDb routerDb, 
+            Profile profile, uint stopId)
+        {
+            var features = new FeatureCollection();
+
+            var stopEnumerator = db.GetStopsEnumerator();
+            if (stopEnumerator.MoveTo(stopId))
+            {
+                var stopLocation = new GeoCoordinate(stopEnumerator.Latitude, stopEnumerator.Longitude);
+                features.Add(new Feature(
+                    new Point(stopLocation),
+                    new Geo.Attributes.SimpleGeometryAttributeCollection(new Tag[]
+                        {
+                            new Tag("stop_id", stopId.ToInvariantString())
+                        })));
+
+                var stopLinksDb = db.GetStopLinksDb(profile).GetEnumerator();
+                stopLinksDb.MoveTo(stopId);
+                while (stopLinksDb.MoveNext())
+                {
+                    var routerPoint = new RouterPoint(0, 0, stopLinksDb.EdgeId, stopLinksDb.Offset);
+                    var linkLocation = new GeoCoordinate(routerPoint.LocationOnNetwork(routerDb));
+
+                    features.Add(new Feature(
+                        new Point(linkLocation),
+                        new Geo.Attributes.SimpleGeometryAttributeCollection(new Tag[]
+                                            {
+                                                new Tag("edge_id", stopLinksDb.EdgeId.ToInvariantString()),
+                                                new Tag("offset", stopLinksDb.Offset.ToInvariantString())
+                                            })));
+                    features.Add(new Feature(
+                        new LineString( stopLocation,
+                            linkLocation),
+                        new Geo.Attributes.SimpleGeometryAttributeCollection()));
+                }
+            }
+            return features;
         }
     }
 }

@@ -117,10 +117,48 @@ namespace OsmSharp.Routing.Transit.Algorithms
             var paths = _routerPoint.ToPaths(_routerDb, _profile, !_backward);
             for (var p = 0; p < paths.Length; p++)
             {
-                if (this.WasEdgeFoundInternal(paths[p].Vertex, _routerPoint.EdgeId, paths[p].Weight))
-                { // report this edge was found.
-                    this.HasSucceeded = true;
-                    return;
+                var edgeId = _routerPoint.EdgeId;
+                LinkedStopRouterPoint stopRouterPoint;
+                if (_stopsPerEdge.TryGetValue(edgeId, out stopRouterPoint))
+                {
+                    if (_routerPoint.EdgeId != edgeId)
+                    { // ok, this is not the source-ege.
+                        throw new Exception("Cannot report on an edge that is not the source when not searching yet.");
+                    }
+
+                    // move the stop links enumerator.
+                    while (stopRouterPoint != null)
+                    {
+                        var stopId = stopRouterPoint.StopId;
+                        var routerPoint = stopRouterPoint.RouterPoint;
+
+                        if (!_backward)
+                        { // forward, route from source to stop.
+                            var path = _routerPoint.PathTo(_routerDb, _profile, routerPoint);
+                            if (path != null)
+                            { // there is a path, report on it.
+                                if (this.StopFound(stopId, path.Weight))
+                                { // report this edge was found.
+                                    this.HasSucceeded = true;
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        { // backward, route from stop to source.
+                            var path = routerPoint.PathTo(_routerDb, _profile, _routerPoint);
+                            if (path != null)
+                            { // there is a path, report on it.
+                                if (this.StopFound(stopId, path.Weight))
+                                { // report this edge was found.
+                                    this.HasSucceeded = true;
+                                    return;
+                                }
+                            }
+                        }
+
+                        stopRouterPoint = stopRouterPoint.Next;
+                    }
                 }
             }
 
@@ -178,37 +216,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
             { // ok, there is a link, get the router points and calculate weights.
                 if (_dykstra == null)
                 { // no dykstra search just yet, this is the source-edge.
-                    if (_routerPoint.EdgeId != edgeId)
-                    { // ok, this is not the source-ege.
-                        throw new Exception("Cannot report on an edge that is not the source when not searching yet.");
-                    }
-
-                    // move the stop links enumerator.
-                    while (stopRouterPoint != null)
-                    {
-                        var stopId = stopRouterPoint.StopId;
-                        var routerPoint = stopRouterPoint.RouterPoint;
-
-                        if (!_backward)
-                        { // forward, route from source to stop.
-                            var path = _routerPoint.PathTo(_routerDb, _profile, routerPoint);
-                            if (path != null)
-                            { // there is a path, report on it.
-                                this.StopFound(stopId, path.Weight);
-                            }
-                        }
-                        else
-                        { // backward, route from stop to source.
-                            var path = routerPoint.PathTo(_routerDb, _profile, _routerPoint);
-                            if (path != null)
-                            { // there is a path, report on it.
-                                this.StopFound(stopId, path.Weight);
-                            }
-                        }
-
-                        stopRouterPoint = stopRouterPoint.Next;
-                    }
-                    return false;
+                    throw new Exception("Could not get visit of other vertex for settled edge.");
                 }
                 var edge = _routerDb.Network.GeometricGraph.Graph.GetEdge(edgeId);
                 var vertex1 = edge.GetOther(vertex);
@@ -227,11 +235,17 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     var paths = routerPoint.ToPaths(_routerDb, _profile, _backward);
                     if (paths[0].Vertex == vertex1)
                     { // report on the time.
-                        this.StopFound(stopId, vertex1Visit.Weight + paths[0].Weight);
+                        if (this.StopFound(stopId, vertex1Visit.Weight + paths[0].Weight))
+                        {
+                            return true;
+                        }
                     }
                     else if (paths[1].Vertex == vertex1)
                     { // report on the time.
-                        this.StopFound(stopId, vertex1Visit.Weight + paths[1].Weight);
+                        if (this.StopFound(stopId, vertex1Visit.Weight + paths[1].Weight))
+                        {
+                            return true;
+                        }
                     }
 
                     stopRouterPoint = stopRouterPoint.Next;

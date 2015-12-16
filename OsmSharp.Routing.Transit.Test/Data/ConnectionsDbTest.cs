@@ -210,6 +210,77 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
 
             Assert.IsFalse(enumerator.MoveNext());
+
+            enumerator.Reset();
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(1, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(0, enumerator.DepartureTime);
+            Assert.AreEqual(100, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(1, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(1000, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(1, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(0, enumerator.DepartureTime);
+            Assert.AreEqual(100, enumerator.ArrivalTime);
+
+            enumerator.Reset();
+            
+            while (enumerator.MoveNext()) { } // move to the end.
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(5, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(100 + (1 << 15) - 1, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(4, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(200, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(3, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(200, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(2, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(200, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(1, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(100, enumerator.DepartureTime);
+            Assert.AreEqual(1000, enumerator.ArrivalTime);
+
+            Assert.IsTrue(enumerator.MovePrevious());
+            Assert.AreEqual(0, enumerator.DepartureStop);
+            Assert.AreEqual(1, enumerator.ArrivalStop);
+            Assert.AreEqual(1234, enumerator.TripId);
+            Assert.AreEqual(0, enumerator.DepartureTime);
+            Assert.AreEqual(100, enumerator.ArrivalTime);
+
+            Assert.IsFalse(enumerator.MovePrevious());
         }
 
         /// <summary>

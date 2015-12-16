@@ -130,11 +130,12 @@ namespace OsmSharp.Routing.Transit.Data
                         ConnectionsDb.DecodeDepartureTimeAndDuration(
                             _connections[connection * CONNECTION_SIZE + 3],
                                 out departureTime, out duration);
+                        uint tripId = _connections[connection * CONNECTION_SIZE + 2];
                         if (sorting == DefaultSorting.DepartureTime)
                         {
-                            return departureTime;
+                            return (long)departureTime * int.MaxValue + tripId;
                         }
-                        return departureTime + duration;
+                        return (long)(departureTime + duration) * int.MaxValue + tripId;
                     },
                     (connection1, connection2) =>
                     {
@@ -163,11 +164,12 @@ namespace OsmSharp.Routing.Transit.Data
                         ConnectionsDb.DecodeDepartureTimeAndDuration(
                             _connections[_connectionsOrder[connection] * CONNECTION_SIZE + 3],
                                 out departureTime, out duration);
-                        if (sorting != DefaultSorting.DepartureTime)
+                        uint tripId = _connections[_connectionsOrder[connection] * CONNECTION_SIZE + 2];
+                        if (sorting == DefaultSorting.DepartureTime)
                         {
-                            return departureTime;
+                            return (long)departureTime * int.MaxValue + tripId;
                         }
-                        return departureTime + duration;
+                        return (long)(departureTime + duration) * int.MaxValue + tripId;
                     },
                      (connection1, connection2) =>
                      {
@@ -293,6 +295,36 @@ namespace OsmSharp.Routing.Transit.Data
                 }
                 _index = _id * CONNECTION_SIZE;
                 if (_id < _count)
+                {
+                    if (_connectionsOrder != null)
+                    { // translate index.
+                        _index = _connectionsOrder[_index];
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// Moves to the previous connection.
+            /// </summary>
+            /// <returns></returns>
+            public bool MovePrevious()
+            {
+                if (_id == uint.MaxValue)
+                { // not moved yet, cannot move to previous.
+                    return false;
+                }
+                else if(_id == 0)
+                { // at the first connection, cannot move to previous.
+                    return false;
+                }
+                else
+                { // all other moves.
+                    _id--;
+                }
+                _index = _id * CONNECTION_SIZE;
+                if (_id >= 0)
                 {
                     if (_connectionsOrder != null)
                     { // translate index.

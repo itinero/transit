@@ -73,5 +73,30 @@ namespace OsmSharp.Routing.Transit.Data
             enumerator.MoveTo(upper);
             return true;
         }
+
+        /// <summary>
+        /// Moves the given enumerator to the connection right before the current connection on the same trip.
+        /// </summary>
+        /// <remarks>This requires the connections to be sorted by departure time.</remarks>
+        /// <returns></returns>
+        public static bool MoveToPreviousConnection(this ConnectionsDb.Enumerator enumerator)
+        {
+            if (enumerator == null) { throw new ArgumentNullException("enumerator"); }
+
+            if (enumerator.Count == 0)
+            { // not possible to search and there's no need.
+                return false;
+            }
+
+            var trip = enumerator.TripId;
+            while (enumerator.MovePrevious())
+            {
+                if (enumerator.TripId == trip)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

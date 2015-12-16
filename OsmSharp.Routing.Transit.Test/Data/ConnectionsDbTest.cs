@@ -447,5 +447,46 @@ namespace OsmSharp.Routing.Transit.Test.Data
 
             Assert.IsFalse(enumerator.MoveToDepartureTime(51));
         }
+
+        /// <summary>
+        /// Tests moving to a previous connection on the same trip.
+        /// </summary>
+        [Test]
+        public void TestConnectionMoveToPreviousConnection()
+        {
+            var db = new ConnectionsDb();
+
+            var connection0 = db.Add(0, 1, 1, 0, 9);
+            var connection1 = db.Add(0, 1, 2, 1, 19);
+            var connection2 = db.Add(0, 2, 3, 2, 29);
+            var connection3 = db.Add(0, 3, 3, 3, 39);
+            var connection4 = db.Add(0, 4, 2, 4, 49);
+            var connection5 = db.Add(0, 5, 1, 5, 59);
+
+            db.Sort(DefaultSorting.DepartureTime, null);
+
+            var enumerator = db.GetEnumerator();
+
+            enumerator.MoveTo(connection5);
+            Assert.IsTrue(enumerator.MoveToPreviousConnection());
+            Assert.AreEqual(connection0, enumerator.Id);
+
+            enumerator.MoveTo(connection4);
+            Assert.IsTrue(enumerator.MoveToPreviousConnection());
+            Assert.AreEqual(connection1, enumerator.Id);
+
+            enumerator.MoveTo(connection3);
+            Assert.IsTrue(enumerator.MoveToPreviousConnection());
+            Assert.AreEqual(connection2, enumerator.Id);
+
+            enumerator.MoveTo(connection2);
+            Assert.IsFalse(enumerator.MoveToPreviousConnection());
+
+            enumerator.MoveTo(connection1);
+            Assert.IsFalse(enumerator.MoveToPreviousConnection());
+
+            enumerator.MoveTo(connection0);
+            Assert.IsFalse(enumerator.MoveToPreviousConnection());
+        }
     }
 }

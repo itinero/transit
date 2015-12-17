@@ -65,7 +65,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 
@@ -140,7 +140,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 
@@ -174,6 +174,66 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
                 ((08 * 3600) + (00 * 60)).ToInvariantString()));
 
             segment = route.Segments[2];
+            Assert.AreEqual(segment.Time, 50 * 60);
+            Assert.AreEqual(segment.Latitude, 2);
+            Assert.AreEqual(segment.Longitude, 2);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.VehicleProfile, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(3, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop3"));
+            Assert.IsTrue(tags.ContainsKeyValue("trip_name", "trip1"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((08 * 3600) + (20 * 60)).ToInvariantString()));
+
+            // build route.
+            routeBuilder = new ProfileSearchRouteBuilder(algorithm, true);
+            routeBuilder.Run();
+            route = routeBuilder.Route;
+
+            Assert.IsNotNull(route);
+            Assert.IsNotNull(route.Segments);
+            Assert.AreEqual(4, route.Segments.Count);
+            Assert.AreEqual(3000, route.TotalTime);
+
+            segment = route.Segments[0];
+            Assert.AreEqual(segment.Time, 0);
+            Assert.AreEqual(segment.Latitude, 0);
+            Assert.AreEqual(segment.Longitude, 0);
+            Assert.AreEqual(null, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(2, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop1"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((07 * 3600) + (30 * 60)).ToInvariantString()));
+
+            segment = route.Segments[1];
+            Assert.AreEqual(segment.Time, 30 * 60);
+            Assert.AreEqual(segment.Latitude, 0);
+            Assert.AreEqual(segment.Longitude, 0);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitProfile, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(2, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop1"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((08 * 3600) + (00 * 60)).ToInvariantString()));
+
+            segment = route.Segments[2];
+            Assert.AreEqual(segment.Time, 40 * 60);
+            Assert.AreEqual(segment.Latitude, 1);
+            Assert.AreEqual(segment.Longitude, 1);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.VehicleProfile, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(3, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop2"));
+            Assert.IsTrue(tags.ContainsKeyValue("trip_name", "trip1"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((08 * 3600) + (10 * 60)).ToInvariantString()));
+
+            segment = route.Segments[3];
             Assert.AreEqual(segment.Time, 50 * 60);
             Assert.AreEqual(segment.Latitude, 2);
             Assert.AreEqual(segment.Longitude, 2);
@@ -223,7 +283,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 
@@ -335,7 +395,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 
@@ -448,7 +508,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 
@@ -524,7 +584,7 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             algorithm.Run();
 
             // build route.
-            var routeBuilder = new ProfileSearchRouteBuilder(algorithm);
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, false);
             routeBuilder.Run();
             var route = routeBuilder.Route;
 

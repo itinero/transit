@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Collections.Tags;
+using OsmSharp.Routing.Transit.Data;
 using OsmSharp.Routing.Algorithms;
 using System;
 using System.Collections.Generic;
@@ -29,14 +30,17 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     public class ProfileSearchRouteBuilder : AlgorithmBase
     {
         private readonly ProfileSearch _search;
+        private readonly bool _intermediateStops;
 
         /// <summary>
         /// Creates a new profile search route builder.
         /// </summary>
         /// <param name="search">The search algorithm.</param>
-        public ProfileSearchRouteBuilder(ProfileSearch search)
+        /// <param name="intermediateStops">True when the intermediate stops need to be added.</param>
+        public ProfileSearchRouteBuilder(ProfileSearch search, bool intermediateStops = true)
         {
             _search = search;
+            _intermediateStops = intermediateStops;
         }
 
         private Route _route;
@@ -133,6 +137,42 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             // reverse stops/connections.
             stops.Reverse();
             trips.Reverse();
+
+            if (_intermediateStops)
+            { // expand trips.
+                for (var i = 0; i< trips.Count;i++)
+                {
+                    if(trips[i].HasValue)
+                    { // there is a trip, expand it.
+                        var lastStop = stops[i + 1].Item1;
+                        var firstStop = stops[i].Item1;
+                        if (!stops[i + 1].Item2.IsConnection)
+                        {
+                            throw new Exception("Last stop of a trip is not a connection, it should be.");
+                        }
+                        var connection = stops[i + 1].Item2.PreviousConnectionId;
+                        connectionEnumerator.MoveTo(connection);
+                        while (true)
+                        { // add departure stop of connection if it doesn't equal the first stop.
+                            if (firstStop == connectionEnumerator.DepartureStop)
+                            {
+                                break;
+                            }
+                            if (!connectionEnumerator.MovePrevious())
+                            {
+                                throw new Exception("There has to be a previous stop, have not reached the first stop for this trip yet.");
+                            }
+                            stops.Insert(i + 1, new Tuple<uint, StopProfile>(connectionEnumerator.ArrivalStop, new StopProfile()
+                                {
+                                    PreviousConnectionId = connectionEnumerator.Id,
+                                    Seconds = connectionEnumerator.ArrivalTime
+                                }));
+                            trips.Insert(i, trips[i].Value);
+                            i++;
+                        }
+                    }
+                }
+            }
 
             // set the duration.
             _duration = stops[stops.Count - 1].Item2.Seconds -

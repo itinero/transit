@@ -159,7 +159,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             {
                                 break;
                             }
-                            if (!connectionEnumerator.MovePrevious())
+                            if (!connectionEnumerator.MoveToPreviousConnection())
                             {
                                 throw new Exception("There has to be a previous stop, have not reached the first stop for this trip yet.");
                             }

@@ -152,6 +152,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         }
                         var connection = stops[i + 1].Item2.PreviousConnectionId;
                         connectionEnumerator.MoveTo(connection);
+                        var firstI = i;
                         while (true)
                         { // add departure stop of connection if it doesn't equal the first stop.
                             if (firstStop == connectionEnumerator.DepartureStop)
@@ -162,7 +163,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             {
                                 throw new Exception("There has to be a previous stop, have not reached the first stop for this trip yet.");
                             }
-                            stops.Insert(i + 1, new Tuple<uint, StopProfile>(connectionEnumerator.ArrivalStop, new StopProfile()
+                            stops.Insert(firstI + 1, new Tuple<uint, StopProfile>(connectionEnumerator.ArrivalStop, new StopProfile()
                                 {
                                     PreviousConnectionId = connectionEnumerator.Id,
                                     Seconds = connectionEnumerator.ArrivalTime

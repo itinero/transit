@@ -161,6 +161,14 @@ namespace OsmSharp.Routing.Transit.GTFS
                 scheduleIds.Add(currentServiceId, newScheduleId);
             }
 
+            // load routes.
+            var routes = new Dictionary<string, global::GTFS.Entities.Route>();
+            for (var i = 0; i < feed.Routes.Count; i++)
+            {
+                var route = feed.Routes.Get(i);
+                routes[route.Id] = route;
+            }
+
             // load trips.
             var tripsIndex = new Dictionary<string, uint>();
             var tripServiceIds = new Dictionary<string, string>();
@@ -170,10 +178,12 @@ namespace OsmSharp.Routing.Transit.GTFS
                 tripServiceIds[trip.Id] = trip.ServiceId;
                 var route = feed.Routes.Get(trip.RouteId);
                 uint agencyId, scheduleId;
+                global::GTFS.Entities.Route gtfsRoute;
                 if(agenciesIndex.TryGetValue(route.AgencyId, out agencyId) &&
-                   scheduleIds.TryGetValue(trip.ServiceId, out scheduleId))
+                   scheduleIds.TryGetValue(trip.ServiceId, out scheduleId) &&
+                   routes.TryGetValue(trip.RouteId, out gtfsRoute))
                 {
-                    tripsIndex[trip.Id] = db.AddTrip(trip, agencyId, scheduleId);
+                    tripsIndex[trip.Id] = db.AddTrip(trip, gtfsRoute, agencyId, scheduleId);
                 }
             }
 
@@ -291,7 +301,7 @@ namespace OsmSharp.Routing.Transit.GTFS
         /// <summary>
         /// Adds a trip for the given agency.
         /// </summary>
-        public static uint AddTrip(this TransitDb db, Trip trip, uint agencyId, uint scheduleId)
+        public static uint AddTrip(this TransitDb db, Trip trip, global::GTFS.Entities.Route route, uint agencyId, uint scheduleId)
         {
             var attributes = new TagsCollection();
             attributes.Add("id", trip.Id);
@@ -305,6 +315,12 @@ namespace OsmSharp.Routing.Transit.GTFS
             attributes.AddNotNullOrWhiteSpace("service_id", trip.ServiceId);
             attributes.AddNotNullOrWhiteSpace("shape_id", trip.ShapeId);
             attributes.AddNotNullOrWhiteSpace("short_name", trip.ShortName);
+
+            attributes.AddNotNullOrWhiteSpace("route_color", route.Color.ToHexColorString());
+            attributes.AddNotNullOrWhiteSpace("route_description", route.Description);
+            attributes.AddNotNullOrWhiteSpace("route_long_name", route.LongName);
+            attributes.AddNotNullOrWhiteSpace("route_short_name", route.ShortName);
+            attributes.AddNotNullOrWhiteSpace("route_text_color", route.TextColor.ToHexColorString());
 
             var metaId = db.TripAttributes.Add(attributes);
 

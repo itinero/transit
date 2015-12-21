@@ -209,7 +209,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 Latitude = (float)stopEnumerator.Latitude,
                 Longitude = (float)stopEnumerator.Longitude,
                 Time = 0,
-                Tags = routeTags.ToArray()
+                Tags = routeTags.ToArray(),
+                Points = new RouteStop[] 
+                { 
+                    new RouteStop()
+                    {
+                        Latitude = stopEnumerator.Latitude,
+                        Longitude = stopEnumerator.Longitude,
+                        Tags = routeTags.ToArray()
+                    }
+                }
             });
             for (int idx = 1; idx < stops.Count; idx++)
             {
@@ -241,7 +250,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             Longitude = (float)stopEnumerator.Longitude,
                             Time = stops[idx].Item2.Seconds - departureTime,
                             Tags = routeTags.ToArray(),
-                            Profile = Constants.WaitProfile
+                            Profile = Constants.WaitProfile,
+                            Points = new RouteStop[] 
+                            { 
+                                new RouteStop()
+                                {
+                                    Latitude = stopEnumerator.Latitude,
+                                    Longitude = stopEnumerator.Longitude,
+                                    Tags = routeTags.ToArray()
+                                }
+                            }
                         });
                     }
                     else if (_route.Segments[_route.Segments.Count - 1].Profile == Constants.TransferProfile)
@@ -253,7 +271,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             Longitude = (float)stopEnumerator.Longitude,
                             Time = stops[idx].Item2.Seconds - departureTime,
                             Tags = routeTags.ToArray(),
-                            Profile = Constants.WaitProfile
+                            Profile = Constants.WaitProfile,
+                            Points = new RouteStop[] 
+                            { 
+                                new RouteStop()
+                                {
+                                    Latitude = stopEnumerator.Latitude,
+                                    Longitude = stopEnumerator.Longitude,
+                                    Tags = routeTags.ToArray()
+                                }
+                            }
                         });
                     }
                     else
@@ -265,7 +292,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             Longitude = (float)stopEnumerator.Longitude,
                             Time = stops[idx].Item2.Seconds - departureTime,
                             Tags = routeTags.ToArray(),
-                            Profile = Constants.TransferProfile
+                            Profile = Constants.TransferProfile,
+                            Points = new RouteStop[] 
+                            { 
+                                new RouteStop()
+                                {
+                                    Latitude = stopEnumerator.Latitude,
+                                    Longitude = stopEnumerator.Longitude,
+                                    Tags = routeTags.ToArray()
+                                }
+                            }
                         });
                     }
                 }
@@ -286,7 +322,16 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                         Longitude = (float)stopEnumerator.Longitude,
                         Time = stops[idx].Item2.Seconds - departureTime,
                         Tags = routeTags.ToArray(),
-                        Profile = Constants.VehicleProfile
+                        Profile = Constants.VehicleProfile,
+                        Points = new RouteStop[] 
+                            { 
+                                new RouteStop()
+                                {
+                                    Latitude = stopEnumerator.Latitude,
+                                    Longitude = stopEnumerator.Longitude,
+                                    Tags = routeTags.ToArray()
+                                }
+                            }
                     });
                 }
             }

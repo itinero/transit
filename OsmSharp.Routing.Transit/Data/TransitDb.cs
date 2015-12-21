@@ -207,6 +207,15 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Gets the schedule enumerator.
+        /// </summary>
+        /// <returns></returns>
+        public SchedulesDb.Enumerator GetSchedulesEnumerator()
+        {
+            return _schedulesDb.GetEnumerator();
+        }
+
+        /// <summary>
         /// Gets the trip count.
         /// </summary>
         public uint ConnectionsCount

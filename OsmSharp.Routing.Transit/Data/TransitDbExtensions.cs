@@ -187,5 +187,26 @@ namespace OsmSharp.Routing.Transit.Data
             }
             return stops;
         }
+
+        /// <summary>
+        /// Gets the default is trip possible function.
+        /// </summary>
+        public static Func<uint, DateTime, bool> GetIsTripPossibleFunc(this TransitDb db)
+        {
+            var tripEnumerator = db.GetTripsEnumerator();
+            var schedulesSnumerator = db.GetSchedulesEnumerator();
+
+            return (tripId, day) =>
+                {
+                    if(tripEnumerator.MoveTo(tripId))
+                    {
+                        if(schedulesSnumerator.MoveTo(tripEnumerator.ScheduleId))
+                        {
+                            return schedulesSnumerator.DateIsSet(day);
+                        }
+                    }
+                    return false;
+                };
+        }
     }
 }

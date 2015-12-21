@@ -279,10 +279,24 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                 if (_profiles.TryGetValue(enumerator.DepartureStop, out departureProfiles))
                 { // stop was visited, has a status.// first time on this trip.
                     var tripReached = false;
+                    var tripPossible = false;
                     var tripStatus = new TripStatus();
                     if (_tripStatuses.TryGetValue(enumerator.TripId, out tripStatus))
                     { // trip was already reached.
-                        tripReached = true;
+                        if(tripStatus.Transfers == int.MaxValue)
+                        { // trip is impossible.
+                            continue;
+                        }
+                        else if (tripStatus.Transfers == -1)
+                        { // trip is possible but has not been reached yet.
+                            tripPossible = true;
+                            tripReached = false;
+                        }
+                        else
+                        { // trip reached and possible.
+                            tripReached = true;
+                            tripPossible = true;
+                        }
                     }
 
                     // latest arrival time in case of a transfer.
@@ -330,6 +344,29 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                     }
                     else
                     { // if trip was not found have a look and see if we can transfer to this trip at this connection.
+                        // first check if trip is possible if needed.
+                        if(!tripPossible && 
+                           !_isTripPossible(enumerator.TripId, _departureTime))
+                        { // trip is not possible. 
+                            _tripStatuses[enumerator.TripId] = new TripStatus()
+                            {
+                                StopId = Constants.NoStopId,
+                                Transfers = int.MaxValue,
+                                DepartureTime = uint.MaxValue
+                            };
+                            continue;
+                        }
+                        else
+                        { // no yet reached, but possible.
+                            _tripStatuses[enumerator.TripId] = new TripStatus()
+                            {
+                                StopId = Constants.NoStopId,
+                                Transfers = -1,
+                                DepartureTime = 0
+                            };
+                        }
+
+                        // check if this trip can be transferred to.
                         var tripTransfers = int.MaxValue;
                         for (var i = departureProfiles.Count - 1; i >= 0; i--)
                         {
@@ -639,6 +676,7 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
     /// 
     /// Keep the first stop possible to reach this trip.
     /// Keep the #transfers to reach this trip.
+    /// Keep a dummy-status when trip is impossible.
     /// </summary>
     public struct TripStatus
     {

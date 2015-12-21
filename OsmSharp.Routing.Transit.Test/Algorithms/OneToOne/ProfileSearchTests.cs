@@ -693,5 +693,85 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.AreEqual(0, tripStatus.StopId);
             Assert.AreEqual(08 * 3600 + 00 * 60, tripStatus.DepartureTime);
         }
+
+        /// <summary>
+        /// Tests a  one-hop with a one-connection db and with only monday as a possible connection after 01-01-2017.
+        /// 
+        /// Departure (0)@00:50:00
+        /// 
+        ///   (0)-->---0--->--(1)
+        /// @01:00          @01:40
+        /// 
+        /// </summary>
+        [Test]
+        public void TestOneHopScheduled()
+        {
+            // build dummy db.
+            var db = new TransitDb();
+            var schedule = db.AddSchedule();
+            db.AddScheduleEntry(schedule, new DateTime(2017, 01, 01), new DateTime(2018, 01, 01),
+                DayOfWeek.Monday);
+            db.AddStop(0, 0, 0);
+            db.AddStop(1, 1, 1);
+            db.AddTrip(schedule, 0, 0);
+            db.AddConnection(0, 1, 0, 3600, 3600 + 40 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 08, 00, 50, 00);
+            var algorithm = new ProfileSearch(db, departureTime,
+                db.GetIsTripPossibleFunc());
+            algorithm.SetSourceStop(0, 50 * 60);
+            algorithm.SetTargetStop(1, 0);
+            algorithm.Run();
+
+            // test results.
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsTrue(algorithm.HasSucceeded);
+
+            // check arrival profile(s).
+            var arrivalStops = algorithm.ArrivalStops;
+            Assert.AreEqual(3, arrivalStops.Count);
+            Assert.AreEqual(1, arrivalStops[2]);
+            var arrivalProfiles = algorithm.ArrivalProfiles;
+            Assert.AreEqual(3, arrivalProfiles.Count);
+            Assert.AreEqual(3600 * 01 + 40 * 60, arrivalProfiles[2].Seconds);
+            Assert.AreEqual(50 * 60, algorithm.Duration(2));
+            Assert.AreEqual(new DateTime(2017, 05, 08, 01, 40, 00), algorithm.ArrivalTime(2));
+
+            // check stop profiles.
+            var connections = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
+            var profiles = algorithm.GetStopProfiles(1);
+            var profile = profiles[0];
+            Assert.IsTrue(profile.IsEmpty);
+            profile = profiles[1];
+            Assert.IsTrue(profile.IsEmpty);
+            profile = profiles[2];
+            Assert.AreEqual(0, profile.PreviousConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds + 50 * 60, profile.Seconds);
+            connections.MoveTo(profile.PreviousConnectionId);
+            Assert.AreEqual(0, connections.TripId);
+            Assert.AreEqual(0, connections.DepartureStop);
+            profiles = algorithm.GetStopProfiles(0);
+            profile = profiles[0];
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.NoConnectionId, profile.PreviousConnectionId);
+            Assert.AreEqual((int)(departureTime - departureTime.Date).TotalSeconds, profile.Seconds);
+
+            var tripStatus = algorithm.GetTripStatus(0);
+            Assert.AreEqual(2, tripStatus.Transfers);
+            Assert.AreEqual(0, tripStatus.StopId);
+            Assert.AreEqual(3600, tripStatus.DepartureTime);
+
+            // run algorithm.
+            departureTime = new DateTime(2017, 05, 10, 00, 50, 00);
+            algorithm = new ProfileSearch(db, departureTime,
+                db.GetIsTripPossibleFunc());
+            algorithm.SetSourceStop(0, 50 * 60);
+            algorithm.SetTargetStop(1, 0);
+            algorithm.Run();
+
+            Assert.IsTrue(algorithm.HasRun);
+            Assert.IsFalse(algorithm.HasSucceeded);
+        }
     }
 }

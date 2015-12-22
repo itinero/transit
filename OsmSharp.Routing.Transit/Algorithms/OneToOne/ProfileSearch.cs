@@ -317,8 +317,8 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             Seconds = enumerator.ArrivalTime
                         });
 
-                        // check if this trip was reached with less transfers at this stop.
-                        for (var i = 0; i < tripStatus.Transfers - 4 && i < departureProfiles.Count; i++)
+                        // check if this trip was reached with less transfers at this stop or a better one.
+                        for (var i = 0; i < tripStatus.Transfers && i < departureProfiles.Count; i++)
                         {
                             var sourceProfile = departureProfiles[i];
                             if (sourceProfile.Seconds == Constants.NoSeconds)
@@ -333,12 +333,31 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                             }
 
                             // ok here, this should lead to one less transfer.
-                            _tripStatuses[enumerator.TripId] = new TripStatus()
-                            {
-                                Transfers = i + 2,
-                                StopId = enumerator.DepartureStop,
-                                DepartureTime = enumerator.DepartureTime
-                            };
+                            var existingStatus = _tripStatuses[enumerator.TripId];
+                            if (existingStatus.Transfers > i + 2)
+                            { // # transfers smaller, always replace.
+                                _tripStatuses[enumerator.TripId] = new TripStatus()
+                                {
+                                    Transfers = i + 2,
+                                    StopId = enumerator.DepartureStop,
+                                    DepartureTime = enumerator.DepartureTime
+                                };
+                            }
+                            else if(existingStatus.Transfers == 2)
+                            { // # transfers equal and point to the first stop, compare source times.
+                                var existingStopTime = _profiles[existingStatus.StopId];
+                                var potentialStopTime = _profiles[enumerator.DepartureStop];
+                                if(existingStopTime[0].Seconds > potentialStopTime[0].Seconds)
+                                { // the potential is an improvement.
+                                    _tripStatuses[enumerator.TripId] = new TripStatus()
+                                    {
+                                        Transfers = i + 2,
+                                        StopId = enumerator.DepartureStop,
+                                        DepartureTime = enumerator.DepartureTime
+                                    };
+                                }
+                            }
+
                             break;
                         }
                     }

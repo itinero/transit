@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -782,6 +782,87 @@ namespace OsmSharp.Transit.Test.Algorithms.OneToOne
             Assert.IsTrue(tags.ContainsKeyValue("trip_name", "trip1"));
             Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
                 ((08 * 3600) + (10 * 60)).ToInvariantString()));
+        }
+
+        /// <summary>
+        /// Tests a successful two-hop with a two-connection db.
+        /// 
+        /// Departure (0)@07:30:00
+        ///           (1)@07:25:00
+        /// 
+        ///   (0)-->---0--->--(1)-->---0--->--(2)
+        /// @08:00          @08:10          @08:20
+        /// 
+        /// Expected result: A route should be generate from (1) -> (2) not from (0) -> (1) -> (2). Waiting is preferred.
+        /// </summary>
+        [Test]
+        public void TestTwoHopsSuccessfulMultipleStarts()
+        {
+            // build dummy db.
+            var db = new TransitDb();
+            db.AddStop(0, 0, db.StopAttributes.Add(new Tag("name", "stop1")));
+            db.AddStop(1, 1, db.StopAttributes.Add(new Tag("name", "stop2")));
+            db.AddStop(2, 2, db.StopAttributes.Add(new Tag("name", "stop3")));
+            db.AddTrip(0, 0, db.TripAttributes.Add(new Tag("name", "trip1")));
+            db.AddConnection(0, 1, 0, 8 * 3600, 8 * 3600 + 10 * 60);
+            db.AddConnection(1, 2, 0, 8 * 3600 + 11 * 60, 8 * 3600 + 20 * 60);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
+
+            // run algorithm.
+            var departureTime = new DateTime(2017, 05, 10, 07, 30, 00);
+            var algorithm = new ProfileSearch(db, departureTime,
+                (profileId, day) => true);
+            algorithm.SetSourceStop(0, 07 * 3600 + 30 * 60);
+            algorithm.SetSourceStop(1, 07 * 3600 + 25 * 60);
+            algorithm.SetTargetStop(2, 0);
+            algorithm.Run();
+
+            // build route.
+            var routeBuilder = new ProfileSearchRouteBuilder(algorithm, true);
+            routeBuilder.Run();
+            var route = routeBuilder.Route;
+
+            Assert.IsNotNull(route);
+            Assert.IsNotNull(route.Segments);
+            Assert.AreEqual(3, route.Segments.Count);
+            Assert.AreEqual(3300, route.TotalTime);
+
+            var segment = route.Segments[0];
+            Assert.AreEqual(segment.Time, 0);
+            Assert.AreEqual(segment.Latitude, 1);
+            Assert.AreEqual(segment.Longitude, 1);
+            Assert.AreEqual(null, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            var tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(2, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop2"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((07 * 3600) + (25 * 60)).ToInvariantString()));
+
+            segment = route.Segments[1];
+            Assert.AreEqual(segment.Time, 46 * 60);
+            Assert.AreEqual(segment.Latitude, 1);
+            Assert.AreEqual(segment.Longitude, 1);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.WaitProfile, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(2, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop2"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((08 * 3600) + (11 * 60)).ToInvariantString()));
+
+            segment = route.Segments[2];
+            Assert.AreEqual(segment.Time, 55 * 60);
+            Assert.AreEqual(segment.Latitude, 2);
+            Assert.AreEqual(segment.Longitude, 2);
+            Assert.AreEqual(OsmSharp.Routing.Transit.Constants.VehicleProfile, segment.Profile);
+            Assert.IsNotNull(segment.Tags);
+            tags = segment.Tags.ConvertToTagsCollection();
+            Assert.AreEqual(3, tags.Count);
+            Assert.IsTrue(tags.ContainsKeyValue("stop_name", "stop3"));
+            Assert.IsTrue(tags.ContainsKeyValue("trip_name", "trip1"));
+            Assert.IsTrue(tags.ContainsKeyValue(OsmSharp.Routing.Transit.Constants.TimeOfDayKey,
+                ((08 * 3600) + (20 * 60)).ToInvariantString()));
         }
     }
 }

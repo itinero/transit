@@ -507,6 +507,12 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                     }
                                 }
                             }
+
+                            // set the arrival time as the one with the least transfers (and thus the biggest travel time) and the time to target.
+                            if(arrivalProfiles.Seconds + targetSeconds < targetProfilesTime)
+                            { // ok, this is the next best.
+                                targetProfilesTime = arrivalProfiles.Seconds + targetSeconds;
+                            }
                         }
                     }
                 }

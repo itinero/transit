@@ -106,10 +106,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                          profiles[profileIdx].Seconds != connectionEnumerator.DepartureTime)
                     { // this is a waiting period.
                         stops.Add(new Tuple<uint, StopProfile>(previousStopId, new StopProfile()
-                            {
-                                PreviousStopId = previousStopId,
-                                Seconds = tripStatus.DepartureTime
-                            }));
+                        {
+                            PreviousStopId = previousStopId,
+                            Seconds = tripStatus.DepartureTime
+                        }));
                         trips.Add(null);
                     }
 
@@ -140,9 +140,9 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
 
             if (_intermediateStops)
             { // expand trips.
-                for (var i = 0; i< trips.Count;i++)
+                for (var i = 0; i < trips.Count; i++)
                 {
-                    if(trips[i].HasValue)
+                    if (trips[i].HasValue)
                     { // there is a trip, expand it.
                         var lastStop = stops[i + 1].Item1;
                         var firstStop = stops[i].Item1;
@@ -164,10 +164,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
                                 throw new Exception("There has to be a previous stop, have not reached the first stop for this trip yet.");
                             }
                             stops.Insert(firstI + 1, new Tuple<uint, StopProfile>(connectionEnumerator.ArrivalStop, new StopProfile()
-                                {
-                                    PreviousConnectionId = connectionEnumerator.Id,
-                                    Seconds = connectionEnumerator.ArrivalTime
-                                }));
+                            {
+                                PreviousConnectionId = connectionEnumerator.Id,
+                                Seconds = connectionEnumerator.ArrivalTime
+                            }));
                             trips.Insert(i, trips[i].Value);
                             i++;
                         }
@@ -396,10 +396,10 @@ namespace OsmSharp.Routing.Transit.Algorithms.OneToOne
             foreach (var tag in tags)
             {
                 routeTags.Add(new RouteTags()
-                    {
-                        Key = prefix + tag.Key,
-                        Value = tag.Value
-                    });
+                {
+                    Key = prefix + tag.Key,
+                    Value = tag.Value
+                });
             }
             return routeTags;
         }

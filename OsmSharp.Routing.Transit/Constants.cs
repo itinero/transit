@@ -74,6 +74,11 @@ namespace OsmSharp.Routing.Transit
         public static string TimeOfDayKey = "transit.timeofday";
 
         /// <summary>
+        /// Holds the key to use when setting a duration on a route segment.
+        /// </summary>
+        public static string DurationKey = "duration";
+
+        /// <summary>
         /// Holds the value to use for a stop id when no information is available.
         /// </summary>
         public const uint NoStopId = uint.MaxValue;

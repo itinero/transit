@@ -223,6 +223,7 @@ namespace OsmSharp.Routing.Transit.GTFS
                 return c;
             });
             var currentTripId = string.Empty;
+            uint collisionOffset = 1;
             for (var i = 0; i < stopTimes.Count; i++)
             {
                 var stopTime = stopTimes[i];
@@ -234,6 +235,7 @@ namespace OsmSharp.Routing.Transit.GTFS
                     if (currentTripId != stopTime.TripId)
                     { // start a new sequence.
                         currentTripId = stopTime.TripId;
+                        collisionOffset = 1;
                     }
                     else
                     { // the previous stop time has the same id, add them as a connection.
@@ -242,8 +244,24 @@ namespace OsmSharp.Routing.Transit.GTFS
                         if(stopsIndex.TryGetValue(previousStopTime.StopId, out stop1) &&
                            stopsIndex.TryGetValue(stopTime.StopId, out stop2))
                         {
-                            db.AddConnection(stop1, stop2, tripId,
-                                (uint)previousStopTime.DepartureTime.TotalSeconds, (uint)stopTime.ArrivalTime.TotalSeconds);
+                            if (stopTime.ArrivalTime.TotalSeconds - previousStopTime.DepartureTime.TotalSeconds < collisionOffset)
+                            { // make sure arrival and departure time differ at least one second.
+                                db.AddConnection(stop1, stop2, tripId,
+                                    (uint)previousStopTime.DepartureTime.TotalSeconds + (collisionOffset - 1), (uint)stopTime.ArrivalTime.TotalSeconds + collisionOffset);
+                                collisionOffset++;
+                            }
+                            else if(collisionOffset > 1)
+                            { // the previous time was offsetted, also offset this departure time.
+                                db.AddConnection(stop1, stop2, tripId,
+                                    (uint)previousStopTime.DepartureTime.TotalSeconds + (collisionOffset - 1), (uint)stopTime.ArrivalTime.TotalSeconds);
+                                collisionOffset = 1;
+                            }
+                            else
+                            { // arrival and departure time differ already.
+                                db.AddConnection(stop1, stop2, tripId,
+                                    (uint)previousStopTime.DepartureTime.TotalSeconds, (uint)stopTime.ArrivalTime.TotalSeconds);
+                                collisionOffset = 1;
+                            }
                         }
                     }
                 }

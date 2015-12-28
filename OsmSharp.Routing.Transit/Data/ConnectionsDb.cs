@@ -70,7 +70,7 @@ namespace OsmSharp.Routing.Transit.Data
         /// </summary>
         public uint Add(uint stop1, uint stop2, uint tripId, uint departureTime, uint arrivalTime)
         {
-            if (arrivalTime < departureTime) { throw new ArgumentException("Departure time must be smaller than arrival time."); }
+            if (arrivalTime <= departureTime) { throw new ArgumentException("Departure time must be smaller than arrival time."); }
             var duration = arrivalTime - departureTime;
             if (duration > CONNECTION_MAX_DURATION) {
                 throw new ArgumentException(string.Format("A connection with a duration > {0}s cannot be stored.", CONNECTION_MAX_DURATION));

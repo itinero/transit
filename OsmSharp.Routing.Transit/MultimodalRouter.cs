@@ -53,18 +53,7 @@ namespace OsmSharp.Routing.Transit
             // create the profile search.
             var tripEnumerator = _db.GetTripsEnumerator();
             var transfersDb =  _db.GetTransfersDb(_transferProfile);
-            var profileSearch = new ProfileSearch(_db, departureTime, transfersDb, (t, day) =>
-            {
-                if (tripEnumerator.MoveTo(t))
-                {
-                    if (settings.UseAgency == null ||
-                        settings.UseAgency(tripEnumerator.AgencyId))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            });
+            var profileSearch = new ProfileSearch(_db, departureTime, transfersDb, _db.GetIsTripPossibleFunc());
 
             // search for sources.
             var departureTimeSeconds = (uint)(departureTime - departureTime.Date).TotalSeconds;

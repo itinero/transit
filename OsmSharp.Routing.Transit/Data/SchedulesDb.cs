@@ -122,7 +122,7 @@ namespace OsmSharp.Routing.Transit.Data
             {
                 _count = _db._data[id];
                 _id = id;
-                if(_count >= (2^25))
+                if(_count >= (1<<25))
                 {
                     throw new InvalidOperationException("Attempt to move to a non-existing schedule id.");
                 }

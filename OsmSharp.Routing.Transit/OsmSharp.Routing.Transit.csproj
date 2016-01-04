@@ -56,25 +56,25 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr3.Runtime.PCL.3.5.0.3\lib\portable-win+net40+sl40+wp\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS, Version=1.3.4.93, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.3.4.93-beta\lib\net40\GTFS.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GTFS, Version=1.3.6.101, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GTFS.1.3.6-rc1-0101\lib\net40\GTFS.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO, Version=1.3.4.93, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.3.4.93-beta\lib\net40\GTFS.IO.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GTFS.IO, Version=1.3.6.101, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GTFS.1.3.6-rc1-0101\lib\net40\GTFS.IO.dll</HintPath>
     </Reference>
-    <Reference Include="GTFS.IO.Desktop, Version=1.3.4.93, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.3.4.93-beta\lib\net40\GTFS.IO.Desktop.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GTFS.IO.Desktop, Version=1.3.6.101, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GTFS.1.3.6-rc1-0101\lib\net40\GTFS.IO.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp, Version=0.0.2.103, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Core.0.0.2-rc1-0103\lib\net45\OsmSharp.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="OsmSharp, Version=0.1.2.104, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OsmSharp.Core.0.1.2-rc1-0104\lib\net45\OsmSharp.dll</HintPath>
     </Reference>
-    <Reference Include="OsmSharp.Osm, Version=0.0.2.103, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Core.0.0.2-rc1-0103\lib\net45\OsmSharp.Osm.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="OsmSharp.Osm, Version=0.1.2.104, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OsmSharp.Core.0.1.2-rc1-0104\lib\net45\OsmSharp.Osm.dll</HintPath>
     </Reference>
     <Reference Include="OsmSharp.Routing, Version=0.1.1.108, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OsmSharp.Routing.0.1.1-beta-0108\lib\net45\OsmSharp.Routing.dll</HintPath>

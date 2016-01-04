@@ -165,7 +165,7 @@ namespace OsmSharp.Routing.Transit.Data
                             _connections[_connectionsOrder[connection] * CONNECTION_SIZE + 3],
                                 out departureTime, out duration);
                         uint tripId = _connections[_connectionsOrder[connection] * CONNECTION_SIZE + 2];
-                        if (sorting == DefaultSorting.DepartureTime)
+                        if (sorting != DefaultSorting.DepartureTime)
                         {
                             return (long)departureTime * int.MaxValue + tripId;
                         }

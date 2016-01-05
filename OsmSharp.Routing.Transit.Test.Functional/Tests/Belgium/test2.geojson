@@ -1,0 +1,69 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "source",
+        "profile": "pedestrian"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.9233503341674805,
+          51.22646633659855
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "type": "result",
+        "departuretime": 201601051700,
+        "time": 7600
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.9233503341674805,
+            51.22649321205676
+          ],
+          [
+            2.9268264770507812,
+            51.22782352762327
+          ],
+          [
+            3.7108039855957027,
+            51.03561909085579
+          ],
+          [
+            4.421074390411377,
+            51.21601059285203
+          ],
+          [
+            4.4322967529296875,
+            51.219088429879115
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "target",
+        "profile": "pedestrian"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.4322967529296875,
+          51.21908674989319
+        ]
+      }
+    }
+  ]
+}

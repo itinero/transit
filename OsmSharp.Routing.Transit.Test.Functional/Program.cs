@@ -1,4 +1,11 @@
-﻿using System;
+﻿using GTFS;
+using GTFS.IO;
+using OsmSharp.Routing.Osm.Vehicles;
+using OsmSharp.Routing.Transit.Data;
+using OsmSharp.Routing.Transit.GTFS;
+using OsmSharp.Routing.Transit.Test.Functional.Staging;
+using System;
+using OsmSharp.Routing.Transit.Osm.Data;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -13,26 +20,32 @@ namespace OsmSharp.Routing.Transit.Test.Functional
     {
         static void Main(string[] args)
         {
-            // download test data.
-            var client = new WebClient();
-            client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
-            client.DownloadFileCompleted += client_DownloadFileCompleted;
-            client.DownloadFileAsync(new Uri("ftp://build.osmsharp.com/data/OSM/routing/develop/belgium.a.routing.zip"), 
-                "belgium.a.routing.zip");
+            OsmSharp.Routing.Osm.Vehicles.Vehicle.RegisterVehicles();
 
-            Console.ReadLine();
-        }
+            // download and extract test-data.
+            Console.WriteLine("Downloading Belgium...");
+            Download.DownloadBelgiumAll();
+            Console.WriteLine("Downloading NMBS GTFS...");
+            Download.DownloadNMBS();
 
-        static void client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            File.Delete("belgium.a.routing");
-            ZipFile.ExtractToDirectory("belgium.a.routing.zip", ".");
-            Console.WriteLine("Belgium downloaded and extracted.");
-        }
+            // create test router.
+            Console.WriteLine("Loading routing data for Belgium...");
+            var router = RouterDb.Deserialize(File.OpenRead("belgium.a.routing"));
 
-        static void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            Console.Write(".");
+            Console.WriteLine("Loading NMBS data...");
+            var reader = new GTFSReader<GTFSFeed>(false);
+            var feed = reader.Read(new GTFSDirectorySource(@"NMBS"));
+            var db = new TransitDb();
+            db.LoadFrom(feed);
+            db.SortConnections(DefaultSorting.DepartureTime, null);
+            db.AddTransfersDb(OsmSharp.Routing.Osm.Vehicles.Vehicle.Pedestrian.Fastest(), 100);
+            db.AddStopLinksDb(router, Vehicle.Pedestrian.Fastest(), maxDistance: 100);
+
+            var transitRouter = new MultimodalRouter(router, db, Vehicle.Pedestrian.Fastest());
+
+            // run tests.
+            Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test1.geojson");
+            Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test2.geojson");
         }
     }
 }

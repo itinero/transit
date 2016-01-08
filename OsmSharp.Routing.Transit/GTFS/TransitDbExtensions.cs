@@ -188,12 +188,35 @@ namespace OsmSharp.Routing.Transit.GTFS
             }
 
             // load stops.
-            var stopsReverseIndex = new string[feed.Stops.Count];
+            var stopsReverseIndex = new Extensions.LinkedListNode<string>[feed.Stops.Count];
+            var stopsIndex = new Dictionary<string, uint>();
             for (var i = 0; i < feed.Stops.Count; i++)
             {
                 var stop = feed.Stops.Get(i);
-                var stopId = db.AddStop(stop);
-                stopsReverseIndex[stopId] = stop.Id;
+                if (string.IsNullOrWhiteSpace(stop.ParentStation))
+                { // only add stops that have no parent station.
+                    var stopId = db.AddStop(stop);
+                    stopsReverseIndex[stopId] = new Extensions.LinkedListNode<string>(stop.Id);
+                    stopsIndex[stop.Id] = stopId;
+                }
+            }
+            for(var i = 0; i < feed.Stops.Count; i++)
+            {
+                var stop = feed.Stops.Get(i);
+                if(!string.IsNullOrWhiteSpace(stop.ParentStation))
+                { // now add the stops that have parent stations.
+                    uint stopId;
+                    if(!stopsIndex.TryGetValue(stop.ParentStation, out stopId))
+                    { // oeps, parent station not found.
+                        throw new Exception("A station was found with a parent station that has a parent station of it's own. Only one level of station hierarchy is supported.");
+                    }
+                    var node = stopsReverseIndex[stopId];
+                    while (node.Next != null)
+                    {
+                        node = node.Next;
+                    }
+                    node.Next = new Extensions.LinkedListNode<string>(stop.Id);
+                }
             }
 
             // sort stops.
@@ -205,10 +228,14 @@ namespace OsmSharp.Routing.Transit.GTFS
                 });
 
             // re-index stops.
-            var stopsIndex = new Dictionary<string, uint>();
             for(uint i = 0; i < stopsReverseIndex.Length; i++)
             {
-                stopsIndex[stopsReverseIndex[i]] = i;
+                var node = stopsReverseIndex[i];
+                while(node != null)
+                {
+                    stopsIndex[node.Value] = i;
+                    node = node.Next;
+                }
             }
 
             // load connections.

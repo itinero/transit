@@ -208,5 +208,18 @@ namespace OsmSharp.Routing.Transit.Data
                     return false;
                 };
         }
+
+        /// <summary>
+        /// Gets the meta-data for the given stop.
+        /// </summary>
+        public static TagsCollectionBase GetStopMeta(this TransitDb db, uint stopId)
+        {
+            var enumerator = db.GetStopsEnumerator();
+            if(!enumerator.MoveTo(stopId))
+            {
+                return null;
+            }
+            return db.StopAttributes.Get(enumerator.MetaId);
+        }
     }
 }

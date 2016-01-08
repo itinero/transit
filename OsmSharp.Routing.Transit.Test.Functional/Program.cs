@@ -44,8 +44,9 @@ namespace OsmSharp.Routing.Transit.Test.Functional
             var transitRouter = new MultimodalRouter(router, db, Vehicle.Pedestrian.Fastest());
 
             // run tests.
-            Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test1.geojson");
-            Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test2.geojson");
+            //Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test1.geojson");
+            //Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test2.geojson");
+            Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test3.geojson");
         }
     }
 }

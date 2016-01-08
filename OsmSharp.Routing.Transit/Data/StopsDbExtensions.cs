@@ -25,7 +25,8 @@ namespace OsmSharp.Routing.Transit.Data
     /// <summary>
     /// Contains extension methods related to the stops db.
     /// </summary>
-    public static class StopsDbEnumerator
+    public static class StopsDbExtensions
     {
+
     }
 }

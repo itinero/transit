@@ -95,6 +95,7 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Tests\Belgium\test1.geojson" />
     <EmbeddedResource Include="Tests\Belgium\test2.geojson" />
+    <EmbeddedResource Include="Tests\Belgium\test3.geojson" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OsmSharp.Routing.Transit\OsmSharp.Routing.Transit.csproj">

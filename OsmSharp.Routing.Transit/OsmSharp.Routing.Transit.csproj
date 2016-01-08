@@ -126,7 +126,7 @@
     <Compile Include="Data\SchedulesDbExtensions.cs" />
     <Compile Include="Data\StopLinksDb.cs" />
     <Compile Include="Data\StopsDb.cs" />
-    <Compile Include="Data\StopsDbEnumerator.cs" />
+    <Compile Include="Data\StopsDbExtensions.cs" />
     <Compile Include="Data\TransfersDb.cs" />
     <Compile Include="Data\TransitDb.cs" />
     <Compile Include="Data\TransitDbExtensions.cs" />

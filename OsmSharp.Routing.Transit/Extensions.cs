@@ -122,5 +122,37 @@ namespace OsmSharp.Routing.Transit
             }
             return features;
         }
+
+        /// <summary>
+        /// Represents a node in a linked-list.
+        /// </summary>
+        public class LinkedListNode<T>
+        {
+            /// <summary>
+            /// Creates a new linked-list node.
+            /// </summary>
+            public LinkedListNode()
+            {
+
+            }
+
+            /// <summary>
+            /// Creates a new linked-list node.
+            /// </summary>
+            public LinkedListNode(T value)
+            {
+                this.Value = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the next node.
+            /// </summary>
+            public LinkedListNode<T> Next { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            public T Value { get; set; }
+        }
     }
 }

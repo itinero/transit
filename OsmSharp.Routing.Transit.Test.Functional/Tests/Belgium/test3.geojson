@@ -1,0 +1,63 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "type": "result",
+        "departuretime": 201601081700,
+        "time": 90
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.337325096130371,
+            50.835174826002465
+          ],
+          [
+            5.496318340301514,
+            50.96630579394126
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "type": "target",
+        "profile": "pedestrian"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.496329069137573,
+          50.96626525325902
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "type": "source",
+        "profile": "pedestrian"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.337368011474609,
+          50.83512061930507
+        ]
+      }
+    }
+  ]
+}

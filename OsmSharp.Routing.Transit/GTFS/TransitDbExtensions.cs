@@ -46,7 +46,7 @@ namespace OsmSharp.Routing.Transit.GTFS
             for(var i = 0; i < feed.Agencies.Count; i++)
             {
                 var agency = feed.Agencies.Get(i);
-                agenciesIndex[agency.Id] = db.AddAgency(agency);
+                agenciesIndex[agency.Id.ToStringEmptyWhenNull()] = db.AddAgency(agency);
             }
 
             // load schedules.
@@ -179,7 +179,7 @@ namespace OsmSharp.Routing.Transit.GTFS
                 var route = feed.Routes.Get(trip.RouteId);
                 uint agencyId, scheduleId;
                 global::GTFS.Entities.Route gtfsRoute;
-                if(agenciesIndex.TryGetValue(route.AgencyId, out agencyId) &&
+                if(agenciesIndex.TryGetValue(route.AgencyId.ToStringEmptyWhenNull(), out agencyId) &&
                    scheduleIds.TryGetValue(trip.ServiceId, out scheduleId) &&
                    routes.TryGetValue(trip.RouteId, out gtfsRoute))
                 {
@@ -332,7 +332,7 @@ namespace OsmSharp.Routing.Transit.GTFS
         public static uint AddAgency(this TransitDb db, Agency agency)
         {
             var attributes = new TagsCollection();
-            attributes.Add("id", agency.Id);
+            attributes.Add("id", agency.Id.ToStringEmptyWhenNull());
             attributes.AddNotNullOrWhiteSpace("fare_url", agency.FareURL);
             attributes.AddNotNullOrWhiteSpace("language_code", agency.LanguageCode);
             attributes.AddNotNullOrWhiteSpace("name", agency.Name);

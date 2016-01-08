@@ -38,6 +38,10 @@ namespace OsmSharp.Routing.Transit.Test.Functional.Tests
             var resolvedTarget = router.Resolve(targetProfile, targetLocation);
 
             var result = test.First(x => x.Attributes.ContainsKeyValue("type", "result"));
+            var name = result.Attributes.FirstOrException(x => x.Key == "name", "Name of test case not found, expected on result geometry.").Value;
+
+            Console.Write("Test {0} started...", name);
+
             DateTime time;
             if (result.Attributes.ContainsKey("departuretime") &&
                 DateTime.TryParseExact(result.Attributes.First(x => x.Key == "departuretime").Value.ToInvariantString(),
@@ -55,6 +59,7 @@ namespace OsmSharp.Routing.Transit.Test.Functional.Tests
                     Assert.AreEqual(timeResult, route.Value.TotalTime, Settings.MinimumTotalTimeDifference);
                 }
                 File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
+                Console.WriteLine("OK.");
             }
             else
             {

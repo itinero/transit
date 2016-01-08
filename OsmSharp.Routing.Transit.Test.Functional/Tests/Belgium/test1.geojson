@@ -43,7 +43,8 @@
         "stroke-opacity": 1,
         "type": "result",
         "departuretime": 201601051700,
-        "time": 4900
+        "time": 4900,
+        "name": "Train Gent -> Antwerpen @ 201601051700"
       },
       "geometry": {
         "type": "LineString",

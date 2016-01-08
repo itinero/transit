@@ -3,6 +3,7 @@ using OsmSharp.Geo.Features;
 using OsmSharp.Geo.Geometries;
 using OsmSharp.Routing;
 using System;
+using System.Diagnostics.Contracts;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -39,8 +40,9 @@ namespace OsmSharp.Routing.Transit.Test.Functional.Tests
 
             var result = test.First(x => x.Attributes.ContainsKeyValue("type", "result"));
             var name = result.Attributes.FirstOrException(x => x.Key == "name", "Name of test case not found, expected on result geometry.").Value;
+            Contract.Requires(name != null, "Name of test case not set.");
 
-            Console.Write("Test {0} started...", name);
+            var performanceInfoConsumer = new PerformanceInfoConsumer(name.ToStringEmptyWhenNull(), 5000);
 
             DateTime time;
             if (result.Attributes.ContainsKey("departuretime") &&
@@ -48,6 +50,7 @@ namespace OsmSharp.Routing.Transit.Test.Functional.Tests
                     "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out time))
             {
+                performanceInfoConsumer.Start();
                 var route = router.TryEarliestArrival(time, resolvedSource, sourceProfile, resolvedTarget, targetProfile, EarliestArrivalSettings.Default);
 
                 Assert.IsFalse(route.IsError, "Route was not found.");
@@ -58,8 +61,9 @@ namespace OsmSharp.Routing.Transit.Test.Functional.Tests
                     var timeResult = (long)value;
                     Assert.AreEqual(timeResult, route.Value.TotalTime, Settings.MinimumTotalTimeDifference);
                 }
+                performanceInfoConsumer.Stop();
                 File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
-                Console.WriteLine("OK.");
+
             }
             else
             {

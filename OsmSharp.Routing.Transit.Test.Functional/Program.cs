@@ -47,6 +47,9 @@ namespace OsmSharp.Routing.Transit.Test.Functional
             Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test1.geojson");
             Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test2.geojson");
             Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test3.geojson");
+            
+            Console.WriteLine("Done!");
+            Console.ReadLine();
         }
     }
 }

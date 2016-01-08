@@ -9,8 +9,8 @@
         "stroke-opacity": 1,
         "type": "result",
         "departuretime": 201601081700,
-        "time": 90,
-        "name":  "Train Brugge -> Antwerpen @ 201601081700"
+        "time": 7000,
+        "name":  "Train Brussel -> Genk @ 201601081700"
       },
       "geometry": {
         "type": "LineString",

@@ -240,7 +240,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                             return true;
                         }
                     }
-                    else if (paths[1].Vertex == vertex1)
+                    else if (paths.Length > 1 && paths[1].Vertex == vertex1)
                     { // report on the time.
                         if (this.StopFound(stopId, vertex1Visit.Weight + paths[1].Weight))
                         {
@@ -319,7 +319,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                             bestWeight = best.Weight;
                         }
                     }
-                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                    if (paths.Length > 1 && _dykstra.TryGetVisit(paths[1].Vertex, out visit))
                     { // check if this one is better.
                         if (visit.Weight + paths[1].Weight < bestWeight)
                         { // concatenate paths and set best.
@@ -390,7 +390,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                             bestWeight = best.Weight;
                         }
                     }
-                    if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                    if (paths.Length > 1 && _dykstra.TryGetVisit(paths[1].Vertex, out visit))
                     { // check if this one is better.
                         if (visit.Weight + paths[1].Weight < bestWeight)
                         { // concatenate paths and set best.
@@ -463,7 +463,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                                 }
                             }
                         }
-                        if (_dykstra.TryGetVisit(paths[1].Vertex, out visit))
+                        if (paths.Length > 1 && _dykstra.TryGetVisit(paths[1].Vertex, out visit))
                         { // check if this one is better.
                             if (visit.Weight + paths[1].Weight < bestWeight)
                             { // concatenate paths and set best.

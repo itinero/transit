@@ -21,6 +21,7 @@ using OsmSharp.Math.Algorithms;
 using OsmSharp.Routing.Algorithms.Search;
 using Reminiscence.Arrays;
 using System;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -48,6 +49,15 @@ namespace OsmSharp.Routing.Transit.Data
         public StopsDb(int size)
         {
             _data = new MemoryArray<uint>(size);
+        }
+
+        /// <summary>
+        /// Creates a new stops db.
+        /// </summary>
+        private StopsDb(ArrayBase<uint> data)
+        {
+            _nextId = (uint)(data.Length / SIZE);
+            _data = data;
         }
 
         private uint _nextId = 0;
@@ -253,6 +263,55 @@ namespace OsmSharp.Routing.Transit.Data
         {
             return System.BitConverter.ToSingle(
                 System.BitConverter.GetBytes(value), 0);
+        }
+        
+        /// <summary>
+        /// Returns the size in bytes as if serialized.
+        /// </summary>
+        /// <returns></returns>
+        public long SizeInBytes
+        {
+            get
+            {
+                return 1 + 8 + // the header: the length of the array and a version-byte.
+                    ((long)_nextId * SIZE) * 4; // the bytes for the actual data.
+            }
+        }
+
+        /// <summary>
+        /// Serializes this stops db to disk.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            var position = stream.Position;
+            stream.WriteByte(1); // write version #.
+
+            var binaryWriter = new BinaryWriter(stream);
+            binaryWriter.Write((long)_nextId); // write size.
+            // write data.
+            for (var i = 0; i < (long)_nextId * SIZE; i++)
+            {
+                binaryWriter.Write(_data[i]);
+            }
+            return stream.Position - position;
+        }
+
+        /// <summary>
+        /// Deserializes this stops db to disk.
+        /// </summary>
+        public static StopsDb Deserialize(Stream stream)
+        {
+            if(stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+            }
+
+            var binaryReader = new BinaryReader(stream);
+            var size = binaryReader.ReadInt64();
+
+            var data = new MemoryArray<uint>(size * SIZE);
+            data.CopyFrom(stream);
+            return new StopsDb(data);
         }
     }
 }

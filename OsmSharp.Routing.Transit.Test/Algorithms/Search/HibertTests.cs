@@ -22,6 +22,7 @@ using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Transit.Algorithms.Search;
 using OsmSharp.Routing.Transit.Data;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Test.Algorithms.Search
 {

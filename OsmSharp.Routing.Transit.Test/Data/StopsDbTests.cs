@@ -23,6 +23,7 @@ using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Transit.Data;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -240,6 +241,67 @@ namespace OsmSharp.Routing.Transit.Test.Data
                 enumerator.MoveTo((uint)stop);
                 Assert.AreEqual(enumerator.Latitude, locations[(int)stop].Latitude);
                 Assert.AreEqual(enumerator.Longitude, locations[(int)stop].Longitude);
+            }
+        }
+
+        /// <summary>
+        /// Tests serializing a stops db.
+        /// </summary>
+        [Test]
+        public void SerializationTest()
+        {
+            var db = new StopsDb();
+
+            db.Add(1.1f, 1.2f, 124);
+            db.Add(2.1f, 2.2f, 128);
+            db.Add(3.1f, 3.2f, 132);
+            db.Add(4.1f, 4.2f, 136);
+            db.Add(5.1f, 5.2f, 140);
+            db.Add(6.1f, 6.2f, 144);
+
+            var size = 1 + 8 + (6 * 3 * 4);
+            using (var stream = new MemoryStream())
+            {
+                Assert.AreEqual(size, db.SizeInBytes);
+                Assert.AreEqual(size, db.Serialize(stream));
+            }
+        }
+
+        /// <summary>
+        /// Tests deserializing a stops db.
+        /// </summary>
+        [Test]
+        public void DeserializationTest()
+        {
+            var db = new StopsDb();
+
+            db.Add(1.1f, 1.2f, 124);
+            db.Add(2.1f, 2.2f, 128);
+            db.Add(3.1f, 3.2f, 132);
+            db.Add(4.1f, 4.2f, 136);
+            db.Add(5.1f, 5.2f, 140);
+            db.Add(6.1f, 6.2f, 144);
+            
+            using (var stream = new MemoryStream())
+            {
+                db.Serialize(stream);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                var db1 = StopsDb.Deserialize(stream);
+
+                Assert.AreEqual(db.Count, db1.Count);
+                Assert.AreEqual(db.SizeInBytes, db1.SizeInBytes);
+
+                var enumerator = db.GetEnumerator();
+                var enumerator1 = db1.GetEnumerator();
+                while(enumerator.MoveNext())
+                {
+                    Assert.IsTrue(enumerator1.MoveNext());
+
+                    Assert.AreEqual(enumerator.Id, enumerator1.Id);
+                    Assert.AreEqual(enumerator.Latitude, enumerator1.Latitude);
+                    Assert.AreEqual(enumerator.Longitude, enumerator1.Longitude);
+                }
             }
         }
     }

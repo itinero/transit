@@ -265,12 +265,11 @@ namespace OsmSharp.Routing.Transit.Data
         /// <summary>
         /// Adds a stop links db.
         /// </summary>
-        public void AddStopLinksDb(Profiles.Profile profile, StopLinksDb db)
+        public void AddStopLinksDb(StopLinksDb db)
         {
-            if (profile == null) { throw new ArgumentNullException("profile"); }
             if (db == null) { throw new ArgumentNullException("db"); }
 
-            _stoplinksDbs[profile.Name] = db;
+            _stoplinksDbs[db.ProfileName] = db;
         }
 
         /// <summary>

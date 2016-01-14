@@ -58,10 +58,10 @@ namespace OsmSharp.Routing.Transit.Test.Algorithms
                 Value = .1f
             });
 
-            var stopLinksDb = new StopLinksDb();
+            var stopLinksDb = new StopLinksDb(1, routerDb, profile);
             stopLinksDb.Add(0, new RouterPoint(51.269138216062984f, 4.796175956726074f, 0, ushort.MaxValue / 2));
             var transitDb = new TransitDb();
-            transitDb.AddStopLinksDb(profile, stopLinksDb);
+            transitDb.AddStopLinksDb(stopLinksDb);
             transitDb.AddStop(51.269138216062984f, 4.796175956726074f, 0);
 
             var stopFound = false;
@@ -137,11 +137,11 @@ namespace OsmSharp.Routing.Transit.Test.Algorithms
             });
 
             var stopLocation = new GeoCoordinate(51.229621576122774f, 4.464208334684372f);
-            var stopLinksDb = new StopLinksDb();
+            var stopLinksDb = new StopLinksDb(1, routerDb, profile);
             stopLinksDb.Add(0, new RouterPoint((float)stopLocation.Latitude, (float)stopLocation.Longitude, 1, 
                 ushort.MaxValue / 2));
             var transitDb = new TransitDb();
-            transitDb.AddStopLinksDb(profile, stopLinksDb);
+            transitDb.AddStopLinksDb(stopLinksDb);
             transitDb.AddStop(51.229621576122774f, 4.464208334684372f, 0);
 
             var stopFound = false;

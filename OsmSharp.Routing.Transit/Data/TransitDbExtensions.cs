@@ -103,7 +103,7 @@ namespace OsmSharp.Routing.Transit.Data
             float maxDistance = DefaultMaxDistance, int maxRouterPoints = DefaultMaxRouterPoints)
         {
             var stopsDbEnumerator = db.GetStopsEnumerator();
-            var linksDb = new StopLinksDb();
+            var linksDb = new StopLinksDb(stopsDbEnumerator.Count, routerDb, profile);
 
             while(stopsDbEnumerator.MoveNext())
             {
@@ -145,7 +145,7 @@ namespace OsmSharp.Routing.Transit.Data
                 }
             }
 
-            db.AddStopLinksDb(profile, linksDb);
+            db.AddStopLinksDb(linksDb);
         }
 
         /// <summary>

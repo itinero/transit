@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -18,6 +18,7 @@
 
 using Reminiscence.Arrays;
 using System;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -45,6 +46,16 @@ namespace OsmSharp.Routing.Transit.Data
         public SchedulesDb(int size)
         {
             _data = new MemoryArray<uint>(size);
+        }
+
+        /// <summary>
+        /// Creates a new schedules db.
+        /// </summary>
+        private SchedulesDb(ArrayBase<uint> data)
+        {
+            _data = data;
+
+            _nextPointer = (uint)_data.Length;
         }
 
         private uint _nextPointer = 0;
@@ -193,6 +204,55 @@ namespace OsmSharp.Routing.Transit.Data
 
             start = REF_DATE.AddDays(startDays);
             end = start.AddDays(intervalSize);
+        }
+
+        /// <summary>
+        /// Returns the size in bytes as if serialized.
+        /// </summary>
+        /// <returns></returns>
+        public long SizeInBytes
+        {
+            get
+            {
+                return 1 + 8 + // the header: the length of the array and a version-byte.
+                    ((long)_nextPointer) * 4; // the bytes for the actual data.
+            }
+        }
+
+        /// <summary>
+        /// Serializes this trips db to disk.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            var position = stream.Position;
+            stream.WriteByte(1); // write version #.
+
+            var binaryWriter = new BinaryWriter(stream);
+            binaryWriter.Write((long)_nextPointer); // write size.
+            // write data.
+            for (var i = 0; i < (long)_nextPointer; i++)
+            {
+                binaryWriter.Write(_data[i]);
+            }
+            return stream.Position - position;
+        }
+
+        /// <summary>
+        /// Deserializes this trips db to disk.
+        /// </summary>
+        public static SchedulesDb Deserialize(Stream stream)
+        {
+            if (stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+            }
+
+            var binaryReader = new BinaryReader(stream);
+            var size = binaryReader.ReadInt64();
+
+            var data = new MemoryArray<uint>(size);
+            data.CopyFrom(stream);
+            return new SchedulesDb(data);
         }
     }
 }

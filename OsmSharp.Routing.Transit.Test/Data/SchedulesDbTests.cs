@@ -19,6 +19,7 @@
 using NUnit.Framework;
 using OsmSharp.Routing.Transit.Data;
 using System;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -132,6 +133,91 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 10, 05)));
             Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 10, 06)));
             Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 10, 07)));
+        }
+
+        /// <summary>
+        /// Tests serialization.
+        /// </summary>
+        [Test]
+        public void TestSerialize()
+        {
+            var db = new SchedulesDb();
+
+            var id1 = db.Add();
+            var day11 = new DateTime(2015, 11, 23);
+            var day12 = new DateTime(2015, 11, 29);
+            var day13 = new DateTime(2015, 11, 30);
+            var day14 = new DateTime(2015, 12, 06);
+            db.AddEntry(id1, day11, day12, DayOfWeek.Monday, DayOfWeek.Saturday);
+            db.AddEntry(id1, day13, day14, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday);
+
+            var id2 = db.Add();
+            var day21 = new DateTime(2015, 09, 29);
+            var day22 = new DateTime(2015, 10, 05);
+            var day23 = new DateTime(2015, 10, 06);
+            var day24 = new DateTime(2015, 10, 06);
+            db.AddEntry(id2, day21, day22, DayOfWeek.Monday, DayOfWeek.Saturday);
+            db.AddEntry(id2, day23, day24, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday);
+
+            var size = 1 + 8 + (6 * 4);
+            using (var stream = new MemoryStream())
+            {
+                Assert.AreEqual(size, db.SizeInBytes);
+                Assert.AreEqual(size, db.Serialize(stream));
+            }
+        }
+
+        /// <summary>
+        /// Tests deserializing.
+        /// </summary>
+        [Test]
+        public void TestDeserialization()
+        {
+            var db = new SchedulesDb();
+
+            var id1 = db.Add();
+            var day11 = new DateTime(2015, 11, 23);
+            var day12 = new DateTime(2015, 11, 29);
+            var day13 = new DateTime(2015, 11, 30);
+            var day14 = new DateTime(2015, 12, 06);
+            db.AddEntry(id1, day11, day12, DayOfWeek.Monday, DayOfWeek.Saturday);
+            db.AddEntry(id1, day13, day14, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday);
+
+            var id2 = db.Add();
+            var day21 = new DateTime(2015, 09, 29);
+            var day22 = new DateTime(2015, 10, 05);
+            var day23 = new DateTime(2015, 10, 06);
+            var day24 = new DateTime(2015, 10, 06);
+            db.AddEntry(id2, day21, day22, DayOfWeek.Monday, DayOfWeek.Saturday);
+            db.AddEntry(id2, day23, day24, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday);
+
+            using (var stream = new MemoryStream())
+            {
+                db.Serialize(stream);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                db = SchedulesDb.Deserialize(stream);
+                
+                var enumerator = db.GetEnumerator();
+                Assert.IsTrue(enumerator.MoveTo(id1));
+
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 22)));
+                Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 11, 23)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 24)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 25)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 26)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 27)));
+                Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 11, 28)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 29)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 11, 30)));
+                Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 12, 01)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 12, 02)));
+                Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 12, 03)));
+                Assert.IsTrue(enumerator.DateIsSet(new DateTime(2015, 12, 04)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 12, 05)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 12, 06)));
+                Assert.IsFalse(enumerator.DateIsSet(new DateTime(2015, 12, 07)));
+            }
         }
     }
 }

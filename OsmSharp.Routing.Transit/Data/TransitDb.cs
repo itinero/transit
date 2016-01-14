@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -17,8 +17,10 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Routing.Attributes;
+using Reminiscence.IO.Streams;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -35,22 +37,35 @@ namespace OsmSharp.Routing.Transit.Data
         private readonly AttributesIndex _tripAttributes;
         private readonly SchedulesDb _schedulesDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
-        private readonly Dictionary<string, StopLinksDb> _stoplinksDbs;
 
         /// <summary>
         /// Creates a new transit db.
         /// </summary>
         public TransitDb()
         {
-            _agencyAttributes = new AttributesIndex();
+            _agencyAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
             _connectionsDb = new ConnectionsDb();
             _stopsDb = new StopsDb();
-            _stopAttributes = new AttributesIndex();
+            _stopAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
             _tripsDb = new TripsDb();
-            _tripAttributes = new AttributesIndex();
+            _tripAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
             _transfersDbs = new Dictionary<string, TransfersDb>();
-            _stoplinksDbs = new Dictionary<string, StopLinksDb>();
             _schedulesDb = new SchedulesDb();
+        }
+
+        /// <summary>
+        /// Creates a new transit db.
+        /// </summary>
+        private TransitDb(AttributesIndex agencyAttributes, ConnectionsDb connectionsDb, SchedulesDb schedulesDb, AttributesIndex stopAttributes, StopsDb stopsDb, Dictionary<string, TransfersDb> transferDbs, AttributesIndex tripAttributes, TripsDb tripsDb)
+        {
+            _agencyAttributes = agencyAttributes;
+            _connectionsDb = connectionsDb;
+            _schedulesDb = schedulesDb;
+            _stopAttributes = stopAttributes;
+            _stopsDb = stopsDb;
+            _transfersDbs = transferDbs;
+            _tripAttributes = tripAttributes;
+            _tripsDb = tripsDb;
         }
 
         /// <summary>
@@ -263,33 +278,88 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
-        /// Adds a stop links db.
+        /// Serializes to the given stream.
         /// </summary>
-        public void AddStopLinksDb(StopLinksDb db)
+        public long Serialize(Stream stream)
         {
-            if (db == null) { throw new ArgumentNullException("db"); }
+            var position = stream.Position;
+            stream.WriteByte(1); // write the version #.
 
-            _stoplinksDbs[db.ProfileName] = db;
+            // write agencies attributes.
+            _agencyAttributes.Serialize(new LimitedStream(stream));
+
+            // write connections db.
+            _connectionsDb.Serialize(stream);
+
+            // write schedules db.
+            _schedulesDb.Serialize(stream);
+
+            // write stop attributes.
+            _stopAttributes.Serialize(new LimitedStream(stream));
+
+            // write stop db.
+            _stopsDb.Serialize(stream);
+
+            // write transfer db's.
+            stream.WriteByte((byte)_transfersDbs.Count);
+            foreach(var transferDb in _transfersDbs)
+            {
+                stream.WriteWithSize(transferDb.Key);
+                transferDb.Value.Serialize(stream);
+            }
+
+            // write trip attributes.
+            _tripAttributes.Serialize(new LimitedStream(stream));
+
+            // write trips db.
+            _tripsDb.Serialize(stream);
+            return stream.Position - position;
         }
 
         /// <summary>
-        /// Returns true if there is a stop links db for the given profile.
+        /// Deserializes from stream.
         /// </summary>
-        public bool HasStopLinksDb(Profiles.Profile profile)
+        public static TransitDb Deserialize(Stream stream)
         {
-            if (profile == null) { throw new ArgumentNullException("profile"); }
+            if (stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+            }
 
-            return _stoplinksDbs.ContainsKey(profile.Name);
-        }
+            // read agencies attributes.
+            var agencyAttributes = AttributesIndex.Deserialize(new LimitedStream(stream), true);
 
-        /// <summary>
-        /// Gets the stop links db.
-        /// </summary>
-        public StopLinksDb GetStopLinksDb(Profiles.Profile profile)
-        {
-            if (profile == null) { throw new ArgumentNullException("profile"); }
+            // read connections db.
+            var connectionsDb = ConnectionsDb.Deserialize(stream);
 
-            return _stoplinksDbs[profile.Name];
+            // read schedules db.
+            var schedulesDb = SchedulesDb.Deserialize(stream);
+
+            // read stop attributes.
+            var stopAttributes = AttributesIndex.Deserialize(new LimitedStream(stream), true);
+
+            // read stop db.
+            var stopsDb = StopsDb.Deserialize(stream);
+
+            // read transfer db's.
+            var transferDbsCount = stream.ReadByte();
+            var transferDbs = new Dictionary<string, TransfersDb>();
+            for(var i = 0; i < transferDbsCount; i++)
+            {
+                var profileName = stream.ReadWithSizeString();
+                var transferDb = TransfersDb.Deserialize(stream);
+
+                transferDbs.Add(profileName, transferDb);
+            }
+
+            // read trip attributes.
+            var tripAttributes = AttributesIndex.Deserialize(new LimitedStream(stream), true);
+
+            // write trips db.
+            var tripsDb = TripsDb.Deserialize(stream);
+
+            return new TransitDb(agencyAttributes, connectionsDb, schedulesDb, stopAttributes, stopsDb, transferDbs,
+                tripAttributes, tripsDb);
         }
     }
 }

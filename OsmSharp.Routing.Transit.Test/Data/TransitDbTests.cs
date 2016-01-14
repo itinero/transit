@@ -27,6 +27,9 @@ using OsmSharp.Routing.Transit.Test.GTFS;
 using OsmSharp.Routing.Transit.Test.Profiles;
 using System;
 using System.Linq;
+using GTFS;
+using System.IO;
+using OsmSharp.Routing.Attributes;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -105,53 +108,32 @@ namespace OsmSharp.Routing.Transit.Test.Data
         }
 
         /// <summary>
-        /// Tests adding stop links db.
+        /// Test serializing and deserializing.
         /// </summary>
         [Test]
-        public void TestAddStopLinksDb()
+        public void TestSerializeDeserialize()
         {
-            // build a simple network and connections db.
-            var routerDb = new RouterDb();
-            routerDb.LoadTestNetwork(
-                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                    "OsmSharp.Routing.Transit.Test.test_data.networks.network1.geojson"));
+            var transitDb = new TransitDb();
+            var reader = new GTFSReader<GTFSFeed>();
+            var feed = reader.Read(GTFS.sample_feed.SampleFeed.BuildSource());
+            transitDb.LoadFrom(feed);
 
-            var db = new TransitDb();
-            var feed = DummyGTFSFeedBuilder.OneConnection(
-                TimeOfDay.FromTotalSeconds(0), TimeOfDay.FromTotalSeconds(3600));
-            feed.Stops.Get(0).Latitude = 51.22965768754021f;
-            feed.Stops.Get(0).Longitude = 4.460974931716918f;
-            feed.Stops.Get(1).Latitude = 51.229617377118906f;
-            feed.Stops.Get(1).Longitude = 4.463152885437011f;
-            db.LoadFrom(feed);
-
-            // add stop links.
-            var profile = MockProfile.CarMock();
-            db.AddStopLinksDb(routerDb, profile);
-
-            // check result.
-            var stopLinksDb = db.GetStopLinksDb(profile);
-            Assert.IsNotNull(stopLinksDb);
-            var stop0 = db.SearchFirstStopsWithTags((t) =>
+            Assert.AreEqual(13, transitDb.TripsCount);
+            Assert.AreEqual(9, transitDb.StopsCount);
+            Assert.AreEqual(22, transitDb.ConnectionsCount);
+            
+            using (var stream = new MemoryStream())
             {
-                return t.ContainsKeyValue("id", "0");
-            });
-            var stop1 = db.SearchFirstStopsWithTags((t) =>
-            {
-                return t.ContainsKeyValue("id", "1");
-            });
+                var size = transitDb.Serialize(stream);
 
-            var stopLinksDbEnumerator = stopLinksDb.GetEnumerator();
-            stopLinksDbEnumerator.MoveTo(stop0);
-            Assert.AreEqual(1, stopLinksDbEnumerator.Count);
-            Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
-            Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);
-            Assert.AreEqual(0, stopLinksDbEnumerator.Offset);
-            stopLinksDbEnumerator.MoveTo(stop1);
-            Assert.AreEqual(1, stopLinksDbEnumerator.Count);
-            Assert.IsTrue(stopLinksDbEnumerator.MoveNext());
-            Assert.AreEqual(0, stopLinksDbEnumerator.EdgeId);
-            Assert.AreEqual(ushort.MaxValue, stopLinksDbEnumerator.Offset);
+                stream.Seek(0, SeekOrigin.Begin);
+
+                transitDb = TransitDb.Deserialize(stream);
+
+                Assert.AreEqual(13, transitDb.TripsCount);
+                Assert.AreEqual(9, transitDb.StopsCount);
+                Assert.AreEqual(22, transitDb.ConnectionsCount);
+            }
         }
     }
 }

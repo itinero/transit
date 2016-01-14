@@ -517,7 +517,7 @@ namespace OsmSharp.Routing.Transit.Data
         {
             if (stream.ReadByte() != 1)
             {
-                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+                throw new Exception("Cannot deserialize db, version # doesn't match.");
             }
 
             var sortingByte = stream.ReadByte();

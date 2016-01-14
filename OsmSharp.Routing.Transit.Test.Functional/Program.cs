@@ -30,18 +30,19 @@ namespace OsmSharp.Routing.Transit.Test.Functional
 
             // create test router.
             Console.WriteLine("Loading routing data for Belgium...");
-            var router = RouterDb.Deserialize(File.OpenRead("belgium.a.routing"));
+            var routerDb = RouterDb.Deserialize(File.OpenRead("belgium.a.routing"));
 
             Console.WriteLine("Loading NMBS data...");
             var reader = new GTFSReader<GTFSFeed>(false);
             var feed = reader.Read(new GTFSDirectorySource(@"NMBS"));
-            var db = new TransitDb();
-            db.LoadFrom(feed);
-            db.SortConnections(DefaultSorting.DepartureTime, null);
-            db.AddTransfersDb(OsmSharp.Routing.Osm.Vehicles.Vehicle.Pedestrian.Fastest(), 100);
-            db.AddStopLinksDb(router, Vehicle.Pedestrian.Fastest(), maxDistance: 100);
+            var transitDb = new TransitDb();
+            var db = new MultimodalDb(routerDb, transitDb);
+            db.TransitDb.LoadFrom(feed);
+            db.TransitDb.SortConnections(DefaultSorting.DepartureTime, null);
+            db.TransitDb.AddTransfersDb(OsmSharp.Routing.Osm.Vehicles.Vehicle.Pedestrian.Fastest(), 100);
+            db.AddStopLinksDb(Vehicle.Pedestrian.Fastest(), maxDistance: 100);
 
-            var transitRouter = new MultimodalRouter(router, db, Vehicle.Pedestrian.Fastest());
+            var transitRouter = new MultimodalRouter(db, Vehicle.Pedestrian.Fastest());
 
             // run tests.
             Tests.Runner.Test(transitRouter, "OsmSharp.Routing.Transit.Test.Functional.Tests.Belgium.test1.geojson");

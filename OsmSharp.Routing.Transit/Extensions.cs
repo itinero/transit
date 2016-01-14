@@ -84,12 +84,12 @@ namespace OsmSharp.Routing.Transit
         /// Gets a feature collection with features representing the stop links.
         /// </summary>
         /// <returns></returns>
-        public static FeatureCollection GetStopLinks(this TransitDb db, RouterDb routerDb, 
+        public static FeatureCollection GetStopLinks(this MultimodalDb db, 
             Profile profile, uint stopId)
         {
             var features = new FeatureCollection();
 
-            var stopEnumerator = db.GetStopsEnumerator();
+            var stopEnumerator = db.TransitDb.GetStopsEnumerator();
             if (stopEnumerator.MoveTo(stopId))
             {
                 var stopLocation = new GeoCoordinate(stopEnumerator.Latitude, stopEnumerator.Longitude);
@@ -105,7 +105,7 @@ namespace OsmSharp.Routing.Transit
                 while (stopLinksDb.MoveNext())
                 {
                     var routerPoint = new RouterPoint(0, 0, stopLinksDb.EdgeId, stopLinksDb.Offset);
-                    var linkLocation = new GeoCoordinate(routerPoint.LocationOnNetwork(routerDb));
+                    var linkLocation = new GeoCoordinate(routerPoint.LocationOnNetwork(db.RouterDb));
 
                     features.Add(new Feature(
                         new Point(linkLocation),

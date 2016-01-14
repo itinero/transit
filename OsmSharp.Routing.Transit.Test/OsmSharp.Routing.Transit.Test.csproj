@@ -81,8 +81,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="OsmSharp.Routing, Version=0.1.1.114, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Routing.0.1.1-beta-0114\lib\net45\OsmSharp.Routing.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\routing\Output\OsmSharp.Routing.dll</HintPath>
     </Reference>
     <Reference Include="Reminiscence, Version=1.0.2.41, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Reminiscence.1.0.2-rc1-0041\lib\portable-net403+sl50+win+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Reminiscence.dll</HintPath>
@@ -106,6 +106,7 @@
     <Compile Include="Algorithms\OneToOne\ProfileSearchTests.cs" />
     <Compile Include="Algorithms\Search\HibertTests.cs" />
     <Compile Include="Data\ConnectionsDbTest.cs" />
+    <Compile Include="Data\MultimodalDbTests.cs" />
     <Compile Include="Data\SchedulesDbTests.cs" />
     <Compile Include="Data\StopLinksDbTests.cs" />
     <Compile Include="Data\StopsDbTests.cs" />

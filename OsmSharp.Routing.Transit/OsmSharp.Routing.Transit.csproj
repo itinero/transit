@@ -114,6 +114,8 @@
     <Compile Include="Data\ConnectionsDb.cs" />
     <Compile Include="Data\ConnectionsDbExtensions.cs" />
     <Compile Include="Data\DefaultSorting.cs" />
+    <Compile Include="Data\MultimodalDb.cs" />
+    <Compile Include="Data\MultimodalDbExtensions.cs" />
     <Compile Include="Data\SchedulesDb.cs" />
     <Compile Include="Data\SchedulesDbExtensions.cs" />
     <Compile Include="Data\StopLinksDb.cs" />

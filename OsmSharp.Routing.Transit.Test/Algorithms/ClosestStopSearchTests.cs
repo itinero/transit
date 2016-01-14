@@ -61,11 +61,12 @@ namespace OsmSharp.Routing.Transit.Test.Algorithms
             var stopLinksDb = new StopLinksDb(1, routerDb, profile);
             stopLinksDb.Add(0, new RouterPoint(51.269138216062984f, 4.796175956726074f, 0, ushort.MaxValue / 2));
             var transitDb = new TransitDb();
-            transitDb.AddStopLinksDb(stopLinksDb);
-            transitDb.AddStop(51.269138216062984f, 4.796175956726074f, 0);
+            var multimodalDb = new MultimodalDb(routerDb, transitDb);
+            multimodalDb.AddStopLinksDb(stopLinksDb);
+            multimodalDb.TransitDb.AddStop(51.269138216062984f, 4.796175956726074f, 0);
 
             var stopFound = false;
-            var closestStopSearch = new ClosestStopsSearch(routerDb, transitDb,
+            var closestStopSearch = new ClosestStopsSearch(multimodalDb,
                 profile, new RouterPoint(51.269138216062984f, 4.796175956726074f, 0, ushort.MaxValue / 2), 1800, false);
             closestStopSearch.StopFound = (uint stopId, float seconds) =>
             {
@@ -94,7 +95,7 @@ namespace OsmSharp.Routing.Transit.Test.Algorithms
             Assert.AreEqual(ushort.MaxValue / 2, point.Offset);
 
             stopFound = false;
-            closestStopSearch = new ClosestStopsSearch(routerDb, transitDb,
+            closestStopSearch = new ClosestStopsSearch(multimodalDb,
                 profile, new RouterPoint(51.27018537520318f, 4.799609184265137f, 0, 0), 1800, false);
             closestStopSearch.StopFound = (uint stopId, float seconds) =>
             {
@@ -141,14 +142,15 @@ namespace OsmSharp.Routing.Transit.Test.Algorithms
             stopLinksDb.Add(0, new RouterPoint((float)stopLocation.Latitude, (float)stopLocation.Longitude, 1, 
                 ushort.MaxValue / 2));
             var transitDb = new TransitDb();
-            transitDb.AddStopLinksDb(stopLinksDb);
-            transitDb.AddStop(51.229621576122774f, 4.464208334684372f, 0);
+            var multimodalDb = new MultimodalDb(routerDb, transitDb);
+            multimodalDb.AddStopLinksDb(stopLinksDb);
+            multimodalDb.TransitDb.AddStop(51.229621576122774f, 4.464208334684372f, 0);
 
             var stopFound = false;
             var distanceToStop = GeoCoordinate.DistanceEstimateInMeter(routerDb.Network.GetVertex(0),
                 routerDb.Network.GetVertex(1)) + GeoCoordinate.DistanceEstimateInMeter(routerDb.Network.GetVertex(1),
                 stopLocation);
-            var closestStopSearch = new ClosestStopsSearch(routerDb, transitDb,
+            var closestStopSearch = new ClosestStopsSearch(multimodalDb,
                 profile, routerDb.Network.CreateRouterPointForVertex(0, 1), 3600, false);
             closestStopSearch.StopFound = (uint stopId, float seconds) =>
             {

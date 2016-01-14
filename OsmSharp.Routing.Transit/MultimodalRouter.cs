@@ -30,14 +30,14 @@ namespace OsmSharp.Routing.Transit
     /// </summary>
     public class MultimodalRouter : Router, IMultimodalRouter
     {
-        private readonly TransitDb _db;
+        private readonly MultimodalDb _db;
         private readonly Profile _transferProfile;
 
         /// <summary>
         /// Creates a multimodal router.
         /// </summary>
-        public MultimodalRouter(RouterDb routerDb, TransitDb db, Profile transferProfile)
-            : base(routerDb)
+        public MultimodalRouter(MultimodalDb db, Profile transferProfile)
+            : base(db.RouterDb)
         {
             _db = db;
             _transferProfile = transferProfile;
@@ -51,13 +51,13 @@ namespace OsmSharp.Routing.Transit
                 EarliestArrivalSettings settings)
         {
             // create the profile search.
-            var tripEnumerator = _db.GetTripsEnumerator();
-            var transfersDb =  _db.GetTransfersDb(_transferProfile);
-            var profileSearch = new ProfileSearch(_db, departureTime, transfersDb, _db.GetIsTripPossibleFunc());
+            var tripEnumerator = _db.TransitDb.GetTripsEnumerator();
+            var transfersDb =  _db.TransitDb.GetTransfersDb(_transferProfile);
+            var profileSearch = new ProfileSearch(_db.TransitDb, departureTime, transfersDb, _db.TransitDb.GetIsTripPossibleFunc());
 
             // search for sources.
             var departureTimeSeconds = (uint)(departureTime - departureTime.Date).TotalSeconds;
-            var sourceSearch = new ClosestStopsSearch(this.Db, _db, sourceProfile, sourcePoint,
+            var sourceSearch = new ClosestStopsSearch(_db, sourceProfile, sourcePoint,
                 settings.MaxSecondsSource, false);
             sourceSearch.StopFound = (s, t) =>
                 {
@@ -66,7 +66,7 @@ namespace OsmSharp.Routing.Transit
                 };
 
             // search for targets.
-            var targetSearch = new ClosestStopsSearch(this.Db, _db, targetProfile, targetPoint,
+            var targetSearch = new ClosestStopsSearch(_db, targetProfile, targetPoint,
                 settings.MaxSecondsTarget, true);
             targetSearch.StopFound = (s, t) =>
             {

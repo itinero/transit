@@ -31,8 +31,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
     /// </summary>
     public class ClosestStopsSearch : AlgorithmBase
     {
-        private readonly RouterDb _routerDb;
-        private readonly TransitDb _db;
+        private readonly MultimodalDb _multimodalDb;
         private readonly Profile _profile;
         private readonly RouterPoint _routerPoint;
         private readonly float _maxSeconds;
@@ -41,7 +40,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
         /// <summary>
         /// Creates a new closest stop search.
         /// </summary>
-        public ClosestStopsSearch(RouterDb routerDb, TransitDb transitDb, Profile profile,
+        public ClosestStopsSearch(MultimodalDb multimodalDb, Profile profile,
             RouterPoint routerPoint, float maxSeconds, bool backward)
         {
             if (profile.Metric != ProfileMetric.TimeInSeconds)
@@ -50,19 +49,18 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     "The default closest stop search can only be used with profiles that use time in seconds as a metric.");
             }
 
-            _routerDb = routerDb;
-            _db = transitDb;
+            _multimodalDb = multimodalDb;
             _profile = profile;
             _routerPoint = routerPoint;
             _maxSeconds = maxSeconds;
             _backward = backward;
 
             // build search.
-            _dykstra = new Dykstra(_routerDb.Network.GeometricGraph.Graph, (profileId) =>
+            _dykstra = new Dykstra(_multimodalDb.RouterDb.Network.GeometricGraph.Graph, (profileId) =>
             {
-                var profileTags = _routerDb.EdgeProfiles.Get(profileId);
+                var profileTags = _multimodalDb.RouterDb.EdgeProfiles.Get(profileId);
                 return _profile.Factor(profileTags);
-            }, _routerPoint.ToPaths(_routerDb, _profile, !_backward), _maxSeconds, _backward);
+            }, _routerPoint.ToPaths(_multimodalDb.RouterDb, _profile, !_backward), _maxSeconds, _backward);
         }
 
         private System.Collections.Generic.Dictionary<uint, LinkedStopRouterPoint> _stopsPerEdge;
@@ -75,12 +73,12 @@ namespace OsmSharp.Routing.Transit.Algorithms
         protected override void DoRun()
         {
             // get the stop links db for the profile given.
-            var stopLinksDb = _db.GetStopLinksDb(_profile);
+            var stopLinksDb = _multimodalDb.GetStopLinksDb(_profile);
             _stopLinksDbEnumerator = stopLinksDb.GetEnumerator();
 
             // find the closest stops within the range of the 'maxSeconds' parameter.
             var distance = _profile.MinSpeed().Value * _maxSeconds;
-            var stopsDbEnumerator = _db.GetStopsEnumerator();
+            var stopsDbEnumerator = _multimodalDb.TransitDb.GetStopsEnumerator();
             var location = new Math.Geo.GeoCoordinate(_routerPoint.Latitude, _routerPoint.Longitude);
             var box = new OsmSharp.Math.Geo.GeoCoordinateBox(
                 location.OffsetWithDirection(distance, Math.Geo.Meta.DirectionEnum.West)
@@ -114,7 +112,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
             }
 
             // report on source edges and build source paths.
-            var paths = _routerPoint.ToPaths(_routerDb, _profile, !_backward);
+            var paths = _routerPoint.ToPaths(_multimodalDb.RouterDb, _profile, !_backward);
             for (var p = 0; p < paths.Length; p++)
             {
                 var edgeId = _routerPoint.EdgeId;
@@ -134,7 +132,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
 
                         if (!_backward)
                         { // forward, route from source to stop.
-                            var path = _routerPoint.PathTo(_routerDb, _profile, routerPoint);
+                            var path = _routerPoint.PathTo(_multimodalDb.RouterDb, _profile, routerPoint);
                             if (path != null)
                             { // there is a path, report on it.
                                 if (this.StopFound(stopId, path.Weight))
@@ -146,7 +144,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                         }
                         else
                         { // backward, route from stop to source.
-                            var path = routerPoint.PathTo(_routerDb, _profile, _routerPoint);
+                            var path = routerPoint.PathTo(_multimodalDb.RouterDb, _profile, _routerPoint);
                             if (path != null)
                             { // there is a path, report on it.
                                 if (this.StopFound(stopId, path.Weight))
@@ -218,7 +216,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                 { // no dykstra search just yet, this is the source-edge.
                     throw new Exception("Could not get visit of other vertex for settled edge.");
                 }
-                var edge = _routerDb.Network.GeometricGraph.Graph.GetEdge(edgeId);
+                var edge = _multimodalDb.RouterDb.Network.GeometricGraph.Graph.GetEdge(edgeId);
                 var vertex1 = edge.GetOther(vertex);
                 Path vertex1Visit;
                 if (!_dykstra.TryGetVisit(vertex1, out vertex1Visit))
@@ -232,7 +230,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     var stopId = stopRouterPoint.StopId;
                     var routerPoint = stopRouterPoint.RouterPoint;
 
-                    var paths = routerPoint.ToPaths(_routerDb, _profile, _backward);
+                    var paths = routerPoint.ToPaths(_multimodalDb.RouterDb, _profile, _backward);
                     if (paths[0].Vertex == vertex1)
                     { // report on the time.
                         if (this.StopFound(stopId, vertex1Visit.Weight + paths[0].Weight))
@@ -287,11 +285,11 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     Path path;
                     if (_backward)
                     { // from stop -> source.
-                        path = point.PathTo(_routerDb, _profile, _routerPoint);
+                        path = point.PathTo(_multimodalDb.RouterDb, _profile, _routerPoint);
                     }
                     else
                     { // from source -> stop.
-                        path = _routerPoint.PathTo(_routerDb, _profile, point);
+                        path = _routerPoint.PathTo(_multimodalDb.RouterDb, _profile, point);
                     }
                     if (path.Weight < bestWeight)
                     { // set as best because improvement.
@@ -300,7 +298,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                 }
                 else
                 { // on different edge, to the usual.
-                    var paths = point.ToPaths(_routerDb, _profile, _backward);
+                    var paths = point.ToPaths(_multimodalDb.RouterDb, _profile, _backward);
                     Path visit;
                     if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                     { // check if this one is better.
@@ -358,11 +356,11 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     Path path;
                     if (_backward)
                     { // from stop -> source.
-                        path = point.PathTo(_routerDb, _profile, _routerPoint);
+                        path = point.PathTo(_multimodalDb.RouterDb, _profile, _routerPoint);
                     }
                     else
                     { // from source -> stop.
-                        path = _routerPoint.PathTo(_routerDb, _profile, point);
+                        path = _routerPoint.PathTo(_multimodalDb.RouterDb, _profile, point);
                     }
                     if (path.Weight < bestWeight)
                     { // set as best because improvement.
@@ -372,7 +370,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                 }
                 else
                 { // on different edge, to the usual.
-                    var paths = point.ToPaths(_routerDb, _profile, _backward);
+                    var paths = point.ToPaths(_multimodalDb.RouterDb, _profile, _backward);
                     Path visit;
                     if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                     { // check if this one is better.
@@ -418,7 +416,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
         {
             RouterPoint best = null;
             var bestWeight = float.MaxValue;
-            var stopEnumerator = _db.GetStopsEnumerator();
+            var stopEnumerator = _multimodalDb.TransitDb.GetStopsEnumerator();
             if (stopEnumerator.MoveTo(stop))
             {
                 _stopLinksDbEnumerator.MoveTo(stop);
@@ -431,11 +429,11 @@ namespace OsmSharp.Routing.Transit.Algorithms
                         Path path;
                         if (_backward)
                         { // from stop -> source.
-                            path = point.PathTo(_routerDb, _profile, _routerPoint);
+                            path = point.PathTo(_multimodalDb.RouterDb, _profile, _routerPoint);
                         }
                         else
                         { // from source -> stop.
-                            path = _routerPoint.PathTo(_routerDb, _profile, point);
+                            path = _routerPoint.PathTo(_multimodalDb.RouterDb, _profile, point);
                         }
                         if (path.Weight < bestWeight)
                         { // set as best because improvement.
@@ -445,7 +443,7 @@ namespace OsmSharp.Routing.Transit.Algorithms
                     }
                     else
                     { // on different edge, to the usual.
-                        var paths = point.ToPaths(_routerDb, _profile, _backward);
+                        var paths = point.ToPaths(_multimodalDb.RouterDb, _profile, _backward);
                         Path visit;
                         if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                         { // check if this one is better.
@@ -496,9 +494,9 @@ namespace OsmSharp.Routing.Transit.Algorithms
             if (_backward)
             {
                 path = path.Reverse();
-                return RouteBuilder.Build(_routerDb, _profile, point, _routerPoint, path);
+                return RouteBuilder.Build(_multimodalDb.RouterDb, _profile, point, _routerPoint, path);
             }
-            return RouteBuilder.Build(_routerDb, _profile, _routerPoint, point, path);
+            return RouteBuilder.Build(_multimodalDb.RouterDb, _profile, _routerPoint, point, path);
         }
 
         /// <summary>

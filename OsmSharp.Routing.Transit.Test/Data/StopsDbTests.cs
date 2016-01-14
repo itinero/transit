@@ -248,7 +248,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
         /// Tests serializing a stops db.
         /// </summary>
         [Test]
-        public void SerializationTest()
+        public void TestSerialization()
         {
             var db = new StopsDb();
 
@@ -271,7 +271,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
         /// Tests deserializing a stops db.
         /// </summary>
         [Test]
-        public void DeserializationTest()
+        public void TestDeserialization()
         {
             var db = new StopsDb();
 
@@ -301,6 +301,7 @@ namespace OsmSharp.Routing.Transit.Test.Data
                     Assert.AreEqual(enumerator.Id, enumerator1.Id);
                     Assert.AreEqual(enumerator.Latitude, enumerator1.Latitude);
                     Assert.AreEqual(enumerator.Longitude, enumerator1.Longitude);
+                    Assert.AreEqual(enumerator.MetaId, enumerator1.MetaId);
                 }
             }
         }

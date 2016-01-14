@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using System.IO;
+
 namespace OsmSharp.Routing.Transit.Data
 {
     /// <summary>
@@ -36,6 +38,14 @@ namespace OsmSharp.Routing.Transit.Data
             {
                 _transfers.AddVertex(i);
             }
+        }
+
+        /// <summary>
+        /// Creates a new transfers db.
+        /// </summary>
+        private TransfersDb(Graphs.Graph transfers)
+        {
+            _transfers = transfers;
         }
 
         /// <summary>
@@ -118,6 +128,24 @@ namespace OsmSharp.Routing.Transit.Data
                     return _enumerator.To;
                 }
             }
+        }
+
+        /// <summary>
+        /// Serializes to the given stream.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            return _transfers.Serialize(stream);
+        }
+
+        /// <summary>
+        /// Deserializes from the given stream.
+        /// </summary>
+        public static TransfersDb Deserialize(Stream stream)
+        {
+            var graph = Graphs.Graph.Deserialize(stream, null);
+
+            return new TransfersDb(graph);
         }
     }
 }

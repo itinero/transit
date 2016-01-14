@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -18,6 +18,7 @@
 
 using NUnit.Framework;
 using OsmSharp.Routing.Transit.Data;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -167,6 +168,66 @@ namespace OsmSharp.Routing.Transit.Test.Data
             Assert.AreEqual(144, enumerator.MetaId);
 
             Assert.IsFalse(enumerator.MoveNext());
+        }
+
+        /// <summary>
+        /// Tests serialization.
+        /// </summary>
+        [Test]
+        public void TestSerialize()
+        {
+            var db = new TripsDb();
+
+            db.Add(1, 2, 3);
+            db.Add(4, 5, 6);
+            db.Add(7, 8, 9);
+            db.Add(10, 11, 12);
+            db.Add(13, 14, 15);
+
+            var size = 1 + 8 + (5 * 3 * 4);
+            using (var stream = new MemoryStream())
+            {
+                Assert.AreEqual(size, db.SizeInBytes);
+                Assert.AreEqual(size, db.Serialize(stream));
+            }
+        }
+
+        /// <summary>
+        /// Tests deserializing.
+        /// </summary>
+        [Test]
+        public void TestDeserialization()
+        {
+            var db = new TripsDb();
+
+            db.Add(1, 2, 3);
+            db.Add(4, 5, 6);
+            db.Add(7, 8, 9);
+            db.Add(10, 11, 12);
+            db.Add(13, 14, 15);
+
+            using (var stream = new MemoryStream())
+            {
+                db.Serialize(stream);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                var db1 = TripsDb.Deserialize(stream);
+
+                Assert.AreEqual(db.Count, db1.Count);
+                Assert.AreEqual(db.SizeInBytes, db1.SizeInBytes);
+
+                var enumerator = db.GetEnumerator();
+                var enumerator1 = db1.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    Assert.IsTrue(enumerator1.MoveNext());
+
+                    Assert.AreEqual(enumerator.Id, enumerator1.Id);
+                    Assert.AreEqual(enumerator.AgencyId, enumerator1.AgencyId);
+                    Assert.AreEqual(enumerator.MetaId, enumerator1.MetaId);
+                    Assert.AreEqual(enumerator.ScheduleId, enumerator1.ScheduleId);
+                }
+            }
         }
     }
 }

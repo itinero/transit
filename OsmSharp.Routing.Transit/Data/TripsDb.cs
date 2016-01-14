@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -17,6 +17,8 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using Reminiscence.Arrays;
+using System;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -44,6 +46,15 @@ namespace OsmSharp.Routing.Transit.Data
         public TripsDb(int size)
         {
             _data = new MemoryArray<uint>(size);
+        }
+
+        /// <summary>
+        /// Creates a new trips db.
+        /// </summary>
+        private TripsDb(ArrayBase<uint> data)
+        {
+            _nextId = (uint)(data.Length / SIZE);
+            _data = data;
         }
 
         private uint _nextId = 0;
@@ -81,6 +92,19 @@ namespace OsmSharp.Routing.Transit.Data
             get
             {
                 return _nextId;
+            }
+        }
+
+        /// <summary>
+        /// Returns the size in bytes as if serialized.
+        /// </summary>
+        /// <returns></returns>
+        public long SizeInBytes
+        {
+            get
+            {
+                return 1 + 8 + // the header: the length of the array and a version-byte.
+                    ((long)_nextId * SIZE) * 4; // the bytes for the actual data.
             }
         }
 
@@ -185,6 +209,42 @@ namespace OsmSharp.Routing.Transit.Data
 
                 return (_index / SIZE) < _count;
             }
+        }
+
+        /// <summary>
+        /// Serializes this trips db to disk.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            var position = stream.Position;
+            stream.WriteByte(1); // write version #.
+
+            var binaryWriter = new BinaryWriter(stream);
+            binaryWriter.Write((long)_nextId); // write size.
+            // write data.
+            for (var i = 0; i < (long)_nextId * SIZE; i++)
+            {
+                binaryWriter.Write(_data[i]);
+            }
+            return stream.Position - position;
+        }
+
+        /// <summary>
+        /// Deserializes this trips db to disk.
+        /// </summary>
+        public static TripsDb Deserialize(Stream stream)
+        {
+            if (stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+            }
+
+            var binaryReader = new BinaryReader(stream);
+            var size = binaryReader.ReadInt64();
+
+            var data = new MemoryArray<uint>(size * SIZE);
+            data.CopyFrom(stream);
+            return new TripsDb(data);
         }
     }
 }

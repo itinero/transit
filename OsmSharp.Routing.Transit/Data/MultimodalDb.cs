@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,5 +103,55 @@ namespace OsmSharp.Routing.Transit.Data
             return _stoplinksDbs[profile.Name];
         }
 
+        /// <summary>
+        /// Serializes to the given stream.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            var position = stream.Position;
+            stream.WriteByte(1); // writes the version #.
+
+            // write routerdb.
+            _routerDb.Serialize(stream);
+
+            // write transitdb.
+            _transitDb.Serialize(stream);
+
+            // write stop links db.
+            stream.WriteByte((byte)_stoplinksDbs.Count);
+            foreach(var stopLinksDb in _stoplinksDbs)
+            {
+                stopLinksDb.Value.Serialize(stream);
+            }
+            return stream.Position - position;
+        }
+
+        /// <summary>
+        /// Deserializes from the given stream.
+        /// </summary>
+        public static MultimodalDb Deserialize(Stream stream)
+        {
+            if (stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize db, version # doesn't match.");
+            }
+
+            // deserialize router db.
+            var routerDb = RouterDb.Deserialize(stream);
+
+            // read transit db.
+            var transitDb = TransitDb.Deserialize(stream);
+
+            // create db.
+            var db = new MultimodalDb(routerDb, transitDb);
+
+            // read stop links db count.
+            var stopLinksDbCount = stream.ReadByte();
+            for(var i = 0;i < stopLinksDbCount;i++)
+            {
+                db.AddStopLinksDb(StopLinksDb.Deserialize(stream));
+            }
+            return db;
+        }
     }
 }

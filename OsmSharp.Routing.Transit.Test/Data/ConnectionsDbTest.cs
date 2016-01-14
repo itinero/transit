@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -23,6 +23,7 @@ using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Transit.Data;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Test.Data
 {
@@ -487,6 +488,69 @@ namespace OsmSharp.Routing.Transit.Test.Data
 
             enumerator.MoveTo(connection0);
             Assert.IsFalse(enumerator.MoveToPreviousConnection());
+        }
+
+        /// <summary>
+        /// Tests serialization.
+        /// </summary>
+        [Test]
+        public void TestSerialize()
+        {
+            var db = new ConnectionsDb();
+
+            db.Add(0, 1, 1, 0, 9);
+            db.Add(0, 1, 2, 1, 19);
+            db.Add(0, 2, 3, 2, 29);
+            db.Add(0, 3, 3, 3, 39);
+            db.Add(0, 4, 2, 4, 49);
+            db.Add(0, 5, 1, 5, 59);
+
+            var size = 2 + 8 + (6 * 4 * 4) + (6 * 4);
+            using (var stream = new MemoryStream())
+            {
+                Assert.AreEqual(size, db.SizeInBytes);
+                Assert.AreEqual(size, db.Serialize(stream));
+            }
+        }
+
+        /// <summary>
+        /// Tests deserializing.
+        /// </summary>
+        [Test]
+        public void TestDeserialization()
+        {
+            var db = new ConnectionsDb();
+
+            db.Add(0, 1, 1, 0, 9);
+            db.Add(0, 1, 2, 1, 19);
+            db.Add(0, 2, 3, 2, 29);
+            db.Add(0, 3, 3, 3, 39);
+            db.Add(0, 4, 2, 4, 49);
+            db.Add(0, 5, 1, 5, 59);
+
+            using (var stream = new MemoryStream())
+            {
+                db.Serialize(stream);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                var db1 = ConnectionsDb.Deserialize(stream);
+
+                Assert.AreEqual(db.Count, db1.Count);
+                Assert.AreEqual(db.SizeInBytes, db1.SizeInBytes);
+
+                var enumerator = db.GetEnumerator();
+                var enumerator1 = db1.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    Assert.IsTrue(enumerator1.MoveNext());
+
+                    Assert.AreEqual(enumerator.Id, enumerator1.Id);
+                    Assert.AreEqual(enumerator.ArrivalStop, enumerator1.ArrivalStop);
+                    Assert.AreEqual(enumerator.ArrivalTime, enumerator1.ArrivalTime);
+                    Assert.AreEqual(enumerator.DepartureStop, enumerator1.DepartureStop);
+                    Assert.AreEqual(enumerator.DepartureTime, enumerator1.DepartureTime);
+                }
+            }
         }
     }
 }

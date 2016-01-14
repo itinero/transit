@@ -22,6 +22,7 @@ using OsmSharp.Routing.Algorithms.Search;
 using Reminiscence.Arrays;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
 {
@@ -60,6 +61,18 @@ namespace OsmSharp.Routing.Transit.Data
         {
             _connections = new MemoryArray<uint>(connections * CONNECTION_SIZE);
             _connectionsOrder = new MemoryArray<uint>(connections);
+        }
+
+        /// <summary>
+        /// Creates a new connections db.
+        /// </summary>
+        private ConnectionsDb(DefaultSorting? sorting, ArrayBase<uint> connections, ArrayBase<uint> connectionsOrder)
+        {
+            _sorting = sorting;
+            _connections = connections;
+            _connectionsOrder = connectionsOrder;
+
+            _nextConnectionId = (uint)(_connectionsOrder.Length);
         }
         
         private DefaultSorting? _sorting; // hold the current sorting.
@@ -444,6 +457,90 @@ namespace OsmSharp.Routing.Transit.Data
         {
             departureTime = value << 15 >> 15;
             duration = value >> 17;
+        }
+
+        /// <summary>
+        /// Returns the size in bytes as if serialized.
+        /// </summary>
+        /// <returns></returns>
+        public long SizeInBytes
+        {
+            get
+            {
+                return 2 + 8 + // the header: the length of the array and a version-byte.
+                    ((long)_nextConnectionId * CONNECTION_SIZE) * 4 + 
+                    ((long)_nextConnectionId * 4); 
+            }
+        }
+
+        /// <summary>
+        /// Serializes this connections db to disk.
+        /// </summary>
+        public long Serialize(Stream stream)
+        {
+            var position = stream.Position;
+            stream.WriteByte(1); // write version #.
+
+            // write sorting status.
+            if(!_sorting.HasValue)
+            {
+                stream.WriteByte(0);
+            }
+            else if(_sorting == DefaultSorting.DepartureTime)
+            {
+                stream.WriteByte(1);
+            }
+            else
+            {
+                stream.WriteByte(2);
+            }
+
+            var binaryWriter = new BinaryWriter(stream);
+            binaryWriter.Write((long)_nextConnectionId); // write size.
+            // write connection data.
+            for (var i = 0; i < (long)_nextConnectionId * CONNECTION_SIZE; i++)
+            {
+                binaryWriter.Write(_connections[i]);
+            }
+            // write connection order data.
+            for (var i = 0; i < (long)_nextConnectionId; i++)
+            {
+                binaryWriter.Write(_connectionsOrder[i]);
+            }
+            return stream.Position - position;
+        }
+
+        /// <summary>
+        /// Deserializes this connection db from the given stream.
+        /// </summary>
+        public static ConnectionsDb Deserialize(Stream stream)
+        {
+            if (stream.ReadByte() != 1)
+            {
+                throw new Exception("Cannot deserialize stops db, version # doesn't match.");
+            }
+
+            var sortingByte = stream.ReadByte();
+            DefaultSorting? sorting = null;
+            if(sortingByte == 1)
+            {
+                sorting = DefaultSorting.DepartureTime;
+            }
+            else
+            {
+                sorting = DefaultSorting.ArrivalTime;
+            }
+
+            var binaryReader = new BinaryReader(stream);
+            var size = binaryReader.ReadInt64();
+
+            var connections = new MemoryArray<uint>(size * CONNECTION_SIZE);
+            connections.CopyFrom(stream);
+
+            var connectionsOrder = new MemoryArray<uint>(size);
+            connectionsOrder.CopyFrom(stream);
+
+            return new ConnectionsDb(sorting, connections, connectionsOrder);
         }
     }
 }

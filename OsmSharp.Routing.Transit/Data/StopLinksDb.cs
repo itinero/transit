@@ -70,6 +70,17 @@ namespace OsmSharp.Routing.Transit.Data
         private uint _nextPointer = 0;
 
         /// <summary>
+        /// Gets the network id.
+        /// </summary>
+        public Guid Guid
+        {
+            get
+            {
+                return _id;
+            }
+        }
+
+        /// <summary>
         /// Adds a new router point for the given stop.
         /// </summary>
         public void Add(uint stopId, RouterPoint point)

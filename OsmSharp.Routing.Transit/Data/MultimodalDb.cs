@@ -74,6 +74,11 @@ namespace OsmSharp.Routing.Transit.Data
         {
             if (db == null) { throw new ArgumentNullException("db"); }
 
+            if (db.Guid != _routerDb.Guid)
+            {
+                throw new Exception("Cannot add this stop links db. It was built based on a different network.");
+            }
+
             _stoplinksDbs[db.ProfileName] = db;
         }
 

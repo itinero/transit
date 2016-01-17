@@ -8,7 +8,7 @@
         <owners>Ben Abelshausen</owners>
         <licenseUrl>http://raw.github.com/xivk/OsmSharp.Transit/master/license.txt</licenseUrl>
         <projectUrl>http://www.osmsharp.com/</projectUrl>
-        <iconUrl>http://raw.github.com/xivk/OsmSharp.Transit/master/packages_nuspec/logo.png</iconUrl>
+        <iconUrl>https://raw.githubusercontent.com/OsmSharp/transit/develop/packages_nuspec/icon.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>OsmSharp is an open-source mapping project, this module adds public transit routing capabilities.</description>
         <summary>OsmSharp is an open-source mapping project, this module adds public transit routing capabilities. Can use a GTFS feed and OpenStreetMap to implement fully multimodal routing.</summary>

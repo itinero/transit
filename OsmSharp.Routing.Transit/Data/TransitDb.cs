@@ -286,6 +286,14 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Returns true if there is a transfers db.
+        /// </summary>
+        public bool HasTransfersDb()
+        {
+            return _transfersDbs.Count > 0;
+        }
+
+        /// <summary>
         /// Returns true if there is a transfers db for the given profile.
         /// </summary>
         public bool HasTransfersDb(Profiles.Profile profile)

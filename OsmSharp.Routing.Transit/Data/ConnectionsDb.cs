@@ -17,11 +17,8 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Collections.Sorting;
-using OsmSharp.Math.Algorithms;
-using OsmSharp.Routing.Algorithms.Search;
 using Reminiscence.Arrays;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace OsmSharp.Routing.Transit.Data
@@ -108,6 +105,15 @@ namespace OsmSharp.Routing.Transit.Data
             _connections[id * CONNECTION_SIZE + 3] = ConnectionsDb.Encode(departureTime, duration);
 
             return id;
+        }
+
+        /// <summary>
+        /// Update stops.
+        /// </summary>
+        public void UpdateStops(uint id, uint stop1, uint stop2)
+        {
+            _connections[id * CONNECTION_SIZE + 0] = stop1;
+            _connections[id * CONNECTION_SIZE + 1] = stop2;
         }
 
         /// <summary>

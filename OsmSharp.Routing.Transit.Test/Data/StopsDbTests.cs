@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of OsmSharp.
 // 
@@ -21,7 +21,6 @@ using OsmSharp.Math.Algorithms;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Transit.Data;
-using System;
 using System.Collections.Generic;
 using System.IO;
 

@@ -20,6 +20,7 @@ using OsmSharp.Collections.Tags;
 using OsmSharp.Math.Geo;
 using OsmSharp.Routing.Algorithms.Search;
 using OsmSharp.Routing.Profiles;
+using Reminiscence.Arrays;
 using System;
 using System.Collections.Generic;
 
@@ -219,6 +220,45 @@ namespace OsmSharp.Routing.Transit.Data
 
                 db.AddConnection(newDepartureStop, newArrivalStop, newTripId, connectionEnumerator.DepartureTime, 
                     connectionEnumerator.ArrivalTime);
+            }
+        }
+
+        /// <summary>
+        /// Sorts the stops and updates the connections.
+        /// </summary>
+        public static void SortStops(this TransitDb db)
+        {
+            if(db.HasTransfersDb()) { throw new ArgumentException("Cannot sort stops for a transit db with tranfers db's. Add tranfer db's after sorting."); }
+
+            // add default stop ids.
+            var stopIds = new MemoryArray<uint>(db.StopsCount);
+            for(uint s = 0; s < db.StopsCount; s++)
+            {
+                stopIds[s] = s;
+            }
+
+            // sort stops.
+            db.SortStops((s1, s2) =>
+            {
+                var temp = stopIds[s1];
+                stopIds[s1] = stopIds[s2];
+                stopIds[s2] = temp;
+            });
+
+            var reverseStopIds = new MemoryArray<uint>(db.StopsCount);
+            for(uint s = 0; s < db.StopsCount; s++)
+            {
+                reverseStopIds[stopIds[s]] = s;
+            }
+            stopIds = null;
+
+            // update stops on connections.
+            var connectionEnumerator = db.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
+            while (connectionEnumerator.MoveNext())
+            {
+                db.ConnectionsDb.UpdateStops(connectionEnumerator.Id,
+                    reverseStopIds[connectionEnumerator.DepartureStop],
+                    reverseStopIds[connectionEnumerator.ArrivalStop]);
             }
         }
     }

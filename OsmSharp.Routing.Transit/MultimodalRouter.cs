@@ -50,6 +50,10 @@ namespace OsmSharp.Routing.Transit
             RouterPoint sourcePoint, Profile sourceProfile, RouterPoint targetPoint, Profile targetProfile, 
                 EarliestArrivalSettings settings)
         {
+            // get the get factor function.
+            var sourceGetFactor = this.GetGetFactor(sourceProfile);
+            var targetGetFactor = this.GetGetFactor(targetProfile);
+
             // create the profile search.
             var tripEnumerator = _db.TransitDb.GetTripsEnumerator();
             var transfersDb =  _db.TransitDb.GetTransfersDb(_transferProfile);
@@ -57,7 +61,7 @@ namespace OsmSharp.Routing.Transit
 
             // search for sources.
             var departureTimeSeconds = (uint)(departureTime - departureTime.Date).TotalSeconds;
-            var sourceSearch = new ClosestStopsSearch(_db, sourceProfile, sourcePoint,
+            var sourceSearch = new ClosestStopsSearch(_db, sourceProfile, sourceGetFactor, sourcePoint,
                 settings.MaxSecondsSource, false);
             sourceSearch.StopFound = (s, t) =>
                 {
@@ -66,7 +70,7 @@ namespace OsmSharp.Routing.Transit
                 };
 
             // search for targets.
-            var targetSearch = new ClosestStopsSearch(_db, targetProfile, targetPoint,
+            var targetSearch = new ClosestStopsSearch(_db, targetProfile, targetGetFactor, targetPoint,
                 settings.MaxSecondsTarget, true);
             targetSearch.StopFound = (s, t) =>
             {

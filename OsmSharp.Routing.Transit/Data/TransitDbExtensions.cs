@@ -154,5 +154,72 @@ namespace OsmSharp.Routing.Transit.Data
             }
             return db.StopAttributes.Get(enumerator.MetaId);
         }
+
+        /// <summary>
+        /// Copies all core data stops, schedules, trips, and connections from the given transit db.
+        /// </summary>
+        public static void CopyFrom(this TransitDb db, TransitDb other)
+        {
+            if (db == null) { throw new ArgumentNullException("db"); }
+            if (other == null) { throw new ArgumentNullException("other"); }
+            if (other.ConnectionSorting == null) { throw new ArgumentException("A database can only be copied if connections are sorted."); }
+
+            var agencyIds = new Dictionary<uint, uint>();
+            var stopIds = new Dictionary<uint, uint>();
+            var tripIds = new Dictionary<uint, uint>();
+            var scheduleIds = new Dictionary<uint, uint>();
+
+            // copy stops and keep id transformations.
+            var stopsEnumerator = other.GetStopsEnumerator();
+            while(stopsEnumerator.MoveNext())
+            {
+                var stopsMeta = other.StopAttributes.Get(stopsEnumerator.MetaId);
+                var newMetaId = db.StopAttributes.Add(stopsMeta);
+                var newStopId = db.AddStop(stopsEnumerator.Latitude, stopsEnumerator.Longitude, newMetaId);
+                stopIds[stopsEnumerator.Id] = newStopId;
+            }
+
+            // copy trips, copy schedules that have not been copied yet, and keep trip id transformations.
+            var tripsEnumerator = other.GetTripsEnumerator();
+            var scheduleEnumerator = other.GetSchedulesEnumerator();
+            while (tripsEnumerator.MoveNext())
+            {
+                var tripsMeta = other.TripAttributes.Get(tripsEnumerator.MetaId);
+                var newMetaId = db.TripAttributes.Add(tripsMeta);
+
+                uint newAgencyMetaId = uint.MaxValue;
+                if (!agencyIds.TryGetValue(tripsEnumerator.AgencyId, out newAgencyMetaId))
+                {
+                    var agencyMeta = other.AgencyAttributes.Get(tripsEnumerator.AgencyId);
+                    newAgencyMetaId = db.AgencyAttributes.Add(agencyMeta);
+                    agencyIds.Add(tripsEnumerator.AgencyId, newAgencyMetaId);
+                }
+
+                uint newScheduleId = uint.MaxValue;
+                if(!scheduleIds.TryGetValue(tripsEnumerator.ScheduleId, out newScheduleId))
+                {
+                    if(scheduleEnumerator.MoveTo(tripsEnumerator.ScheduleId))
+                    {
+                        newScheduleId = scheduleEnumerator.CopyTo(db.SchedulesDb);
+                        scheduleIds[tripsEnumerator.ScheduleId] = newScheduleId;
+                    }
+                }
+
+                var newTripId = db.AddTrip(newScheduleId, newAgencyMetaId, newMetaId);
+                tripIds[tripsEnumerator.Id] = newTripId;
+            }
+
+            // copy connections.
+            var connectionEnumerator = other.GetConnectionsEnumerator(other.ConnectionSorting.Value);
+            while(connectionEnumerator.MoveNext())
+            {
+                var newArrivalStop = stopIds[connectionEnumerator.ArrivalStop];
+                var newDepartureStop = stopIds[connectionEnumerator.DepartureStop];
+                var newTripId = tripIds[connectionEnumerator.TripId];
+
+                db.AddConnection(newDepartureStop, newArrivalStop, newTripId, connectionEnumerator.DepartureTime, 
+                    connectionEnumerator.ArrivalTime);
+            }
+        }
     }
 }

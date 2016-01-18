@@ -84,6 +84,14 @@ namespace OsmSharp.Routing.Transit.Data
         /// </summary>
         public void AddEntry(uint id, DateTime start, DateTime end, byte weekMask)
         {
+            this.AddEntry(id, this.Encode(start, end, weekMask));
+        }
+
+        /// <summary>
+        /// Adds a raw entry.
+        /// </summary>
+        private void AddEntry(uint id, uint encodedValue)
+        {
             var count = _data[id];
             if (_nextPointer != id + count + 1)
             {
@@ -98,7 +106,7 @@ namespace OsmSharp.Routing.Transit.Data
                 _data.Resize(pointer + BLOCK_SIZE);
             }
 
-            _data[pointer] = this.Encode(start, end, weekMask);
+            _data[pointer] = encodedValue;
             _data[id] = count + 1;
         }
 
@@ -162,6 +170,20 @@ namespace OsmSharp.Routing.Transit.Data
                     }
                 }
                 return false;
+            }
+
+            /// <summary>
+            /// Copies the current schedule to another schedules db.
+            /// </summary>
+            public uint CopyTo(SchedulesDb otherDb)
+            {
+                var newScheduleId = otherDb.Add();
+                for (var pointer = _id + 1; pointer < _id + 1 + _count; pointer++)
+                {
+                    var value = _db._data[pointer];
+                    otherDb.AddEntry(newScheduleId, value);
+                }
+                return newScheduleId;
             }
         }
 

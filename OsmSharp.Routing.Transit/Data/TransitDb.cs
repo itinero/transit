@@ -167,6 +167,17 @@ namespace OsmSharp.Routing.Transit.Data
         }
 
         /// <summary>
+        /// Gets the connections db.
+        /// </summary>
+        public ConnectionsDb ConnectionsDb
+        {
+            get
+            {
+                return _connectionsDb;
+            }
+        }
+
+        /// <summary>
         /// Adds a new trip.
         /// </summary>
         public uint AddTrip(uint scheduleId, uint agencyId, uint metaId)
@@ -181,6 +192,17 @@ namespace OsmSharp.Routing.Transit.Data
         public TripsDb.Enumerator GetTripsEnumerator()
         {
             return _tripsDb.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets the trips db.
+        /// </summary>
+        public TripsDb TripsDb
+        {
+            get
+            {
+                return _tripsDb;
+            }
         }
 
         /// <summary>
@@ -228,6 +250,17 @@ namespace OsmSharp.Routing.Transit.Data
         public SchedulesDb.Enumerator GetSchedulesEnumerator()
         {
             return _schedulesDb.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets the schedules db.
+        /// </summary>
+        public SchedulesDb SchedulesDb
+        {
+            get
+            {
+                return _schedulesDb;
+            }
         }
 
         /// <summary>

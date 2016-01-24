@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
+using Reminiscence.IO.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -112,7 +113,7 @@ namespace OsmSharp.Routing.Transit.Data
             stream.WriteByte(1); // writes the version #.
 
             // write routerdb.
-            _routerDb.Serialize(stream);
+            _routerDb.Serialize(new LimitedStream(stream));
 
             // write transitdb.
             _transitDb.Serialize(stream);

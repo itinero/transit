@@ -20,6 +20,10 @@ namespace OsmSharp.Routing.Transit.Test.Functional
     {
         static void Main(string[] args)
         {
+            // enable logging.
+            OsmSharp.Logging.Log.Enable();
+            OsmSharp.Logging.Log.RegisterListener(new global::OsmSharp.WinForms.UI.Logging.ConsoleTraceListener());
+
             OsmSharp.Routing.Osm.Vehicles.Vehicle.RegisterVehicles();
 
             // download and extract test-data.

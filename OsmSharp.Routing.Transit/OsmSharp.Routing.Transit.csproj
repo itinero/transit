@@ -76,8 +76,8 @@
       <HintPath>..\packages\OsmSharp.Core.1.2.0-rc1-0118\lib\net45\OsmSharp.Osm.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OsmSharp.Routing, Version=0.2.0.121, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OsmSharp.Routing.0.2.0-beta-0121\lib\net45\OsmSharp.Routing.dll</HintPath>
+    <Reference Include="OsmSharp.Routing, Version=0.2.0.124, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OsmSharp.Routing.0.2.0-beta-0124\lib\net45\OsmSharp.Routing.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net">

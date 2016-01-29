@@ -17,6 +17,7 @@
 // along with OsmSharp. If not, see <http://www.gnu.org/licenses/>.
 
 using OsmSharp.Routing.Algorithms;
+using OsmSharp.Routing.Algorithms.Routes;
 using OsmSharp.Routing.Profiles;
 using OsmSharp.Routing.Transit.Algorithms;
 using OsmSharp.Routing.Transit.Algorithms.OneToOne;
@@ -153,7 +154,7 @@ namespace OsmSharp.Routing.Transit
                     { // transit it not preferred or belof threshold.
                         var path = bidirectionalHelper.GetPath();
                         return new Result<Route>(
-                            RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                            CompleteRouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
                     }
                 }
             }
@@ -166,7 +167,7 @@ namespace OsmSharp.Routing.Transit
                     { // transit it not preferred or belof threshold.
                         var path = helper.GetPath();
                         return new Result<Route>(
-                            RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                            CompleteRouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
                     }
                 }
             }           

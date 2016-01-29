@@ -18,6 +18,7 @@
 
 using OsmSharp.Routing.Algorithms;
 using OsmSharp.Routing.Algorithms.Default;
+using OsmSharp.Routing.Algorithms.Routes;
 using OsmSharp.Routing.Graphs;
 using OsmSharp.Routing.Profiles;
 using OsmSharp.Routing.Transit.Algorithms.Search;
@@ -504,9 +505,9 @@ namespace OsmSharp.Routing.Transit.Algorithms
             if (_backward)
             {
                 path = path.Reverse();
-                return RouteBuilder.Build(_multimodalDb.RouterDb, _profile, point, _routerPoint, path);
+                return CompleteRouteBuilder.Build(_multimodalDb.RouterDb, _profile, point, _routerPoint, path);
             }
-            return RouteBuilder.Build(_multimodalDb.RouterDb, _profile, _routerPoint, point, path);
+            return CompleteRouteBuilder.Build(_multimodalDb.RouterDb, _profile, _routerPoint, point, path);
         }
 
         /// <summary>

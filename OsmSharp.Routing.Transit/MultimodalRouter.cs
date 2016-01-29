@@ -41,7 +41,21 @@ namespace OsmSharp.Routing.Transit
         {
             _db = db;
             _transferProfile = transferProfile;
+
+            this.PreferTransit = true;
+            this.PreferTransitThreshold = 60 * 5;
         }
+
+        /// <summary>
+        /// Get or sets the prefer transit flag.
+        /// </summary>
+        public bool PreferTransit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the prefer transit threshold in seconds.
+        /// </summary>
+        /// <remarks>Only for routes with duration > threshold, use prefer transit flag.</remarks>
+        public int PreferTransitThreshold { get; set; }
 
         /// <summary>
         /// Tries to calculate an earliest arrival route from stop1 to stop2.
@@ -73,10 +87,10 @@ namespace OsmSharp.Routing.Transit
             var targetSearch = new ClosestStopsSearch(_db, targetProfile, targetGetFactor, targetPoint,
                 settings.MaxSecondsTarget, true);
             targetSearch.StopFound = (s, t) =>
-            {
-                profileSearch.SetTargetStop(s, (uint)t);
-                return false;
-            };
+                {
+                    profileSearch.SetTargetStop(s, (uint)t);
+                    return false;
+                };
 
             // create bidirectional helper if possible.
             SearchHelper helper = null;
@@ -126,30 +140,34 @@ namespace OsmSharp.Routing.Transit
                 return new Result<Route>(string.Format("Route could not be built: {0}.", profileSearchRouteBuilder.ErrorMessage));
             }
 
+            var sourceWeight = sourceSearch.GetWeight(profileSearchRouteBuilder.Stops[0]);
+            var targetWeight = targetSearch.GetWeight(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
+            var transitWeight = sourceWeight + profileSearchRouteBuilder.Duration + targetWeight;
+            
             if (bidirectionalHelper != null &&
                 bidirectionalHelper.HasSucceeded)
             { // there is a direct route to the target.
-                var sourceWeight = sourceSearch.GetWeight(profileSearchRouteBuilder.Stops[0]);
-                var targetWeight = targetSearch.GetWeight(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
-                var transitWeight = sourceWeight + profileSearchRouteBuilder.Duration + targetWeight;
                 if(transitWeight > bidirectionalHelper.BestWeight)
                 {
-                    var path = bidirectionalHelper.GetPath();
-                    return new Result<Route>(
-                        RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                    if (!this.PreferTransit || bidirectionalHelper.BestWeight < this.PreferTransitThreshold)
+                    { // transit it not preferred or belof threshold.
+                        var path = bidirectionalHelper.GetPath();
+                        return new Result<Route>(
+                            RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                    }
                 }
             }
             else if(helper != null &&
                 helper.HasSucceeded)
             { // there is a direct route to the target.
-                var sourceWeight = sourceSearch.GetWeight(profileSearchRouteBuilder.Stops[0]);
-                var targetWeight = targetSearch.GetWeight(profileSearchRouteBuilder.Stops[profileSearchRouteBuilder.Stops.Count - 1]);
-                var transitWeight = sourceWeight + profileSearchRouteBuilder.Duration + targetWeight;
                 if (transitWeight > helper.BestWeight)
                 {
-                    var path = helper.GetPath();
-                    return new Result<Route>(
-                        RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                    if (!this.PreferTransit || bidirectionalHelper.BestWeight < this.PreferTransitThreshold)
+                    { // transit it not preferred or belof threshold.
+                        var path = helper.GetPath();
+                        return new Result<Route>(
+                            RouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                    }
                 }
             }           
 

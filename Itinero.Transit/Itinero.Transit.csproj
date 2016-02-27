@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{293D8019-9E89-4BCB-A857-24B92F48C22C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Itinero.Transit</RootNamespace>
+    <AssemblyName>Itinero.Transit</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Output\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\Output\Itinero.Transit.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Output\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\Output\Itinero.Transit.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.XML</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>..\Output\OsmSharp.Routing.Transit.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\GeoAPI.1.7.4\lib\net45\GeoAPI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GTFS, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GTFS.IO, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GTFS.IO.Desktop, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.IO.Desktop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Itinero, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Itinero.0.6.0-rc1\lib\net45\Itinero.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Itinero.Geo, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Itinero.Geo.0.6.0-rc1\lib\net45\Itinero.Geo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.1.14\lib\net45\NetTopologySuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.1.14\lib\net45\PowerCollections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="Reminiscence, Version=1.0.2.41, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Reminiscence.1.0.2-rc1-0041\lib\portable-net403+sl50+win+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Reminiscence.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Zlib.Portable, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zlib.Portable.1.11.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyVersion.cs">
+      <Link>Properties\SharedAssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="Algorithms\BidirectionalSearchHelper.cs" />
+    <Compile Include="Algorithms\ClosestStopsSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearch.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearchExtensions.cs" />
+    <Compile Include="Algorithms\OneToOne\ProfileSearchRouteBuilder.cs" />
+    <Compile Include="Algorithms\SearchHelper.cs" />
+    <Compile Include="Algorithms\Search\Hilbert.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Data\ConnectionsDb.cs" />
+    <Compile Include="Data\ConnectionsDbExtensions.cs" />
+    <Compile Include="Data\DefaultSorting.cs" />
+    <Compile Include="Data\MultimodalDb.cs" />
+    <Compile Include="Data\MultimodalDbExtensions.cs" />
+    <Compile Include="Data\SchedulesDb.cs" />
+    <Compile Include="Data\SchedulesDbExtensions.cs" />
+    <Compile Include="Data\StopLinksDb.cs" />
+    <Compile Include="Data\StopsDb.cs" />
+    <Compile Include="Data\StopsDbExtensions.cs" />
+    <Compile Include="Data\TransfersDb.cs" />
+    <Compile Include="Data\TransitDb.cs" />
+    <Compile Include="Data\TransitDbExtensions.cs" />
+    <Compile Include="Data\TripsDb.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GTFS\TransitDbExtensions.cs" />
+    <Compile Include="IMultimodalRouter.cs" />
+    <Compile Include="ITransitRouter.cs" />
+    <Compile Include="MultimodalRouter.cs" />
+    <Compile Include="Osm\Data\TransitDbExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransitRouter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

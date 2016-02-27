@@ -1,0 +1,87 @@
+﻿using NUnit.Framework;
+using Itinero;
+using System;
+using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
+
+namespace Itinero.Transit.Test.Functional.Tests
+{
+    /// <summary>
+    /// The test runner.
+    /// </summary>
+    public static class Runner
+    {
+        /// <summary>
+        /// Executes the given test on the given router.
+        /// </summary>
+        public static void Test(MultimodalRouter router, FeatureCollection test)
+        {
+            var source = test.FirstOrException(x => x.Attributes.ContainsKeyValue("type", "source"), "Invalid test data: no source found.");
+            var target = test.FirstOrException(x => x.Attributes.ContainsKeyValue("type", "target"), "Invalid test data: no target found");
+
+            var sourceLocation = (source.Geometry as Point).Coordinate;
+            var targetLocation = (target.Geometry as Point).Coordinate;
+
+            var sourceProfile = Itinero.Profiles.Profile.Get(source.Attributes.FirstOrException(x => x.Key == "profile", 
+                "Invalid test data: no vehicle profile found on source.").Value.ToInvariantString());
+            var targetProfile = Itinero.Profiles.Profile.Get(target.Attributes.FirstOrException(x => x.Key == "profile",
+                "Invalid test data: no vehicle profile found on target.").Value.ToInvariantString());
+
+            var resolvedSource = router.Resolve(sourceProfile, sourceLocation);
+            var resolvedTarget = router.Resolve(targetProfile, targetLocation);
+
+            var result = test.First(x => x.Attributes.ContainsKeyValue("type", "result"));
+            var name = result.Attributes.FirstOrException(x => x.Key == "name", "Name of test case not found, expected on result geometry.").Value;
+            Contract.Requires(name != null, "Name of test case not set.");
+
+            var performanceInfoConsumer = new PerformanceInfoConsumer(name.ToStringEmptyWhenNull(), 5000);
+
+            DateTime time;
+            if (result.Attributes.ContainsKey("departuretime") &&
+                DateTime.TryParseExact(result.Attributes.First(x => x.Key == "departuretime").Value.ToInvariantString(),
+                    "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out time))
+            {
+                performanceInfoConsumer.Start();
+                var route = router.TryEarliestArrival(time, resolvedSource, sourceProfile, resolvedTarget, targetProfile, EarliestArrivalSettings.Default);
+
+                Assert.IsFalse(route.IsError, "Route was not found.");
+
+                object value;
+                if (result.Attributes.TryGetValue("time", out value))
+                {
+                    var timeResult = (long)value;
+                    Assert.AreEqual(timeResult, route.Value.TotalTime, Settings.MinimumTotalTimeDifference);
+                }
+                performanceInfoConsumer.Stop();
+                File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
+
+            }
+            else
+            {
+                throw new Exception("Invalid test data: no departure time set.");
+            }
+        }
+
+        /// <summary>
+        /// Executes the given test on the given router.
+        /// </summary>
+        public static void Test(MultimodalRouter router, string embeddedResourceId)
+        {
+            FeatureCollection featureCollection;
+            using (var stream = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(embeddedResourceId)))
+            {
+                featureCollection = OsmSharp.Geo.Streams.GeoJson.GeoJsonConverter.ToFeatureCollection(stream.ReadToEnd());
+            }
+
+            Test(router, featureCollection);
+        }
+    }
+}

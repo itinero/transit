@@ -32,9 +32,10 @@ namespace Itinero.Transit.Test.Functional
     {
         static void Main(string[] args)
         {
-            // enable logging.
-            OsmSharp.Logging.Log.Enable();
-            OsmSharp.Logging.Log.RegisterListener(new ConsoleTraceListener());
+            Itinero.Logging.Logger.LogAction = (origin, level, message, parameters) =>
+            {
+                Console.WriteLine(string.Format("[{0}] {1} - {2}", origin, level, message));
+            };
 
             Itinero.Osm.Vehicles.Vehicle.RegisterVehicles();
 

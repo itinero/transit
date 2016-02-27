@@ -37,28 +37,36 @@
       <HintPath>..\packages\GeoAPI.1.7.4\lib\net45\GeoAPI.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="GTFS, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.dll</HintPath>
+    <Reference Include="GTFS, Version=1.5.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.5.6-rc1\lib\net40\GTFS.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="GTFS.IO, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.IO.dll</HintPath>
+    <Reference Include="GTFS.IO, Version=1.5.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.5.6-rc1\lib\net40\GTFS.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="GTFS.IO.Desktop, Version=1.4.6.105, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GTFS.1.4.6-rc1-0105\lib\net40\GTFS.IO.Desktop.dll</HintPath>
+    <Reference Include="GTFS.IO.Desktop, Version=1.5.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GTFS.1.5.6-rc1\lib\net40\GTFS.IO.Desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Itinero, Version=0.5.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Itinero.0.5.2-rc1\lib\net45\Itinero.dll</HintPath>
+    <Reference Include="Itinero, Version=0.6.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Itinero.0.6.1-rc1\lib\net45\Itinero.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Itinero.Geo, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Itinero.Geo.0.6.0-rc1\lib\net45\Itinero.Geo.dll</HintPath>
+      <HintPath>..\packages\Itinero.Geo.0.6.1-rc1\lib\net45\Itinero.Geo.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
       <HintPath>..\packages\NetTopologySuite.1.14\lib\net45\NetTopologySuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.GeoJSON, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.GeoJSON.1.14\lib\net45\NetTopologySuite.IO.GeoJSON.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.0.5813.39031, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">

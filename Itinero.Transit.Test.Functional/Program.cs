@@ -32,12 +32,12 @@ namespace Itinero.Transit.Test.Functional
     {
         static void Main(string[] args)
         {
-            Itinero.Logging.Logger.LogAction = (origin, level, message, parameters) =>
+            Logging.Logger.LogAction = (origin, level, message, parameters) =>
             {
                 Console.WriteLine(string.Format("[{0}] {1} - {2}", origin, level, message));
             };
 
-            Itinero.Osm.Vehicles.Vehicle.RegisterVehicles();
+            Vehicle.RegisterVehicles();
 
             // download and extract test-data.
             Console.WriteLine("Downloading Belgium...");
@@ -47,7 +47,7 @@ namespace Itinero.Transit.Test.Functional
 
             // create test router.
             Console.WriteLine("Loading routing data for Belgium...");
-            var routerDb = RouterDb.Deserialize(File.OpenRead("belgium.a.routing"));
+            var routerDb = RouterDb.Deserialize(File.OpenRead("belgium.a.routerdb"));
 
             Console.WriteLine("Loading NMBS data...");
             var reader = new GTFSReader<GTFSFeed>(false);

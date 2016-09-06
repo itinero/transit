@@ -72,7 +72,10 @@ namespace Itinero.Transit.Test.Functional
             {
                 if(names[i].Equals(key))
                 {
-                    return attributes.GetValues()[i] == value;
+                    if (attributes.GetValues()[i] != null)
+                    {
+                        return attributes.GetValues()[i].ToInvariantString().Equals(value);
+                    }
                 }
             }
             return false;

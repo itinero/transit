@@ -66,7 +66,6 @@ namespace Itinero.Transit.Test.Functional.Tests
                 }
                 performanceInfoConsumer.Stop();
                 File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
-
             }
             else
             {
@@ -84,7 +83,7 @@ namespace Itinero.Transit.Test.Functional.Tests
             {
                 var jsonReader = new JsonTextReader(stream);
                 var geoJsonSerializer = new NetTopologySuite.IO.GeoJsonSerializer();
-                featureCollection = geoJsonSerializer.Deserialize(jsonReader) as FeatureCollection;
+                featureCollection = geoJsonSerializer.Deserialize<FeatureCollection>(jsonReader) as FeatureCollection;
             }
 
             Test(router, featureCollection);

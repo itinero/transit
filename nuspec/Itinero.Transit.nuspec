@@ -6,20 +6,24 @@
         <title>Itinero.Transit</title>
         <authors>Ben Abelshausen</authors>
         <owners>Ben Abelshausen</owners>
-        <licenseUrl>http://raw.github.com/xivk/OsmSharp.Transit/master/license.txt</licenseUrl>
-        <projectUrl>http://www.osmsharp.com/</projectUrl>
-        <iconUrl>https://raw.githubusercontent.com/OsmSharp/transit/develop/packages_nuspec/icon.png</iconUrl>
+        <licenseUrl>https://github.com/itinero/transit/blob/develop/license.txt</licenseUrl>
+        <projectUrl>http://www.itinero.tech/</projectUrl>
+        <iconUrl>http://www.itinero.tech/logos/itinero_logo_notext.svg.128.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Itinero.Transit is a module for Itinero to add transit routing capabilities.</description>
-        <summary>Itinero.Transit is a module for Itinero to add transit routing capabilities. Can use a GTFS feed and OpenStreetMap to implement fully multimodal routing.</summary>
+        <summary>Itinero.Transit is a module for Itinero to add transit routing capabilities.</summary>
         <copyright>Ben Abelshausen</copyright>
         <tags>osm, openstreetmap, routing, GFTS, transit</tags>
         <dependencies>
-          <dependency id="Itinero" version="0.6.1-rc1" />
-          <dependency id="GTFS" version="1.5.6-rc1" />
+          <dependency id="Itinero" version="0.23.1-rc1" />
+          <dependency id="Itinero.Geo" version="0.23.1-rc1" />
+          <dependency id="GTFS" version="1.7.1" />
+          <dependency id="GeoAPI" version="[1.7.4,2)" />
+          <dependency id="NetTopologySuite" version="[1.14,2)" />
         </dependencies>
     </metadata>
     <files>
         <file src="Output\Itinero.Transit.dll" target="lib\net45\Itinero.Transit.dll" />
+        <file src="Output\Itinero.Transit.Geo.dll" target="lib\net45\Itinero.Transit.Geo.dll" />
     </files>
 </package>

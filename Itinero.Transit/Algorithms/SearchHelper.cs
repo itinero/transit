@@ -18,6 +18,7 @@
 
 using Itinero.Algorithms;
 using Itinero.Algorithms.Default;
+using Itinero.Algorithms.Weights;
 using Itinero.Profiles;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace Itinero.Transit.Algorithms
     {
         private readonly Dykstra _search;
         private readonly RouterPoint _target;
-        private readonly Path[] _targetPaths;
+        private readonly EdgePath<float>[] _targetPaths;
 
         /// <summary>
         /// Creates a new search helper.
@@ -42,7 +43,7 @@ namespace Itinero.Transit.Algorithms
             _target = target;
 
             _targets = new HashSet<uint>();
-            _targetPaths = target.ToPaths(routerDb, profile, false);
+            _targetPaths = target.ToEdgePaths(routerDb, new DefaultWeightHandler(profile.GetGetFactor(routerDb)), false);
             for (var i = 0; i < _targetPaths.Length; i++)
             {
                 _targets.Add(_targetPaths[i].Vertex);
@@ -50,7 +51,7 @@ namespace Itinero.Transit.Algorithms
         }
 
         private readonly HashSet<uint> _targets;
-        private Path _best = null;
+        private EdgePath<float> _best = null;
         private uint _bestVertex = uint.MaxValue;
         private float _bestWeight = float.MaxValue;
 
@@ -66,7 +67,7 @@ namespace Itinero.Transit.Algorithms
         {
             if(_targets.Contains(vertex))
             {
-                Path path;
+                EdgePath<float> path;
                 if(_search.TryGetVisit(vertex, out path))
                 {
                     for(var i = 0; i < _targetPaths.Length; i++)
@@ -105,7 +106,7 @@ namespace Itinero.Transit.Algorithms
         /// Gets the path from source->target.
         /// </summary>
         /// <returns></returns>
-        public List<uint> GetPath()
+        public EdgePath<float> GetPath()
         {
             if (!this.HasSucceeded)
             {
@@ -116,10 +117,7 @@ namespace Itinero.Transit.Algorithms
             {
                 if(_targetPaths[i].Vertex == _bestVertex)
                 {
-                    var path = new List<uint>();
-                    _best.AddToList(path);
-                    _targetPaths[i].AddToListReverse(path);
-                    return path;
+                    return _best.Append(_targetPaths[i]);
                 }
             }
             throw new InvalidOperationException("No path could be found to/from source/target.");

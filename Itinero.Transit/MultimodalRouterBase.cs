@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of Itinero.
 // 
@@ -24,12 +24,20 @@ namespace Itinero.Transit
     /// <summary>
     /// Abstract representation of a multimodal router.
     /// </summary>
-    public interface IMultimodalRouter : IRouter
+    public abstract class MultimodalRouterBase
     {
+        /// <summary>
+        /// Gets the core router.
+        /// </summary>
+        public abstract Router Router
+        {
+            get;
+        }
+
         /// <summary>
         /// Tries to calculate an earliest arrival route from stop1 to stop2.
         /// </summary>
-        Result<Route> TryEarliestArrival(DateTime departureTime,
+        public abstract Result<Route> TryEarliestArrival(DateTime departureTime,
             RouterPoint sourcePoint, Profile sourceProfile, RouterPoint targetPoint, Profile targetProfile, 
                 EarliestArrivalSettings settings);
     }

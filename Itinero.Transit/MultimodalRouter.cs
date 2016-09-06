@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2015 Abelshausen Ben
+// Copyright (C) 2016 Abelshausen Ben
 // 
 // This file is part of Itinero.
 // 
@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Itinero. If not, see <http://www.gnu.org/licenses/>.
 
-using Itinero.Algorithms;
 using Itinero.Algorithms.Routes;
 using Itinero.Profiles;
 using Itinero.Transit.Algorithms;
@@ -29,19 +28,20 @@ namespace Itinero.Transit
     /// <summary>
     /// An implementation of a multi modal router.
     /// </summary>
-    public class MultimodalRouter : Router, IMultimodalRouter
+    public class MultimodalRouter : MultimodalRouterBase
     {
         private readonly MultimodalDb _db;
         private readonly Profile _transferProfile;
+        private readonly Router _router;
 
         /// <summary>
         /// Creates a multimodal router.
         /// </summary>
         public MultimodalRouter(MultimodalDb db, Profile transferProfile)
-            : base(db.RouterDb)
         {
             _db = db;
             _transferProfile = transferProfile;
+            _router = new Router(db.RouterDb);
 
             this.PreferTransit = true;
             this.PreferTransitThreshold = 60 * 5;
@@ -53,6 +53,17 @@ namespace Itinero.Transit
         public bool PreferTransit { get; set; }
 
         /// <summary>
+        /// Gets router.
+        /// </summary>
+        public override Router Router
+        {
+            get
+            {
+                return _router;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the prefer transit threshold in seconds.
         /// </summary>
         /// <remarks>Only for routes with duration > threshold, use prefer transit flag.</remarks>
@@ -61,13 +72,13 @@ namespace Itinero.Transit
         /// <summary>
         /// Tries to calculate an earliest arrival route from stop1 to stop2.
         /// </summary>
-        public Result<Route> TryEarliestArrival(DateTime departureTime,
+        public override Result<Route> TryEarliestArrival(DateTime departureTime,
             RouterPoint sourcePoint, Profile sourceProfile, RouterPoint targetPoint, Profile targetProfile, 
                 EarliestArrivalSettings settings)
         {
             // get the get factor function.
-            var sourceGetFactor = this.GetGetFactor(sourceProfile);
-            var targetGetFactor = this.GetGetFactor(targetProfile);
+            var sourceGetFactor = _router.GetDefaultGetFactor(sourceProfile);
+            var targetGetFactor = _router.GetDefaultGetFactor(targetProfile);
 
             // create the profile search.
             var tripEnumerator = _db.TransitDb.GetTripsEnumerator();
@@ -104,7 +115,7 @@ namespace Itinero.Transit
             }
             else
             { // profiles are different but the source can still reach the destination.
-                helper = new SearchHelper(this.Db, sourceSearch.Search, sourceProfile, targetPoint);
+                helper = new SearchHelper(_router.Db, sourceSearch.Search, sourceProfile, targetPoint);
                 sourceSearch.WasFound = helper.SourceWasFound;
             }
 
@@ -154,7 +165,7 @@ namespace Itinero.Transit
                     { // transit it not preferred or belof threshold.
                         var path = bidirectionalHelper.GetPath();
                         return new Result<Route>(
-                            CompleteRouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                            CompleteRouteBuilder.Build(_router.Db, sourceProfile, sourcePoint, targetPoint, path));
                     }
                 }
             }
@@ -167,7 +178,7 @@ namespace Itinero.Transit
                     { // transit it not preferred or belof threshold.
                         var path = helper.GetPath();
                         return new Result<Route>(
-                            CompleteRouteBuilder.Build(this.Db, sourceProfile, sourcePoint, targetPoint, path));
+                            CompleteRouteBuilder.Build(_router.Db, sourceProfile, sourcePoint, targetPoint, path));
                     }
                 }
             }           

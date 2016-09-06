@@ -60,7 +60,7 @@ namespace Itinero.Transit.Data
                         // get profile.
                         float distance;
                         ushort edgeProfileId;
-                        Itinero.Data.EdgeDataSerializer.Deserialize(edge.Data[0],
+                        Itinero.Data.Edges.EdgeDataSerializer.Deserialize(edge.Data[0],
                             out distance, out edgeProfileId);
                         var edgeProfile = db.RouterDb.EdgeProfiles.Get(edgeProfileId);
                         // get factor from profile.

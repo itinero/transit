@@ -18,8 +18,8 @@
 
 using Itinero.Geo;
 using Itinero.LocalGeo;
-using Itinero.Network;
 using NetTopologySuite.Features;
+using Itinero.Data.Network;
 using NetTopologySuite.Geometries;
 using System.Collections.Generic;
 using System.IO;
@@ -114,7 +114,7 @@ namespace Itinero.Transit.Test
                             shape.Add(line.Coordinates[i].FromCoordinate());
                             continue;
                         }
-                        db.Network.AddEdge(vertex1, vertex2, new Itinero.Network.Data.EdgeData()
+                        db.Network.AddEdge(vertex1, vertex2, new Itinero.Data.Network.Edges.EdgeData()
                         {
                             Distance = (float)distance,
                             MetaId = metaId,

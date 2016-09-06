@@ -38,8 +38,8 @@ namespace Itinero.Transit.Test.Functional.Tests
             var targetProfile = Itinero.Profiles.Profile.Get(target.Attributes.FirstOrException(x => x == "profile",
                 "Invalid test data: no vehicle profile found on target.").ToInvariantString());
 
-            var resolvedSource = router.Resolve(sourceProfile, sourceLocation);
-            var resolvedTarget = router.Resolve(targetProfile, targetLocation);
+            var resolvedSource = router.Router.Resolve(sourceProfile, sourceLocation);
+            var resolvedTarget = router.Router.Resolve(targetProfile, targetLocation);
 
             var result = test.Features.First(x => x.Attributes.Contains("type", "result"));
             var name = result.Attributes.FirstOrException(x => x == "name", "Name of test case not found, expected on result geometry.").ToInvariantString();

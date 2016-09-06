@@ -58,7 +58,7 @@ namespace Itinero.Transit.Algorithms
             if (!this.HasSucceeded)
             { // not succeeded yet.
                 // check forward search for the same vertex.
-                Path forwardVisit;
+                EdgePath<float> forwardVisit;
                 if (_sourceSearch.TryGetVisit(vertex, out forwardVisit))
                 { // there is a status for this vertex in the source search.
                     weight = weight + forwardVisit.Weight;
@@ -93,25 +93,19 @@ namespace Itinero.Transit.Algorithms
         /// Gets the path from source->target.
         /// </summary>
         /// <returns></returns>
-        public List<uint> GetPath()
+        public EdgePath<float> GetPath()
         {
             if (!this.HasSucceeded)
             {
                 throw new Exception("No results available, algorithm was not successful!");
             }
 
-            Path fromSource;
-            Path toTarget;
+            EdgePath<float> fromSource;
+            EdgePath<float> toTarget;
             if (_sourceSearch.TryGetVisit(_bestVertex, out fromSource) &&
                _targetSearch.TryGetVisit(_bestVertex, out toTarget))
             {
-                var path = new List<uint>();
-                fromSource.AddToList(path);
-                if (toTarget.From != null)
-                {
-                    toTarget.From.AddToListReverse(path);
-                }
-                return path;
+                return fromSource.Append(toTarget);
             }
             throw new InvalidOperationException("No path could be found to/from source/target.");
         }

@@ -26,6 +26,7 @@ using Itinero.Profiles;
 using Itinero.Transit.Algorithms.Search;
 using Itinero.Transit.Data;
 using System;
+using Itinero.Algorithms.Weights;
 
 namespace Itinero.Transit.Algorithms
 {
@@ -72,8 +73,8 @@ namespace Itinero.Transit.Algorithms
             _backward = backward;
 
             // build search.
-            _dykstra = new Dykstra(_multimodalDb.RouterDb.Network.GeometricGraph.Graph, _getFactor, 
-                _routerPoint.ToPaths(_multimodalDb.RouterDb, _getFactor, !_backward), _maxSeconds, _backward);
+            _dykstra = new Dykstra(_multimodalDb.RouterDb.Network.GeometricGraph.Graph, new DefaultWeightHandler(_getFactor), x => Itinero.Constants.NO_VERTEX, 
+                _routerPoint.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), !_backward), _maxSeconds, _backward);
         }
 
         private System.Collections.Generic.Dictionary<uint, LinkedStopRouterPoint> _stopsPerEdge;
@@ -125,7 +126,7 @@ namespace Itinero.Transit.Algorithms
             }
 
             // report on source edges and build source paths.
-            var paths = _routerPoint.ToPaths(_multimodalDb.RouterDb, _getFactor, !_backward);
+            var paths = _routerPoint.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), !_backward);
             for (var p = 0; p < paths.Length; p++)
             {
                 var edgeId = _routerPoint.EdgeId;
@@ -145,7 +146,7 @@ namespace Itinero.Transit.Algorithms
 
                         if (!_backward)
                         { // forward, route from source to stop.
-                            var path = _routerPoint.PathTo(_multimodalDb.RouterDb, _getFactor, routerPoint);
+                            var path = _routerPoint.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), routerPoint);
                             if (path != null)
                             { // there is a path, report on it.
                                 if (this.StopFound(stopId, path.Weight))
@@ -157,7 +158,7 @@ namespace Itinero.Transit.Algorithms
                         }
                         else
                         { // backward, route from stop to source.
-                            var path = routerPoint.PathTo(_multimodalDb.RouterDb, _getFactor, _routerPoint);
+                            var path = routerPoint.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _routerPoint);
                             if (path != null)
                             { // there is a path, report on it.
                                 if (this.StopFound(stopId, path.Weight))
@@ -214,12 +215,22 @@ namespace Itinero.Transit.Algorithms
         /// <summary>
         /// Called when a new edge was found.
         /// </summary>
-        private bool WasEdgeFoundInternal(uint vertex, uint edgeId, float weight)
+        private bool WasEdgeFoundInternal(uint vertex1, uint vertex2, float weight1, float weight2, long directedEdgeId, float length)
         {
             if(this.WasEdgeFound != null &&
-               this.WasEdgeFound(vertex, edgeId, weight))
+               this.WasEdgeFound(vertex1, vertex2, weight1, weight2, directedEdgeId, length))
             { // somewhere else the descision was made to stop the search here.
                 return true;
+            }
+
+            uint edgeId = Itinero.Constants.NO_EDGE;
+            if (directedEdgeId > 0)
+            {
+                edgeId = (uint)(directedEdgeId - 1);
+            }
+            else
+            {
+                edgeId = (uint)(-directedEdgeId - 1);
             }
 
             LinkedStopRouterPoint stopRouterPoint;
@@ -230,8 +241,7 @@ namespace Itinero.Transit.Algorithms
                     throw new Exception("Could not get visit of other vertex for settled edge.");
                 }
                 var edge = _multimodalDb.RouterDb.Network.GeometricGraph.Graph.GetEdge(edgeId);
-                var vertex1 = edge.GetOther(vertex);
-                Path vertex1Visit;
+                EdgePath<float> vertex1Visit;
                 if (!_dykstra.TryGetVisit(vertex1, out vertex1Visit))
                 {
                     throw new Exception("Could not get visit of other vertex for settled edge.");
@@ -243,7 +253,7 @@ namespace Itinero.Transit.Algorithms
                     var stopId = stopRouterPoint.StopId;
                     var routerPoint = stopRouterPoint.RouterPoint;
 
-                    var paths = routerPoint.ToPaths(_multimodalDb.RouterDb, _getFactor, _backward);
+                    var paths = routerPoint.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _backward);
                     if (paths[0].Vertex == vertex1)
                     { // report on the time.
                         if (this.StopFound(stopId, vertex1Visit.Weight + paths[0].Weight))
@@ -295,14 +305,14 @@ namespace Itinero.Transit.Algorithms
                     _stopLinksDbEnumerator.Offset);
                 if (point.EdgeId == _routerPoint.EdgeId)
                 { // on the same edge.
-                    Path path;
+                    EdgePath<float> path;
                     if (_backward)
                     { // from stop -> source.
-                        path = point.PathTo(_multimodalDb.RouterDb, _getFactor, _routerPoint);
+                        path = point.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _routerPoint);
                     }
                     else
                     { // from source -> stop.
-                        path = _routerPoint.PathTo(_multimodalDb.RouterDb, _getFactor, point);
+                        path = _routerPoint.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), point);
                     }
                     if (path.Weight < bestWeight)
                     { // set as best because improvement.
@@ -311,20 +321,20 @@ namespace Itinero.Transit.Algorithms
                 }
                 else
                 { // on different edge, to the usual.
-                    var paths = point.ToPaths(_multimodalDb.RouterDb, _profile, _backward);
-                    Path visit;
+                    var paths = point.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_profile.GetGetFactor(_multimodalDb.RouterDb)), _backward);
+                    EdgePath<float> visit;
                     if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                     { // check if this one is better.
                         if (visit.Weight + paths[0].Weight < bestWeight)
                         { // concatenate paths and set best.
-                            Path best;
+                            EdgePath<float> best;
                             if (paths[0].Weight == 0)
                             { // just use the visit.
                                 best = visit;
                             }
                             else
                             { // there is a distance/weight.
-                                best = new Path(Itinero.Constants.NO_VERTEX,
+                                best = new EdgePath<float>(Itinero.Constants.NO_VERTEX,
                                     paths[0].Weight + visit.Weight, visit);
                             }
                             bestWeight = best.Weight;
@@ -334,14 +344,14 @@ namespace Itinero.Transit.Algorithms
                     { // check if this one is better.
                         if (visit.Weight + paths[1].Weight < bestWeight)
                         { // concatenate paths and set best.
-                            Path best;
+                            EdgePath<float> best;
                             if (paths[1].Weight == 0)
                             { // just use the visit.
                                 best = visit;
                             }
                             else
                             { // there is a distance/weight.
-                                best = new Path(Itinero.Constants.NO_VERTEX,
+                                best = new EdgePath<float>(Itinero.Constants.NO_VERTEX,
                                     paths[1].Weight + visit.Weight, visit);
                             }
                             bestWeight = best.Weight;
@@ -355,9 +365,9 @@ namespace Itinero.Transit.Algorithms
         /// <summary>
         /// Gets the path to the given stop.
         /// </summary>
-        public Path GetPath(uint stop)
+        public EdgePath<float> GetPath(uint stop)
         {
-            Path best = null;
+            EdgePath<float> best = null;
             var bestWeight = float.MaxValue;
             _stopLinksDbEnumerator.MoveTo(stop);
             while (_stopLinksDbEnumerator.MoveNext())
@@ -366,14 +376,14 @@ namespace Itinero.Transit.Algorithms
                     _stopLinksDbEnumerator.Offset);
                 if (point.EdgeId == _routerPoint.EdgeId)
                 { // on the same edge.
-                    Path path;
+                    EdgePath<float> path;
                     if (_backward)
                     { // from stop -> source.
-                        path = point.PathTo(_multimodalDb.RouterDb, _getFactor, _routerPoint);
+                        path = point.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _routerPoint);
                     }
                     else
                     { // from source -> stop.
-                        path = _routerPoint.PathTo(_multimodalDb.RouterDb, _getFactor, point);
+                        path = _routerPoint.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), point);
                     }
                     if (path.Weight < bestWeight)
                     { // set as best because improvement.
@@ -383,8 +393,8 @@ namespace Itinero.Transit.Algorithms
                 }
                 else
                 { // on different edge, to the usual.
-                    var paths = point.ToPaths(_multimodalDb.RouterDb, _getFactor, _backward);
-                    Path visit;
+                    var paths = point.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _backward);
+                    EdgePath<float> visit;
                     if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                     { // check if this one is better.
                         if (visit.Weight + paths[0].Weight < bestWeight)
@@ -395,7 +405,7 @@ namespace Itinero.Transit.Algorithms
                             }
                             else
                             { // there is a distance/weight.
-                                best = new Path(Itinero.Constants.NO_VERTEX,
+                                best = new EdgePath<float>(Itinero.Constants.NO_VERTEX,
                                     paths[0].Weight + visit.Weight, visit);
                             }
                             bestWeight = best.Weight;
@@ -411,7 +421,7 @@ namespace Itinero.Transit.Algorithms
                             }
                             else
                             { // there is a distance/weight.
-                                best = new Path(Itinero.Constants.NO_VERTEX,
+                                best = new EdgePath<float>(Itinero.Constants.NO_VERTEX,
                                     paths[1].Weight + visit.Weight, visit);
                             }
                             bestWeight = best.Weight;
@@ -439,14 +449,14 @@ namespace Itinero.Transit.Algorithms
                         _stopLinksDbEnumerator.Offset);
                     if (point.EdgeId == _routerPoint.EdgeId)
                     { // on the same edge.
-                        Path path;
+                        EdgePath<float> path;
                         if (_backward)
                         { // from stop -> source.
-                            path = point.PathTo(_multimodalDb.RouterDb, _getFactor, _routerPoint);
+                            path = point.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _routerPoint);
                         }
                         else
                         { // from source -> stop.
-                            path = _routerPoint.PathTo(_multimodalDb.RouterDb, _getFactor, point);
+                            path = _routerPoint.EdgePathTo(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), point);
                         }
                         if (path.Weight < bestWeight)
                         { // set as best because improvement.
@@ -456,8 +466,8 @@ namespace Itinero.Transit.Algorithms
                     }
                     else
                     { // on different edge, to the usual.
-                        var paths = point.ToPaths(_multimodalDb.RouterDb, _getFactor, _backward);
-                        Path visit;
+                        var paths = point.ToEdgePaths(_multimodalDb.RouterDb, new DefaultWeightHandler(_getFactor), _backward);
+                        EdgePath<float> visit;
                         if (_dykstra.TryGetVisit(paths[0].Vertex, out visit))
                         { // check if this one is better.
                             if (visit.Weight + paths[0].Weight < bestWeight)
@@ -506,7 +516,8 @@ namespace Itinero.Transit.Algorithms
 
             if (_backward)
             {
-                path = path.Reverse();
+                var reverse = new EdgePath<float>(path.Vertex);
+                path = reverse.Append(path);
                 return CompleteRouteBuilder.Build(_multimodalDb.RouterDb, _profile, point, _routerPoint, path);
             }
             return CompleteRouteBuilder.Build(_multimodalDb.RouterDb, _profile, _routerPoint, point, path);

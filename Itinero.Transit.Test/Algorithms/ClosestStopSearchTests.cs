@@ -43,7 +43,7 @@ namespace Itinero.Transit.Test.Algorithms
             routerDb.Network.AddVertex(0, 51.27018537520318f, 4.799609184265137f);
             routerDb.Network.AddVertex(1, 51.2682252886248f, 4.793150424957275f);
             routerDb.Network.AddEdge(0, 1,
-                new Itinero.Network.Data.EdgeData()
+                new Itinero.Data.Network.Edges.EdgeData()
                 {
                     Profile = 0,
                     MetaId = 0,

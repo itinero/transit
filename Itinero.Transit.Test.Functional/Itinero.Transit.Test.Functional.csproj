@@ -50,8 +50,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Itinero, Version=0.23.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\routing\src\Itinero\bin\Debug\net45\Itinero.dll</HintPath>
+      <HintPath>..\packages\Itinero.0.23.1-rc1\lib\net45\Itinero.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Itinero.Geo, Version=0.23.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Itinero.Geo.0.23.1-rc1\lib\net45\Itinero.Geo.dll</HintPath>

@@ -14,16 +14,21 @@
         <summary>Itinero.Transit is a module for Itinero to add transit routing capabilities.</summary>
         <copyright>Ben Abelshausen</copyright>
         <tags>osm, openstreetmap, routing, GFTS, transit</tags>
-        <dependencies>
-          <dependency id="Itinero" version="0.30.0-rc1" />
-          <dependency id="Itinero.Geo" version="0.30.0-rc1" />
-          <dependency id="GTFS" version="1.7.1" />
-          <dependency id="GeoAPI" version="[1.7.4,2)" />
-          <dependency id="NetTopologySuite" version="[1.14,2)" />
-        </dependencies>
+		<dependencies>
+		  <group targetFramework=".NETFramework4.5">
+			<dependency id="GTFS" version="[1.7.1, )" />
+			<dependency id="Itinero" version="[0.30.0-rc1, )" />
+			<dependency id="Itinero.Geo" version="[0.30.0-rc1, )" />
+			<dependency id="NetTopologySuite" version="[1.14.0, )" />
+			<dependency id="Newtonsoft.Json" version="[9.0.1, )" />
+		  </group>
+		</dependencies>
+		<frameworkAssemblies>
+		  <frameworkAssembly assemblyName="System.Xml" targetFramework=".NETFramework4.5" />
+		</frameworkAssemblies>
     </metadata>
     <files>
-        <file src="Output\Itinero.Transit.dll" target="lib\net45\Itinero.Transit.dll" />
-        <file src="Output\Itinero.Transit.Geo.dll" target="lib\net45\Itinero.Transit.Geo.dll" />
+        <file src="src\Itinero.Transit\bin\Release\net45\Itinero.Transit.dll" target="lib\net45\Itinero.Transit.dll" />
+        <file src="src\Itinero.Transit.Geo\bin\Release\net45\Itinero.Transit.Geo.dll" target="lib\net45\Itinero.Transit.Geo.dll" />
     </files>
 </package>

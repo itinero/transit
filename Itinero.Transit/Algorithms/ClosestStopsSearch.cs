@@ -27,6 +27,7 @@ using Itinero.Transit.Algorithms.Search;
 using Itinero.Transit.Data;
 using System;
 using Itinero.Algorithms.Weights;
+using Itinero.Data.Network;
 
 namespace Itinero.Transit.Algorithms
 {
@@ -91,7 +92,7 @@ namespace Itinero.Transit.Algorithms
             _stopLinksDbEnumerator = stopLinksDb.GetEnumerator();
 
             // find the closest stops within the range of the 'maxSeconds' parameter.
-            var distance = _profile.MinSpeed().Value * _maxSeconds;
+            var distance = ((3 / 3.6f) / 1.0f) * _maxSeconds;
             var stopsDbEnumerator = _multimodalDb.TransitDb.GetStopsEnumerator();
             var location = new Coordinate(_routerPoint.Latitude, _routerPoint.Longitude);
             var box = new Box(
@@ -175,7 +176,7 @@ namespace Itinero.Transit.Algorithms
             }
 
             // execute dykstra search from all sources.
-            _dykstra.WasEdgeFound = this.WasEdgeFoundInternal;
+            _dykstra.WasFound = this.WasEdgeFoundInternal;
             _dykstra.WasFound = this.WasFoundInternal;
             _dykstra.Run();
 
@@ -210,27 +211,44 @@ namespace Itinero.Transit.Algorithms
         /// <summary>
         /// Gets or sets the wasfound function to be called when a new vertex is found.
         /// </summary>
-        public Dykstra.WasEdgeFoundDelegate WasEdgeFound { get; set; }
+        public Dykstra.WasFoundDelegate WasEdgeFound { get; set; }
 
         /// <summary>
         /// Called when a new edge was found.
         /// </summary>
-        private bool WasEdgeFoundInternal(uint vertex1, uint vertex2, float weight1, float weight2, long directedEdgeId, float length)
+        private bool WasEdgeFoundInternal(uint vertex, float weight)
         {
             if(this.WasEdgeFound != null &&
-               this.WasEdgeFound(vertex1, vertex2, weight1, weight2, directedEdgeId, length))
+               this.WasEdgeFound(vertex, weight))
             { // somewhere else the descision was made to stop the search here.
                 return true;
             }
 
+            EdgePath<float> visit;
+            if (!_dykstra.TryGetVisit(vertex, out visit))
+            { // could not get visit, can't act on it.
+                return false;
+            }
+            if (visit.Edge == Itinero.Constants.NO_EDGE)
+            { // no edge information.
+                return false;
+            }
+
             uint edgeId = Itinero.Constants.NO_EDGE;
-            if (directedEdgeId > 0)
+            if (visit.Edge > 0)
             {
-                edgeId = (uint)(directedEdgeId - 1);
+                edgeId = (uint)(visit.Edge - 1);
             }
             else
             {
-                edgeId = (uint)(-directedEdgeId - 1);
+                edgeId = (uint)(-visit.Edge - 1);
+            }
+
+            var edge = _multimodalDb.RouterDb.Network.GetEdge(visit.Edge);
+            var vertex1 = edge.From;
+            if (visit.Edge < 0)
+            {
+                vertex1 = edge.To;
             }
 
             LinkedStopRouterPoint stopRouterPoint;
@@ -240,7 +258,6 @@ namespace Itinero.Transit.Algorithms
                 { // no dykstra search just yet, this is the source-edge.
                     throw new Exception("Could not get visit of other vertex for settled edge.");
                 }
-                var edge = _multimodalDb.RouterDb.Network.GeometricGraph.Graph.GetEdge(edgeId);
                 EdgePath<float> vertex1Visit;
                 if (!_dykstra.TryGetVisit(vertex1, out vertex1Visit))
                 {

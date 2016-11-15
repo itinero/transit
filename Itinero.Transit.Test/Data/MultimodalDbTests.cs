@@ -57,7 +57,7 @@ namespace Itinero.Transit.Test.Data
             var db = new MultimodalDb(routerDb, transitDb);
 
             // add stop links.
-            var profile = MockProfile.CarMock();
+            var profile = VehicleMock.Car().Fastest();
             db.AddStopLinksDb(profile);
 
             // check result.

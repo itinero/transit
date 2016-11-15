@@ -24,6 +24,7 @@ using System;
 using GTFS;
 using System.IO;
 using Itinero.LocalGeo;
+using Itinero.Profiles;
 
 namespace Itinero.Transit.Test.Data
 {

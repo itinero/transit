@@ -18,6 +18,7 @@
 
 using Itinero.Attributes;
 using Itinero.LocalGeo;
+using Itinero.Profiles;
 using Reminiscence.Arrays;
 using System;
 using System.Collections.Generic;

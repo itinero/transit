@@ -33,9 +33,9 @@ namespace Itinero.Transit.Test.Functional.Tests
             var sourceLocation = (source.Geometry as Point).Coordinate;
             var targetLocation = (target.Geometry as Point).Coordinate;
 
-            var sourceProfile = Itinero.Profiles.Profile.Get(source.Attributes.FirstOrException(x => x == "profile", 
+            var sourceProfile = Itinero.Profiles.Profile.GetRegistered(source.Attributes.FirstOrException(x => x == "profile", 
                 "Invalid test data: no vehicle profile found on source.").ToInvariantString());
-            var targetProfile = Itinero.Profiles.Profile.Get(target.Attributes.FirstOrException(x => x == "profile",
+            var targetProfile = Itinero.Profiles.Profile.GetRegistered(target.Attributes.FirstOrException(x => x == "profile",
                 "Invalid test data: no vehicle profile found on target.").ToInvariantString());
 
             var resolvedSource = router.Router.Resolve(sourceProfile, sourceLocation);

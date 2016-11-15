@@ -52,11 +52,12 @@ namespace Itinero.Transit.Test.Algorithms
             routerDb.EdgeProfiles.Add(new AttributeCollection());
             routerDb.EdgeMeta.Add(new AttributeCollection());
 
-            var profile = MockProfile.CarMock(x => new Speed()
+            var profile = VehicleMock.Car(x => new FactorAndSpeed()
             {
                 Direction = 0,
-                Value = .1f
-            });
+                Value = .1f,
+                SpeedFactor = .1f
+            }).Fastest();
 
             var stopLinksDb = new StopLinksDb(1, routerDb, profile);
             stopLinksDb.Add(0, new RouterPoint(51.269138216062984f, 4.796175956726074f, 0, ushort.MaxValue / 2));
@@ -131,11 +132,12 @@ namespace Itinero.Transit.Test.Algorithms
                 Assembly.GetExecutingAssembly().GetManifestResourceStream(
                     "Itinero.Transit.Test.test_data.networks.network2.geojson"));
 
-            var profile = MockProfile.CarMock(x => new Speed()
+            var profile = VehicleMock.Car(x => new FactorAndSpeed()
             {
                 Direction = 0,
-                Value = 10f
-            });
+                Value = 10f,
+                SpeedFactor = 10f
+            }).Fastest();
 
             var stopLocation = new Coordinate(51.229621576122774f, 4.464208334684372f);
             var stopLinksDb = new StopLinksDb(1, routerDb, profile);

@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "GTFS": "1.7.1",
+    "Itinero": "0.30.0-rc1",
+    "Itinero.Geo": "0.30.0-rc1"
+  },
+
+  "frameworks": {
+    "net4.5": {
+      "buildOptions": {
+        "define": [ "NET45" ],
+        "compile": {
+          "includeFiles": [
+            "../../SharedAssemblyVersion.cs"
+          ]
+        }
+      },
+      "frameworkAssemblies": {
+        "System.Xml": ""
+      }
+    }
+  }
+}

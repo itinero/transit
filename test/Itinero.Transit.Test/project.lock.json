@@ -1,0 +1,366 @@
+{
+  "locked": false,
+  "version": 2,
+  "targets": {
+    ".NETFramework,Version=v4.5": {
+      "GeoAPI/1.7.4": {
+        "type": "package",
+        "compile": {
+          "lib/net45/GeoAPI.dll": {}
+        },
+        "runtime": {
+          "lib/net45/GeoAPI.dll": {}
+        }
+      },
+      "GTFS/1.7.1": {
+        "type": "package",
+        "compile": {
+          "lib/net40/GTFS.IO.Desktop.dll": {},
+          "lib/net40/GTFS.IO.dll": {},
+          "lib/net40/GTFS.dll": {}
+        },
+        "runtime": {
+          "lib/net40/GTFS.IO.Desktop.dll": {},
+          "lib/net40/GTFS.IO.dll": {},
+          "lib/net40/GTFS.dll": {}
+        }
+      },
+      "Itinero/0.30.0-rc1": {
+        "type": "package",
+        "dependencies": {
+          "Reminiscence": "1.0.5"
+        },
+        "frameworkAssemblies": [
+          "System.Xml"
+        ],
+        "compile": {
+          "lib/net45/Itinero.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Itinero.dll": {}
+        }
+      },
+      "Itinero.Geo/0.30.0-rc1": {
+        "type": "package",
+        "dependencies": {
+          "GeoAPI": "[1.7.4, 2.0.0)",
+          "Itinero": "0.30.0-rc1",
+          "NetTopologySuite": "[1.14.0, 2.0.0)"
+        },
+        "compile": {
+          "lib/net45/Itinero.Geo.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Itinero.Geo.dll": {}
+        }
+      },
+      "NetTopologySuite/1.14.0": {
+        "type": "package",
+        "dependencies": {
+          "GeoAPI": "[1.7.4, 1.8.0)"
+        },
+        "frameworkAssemblies": [
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/NetTopologySuite.dll": {},
+          "lib/net45/PowerCollections.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NetTopologySuite.dll": {},
+          "lib/net45/PowerCollections.dll": {}
+        }
+      },
+      "NetTopologySuite.IO.GeoJSON/1.14.0": {
+        "type": "package",
+        "dependencies": {
+          "NetTopologySuite": "[1.14.0]",
+          "Newtonsoft.Json": "(, )"
+        },
+        "frameworkAssemblies": [
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/NetTopologySuite.IO.GeoJSON.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NetTopologySuite.IO.GeoJSON.dll": {}
+        }
+      },
+      "Newtonsoft.Json/9.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        }
+      },
+      "NUnit/3.5.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/nunit.framework.dll": {}
+        },
+        "runtime": {
+          "lib/net45/nunit.framework.dll": {}
+        }
+      },
+      "Reminiscence/1.0.5": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Reminiscence.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Reminiscence.dll": {}
+        }
+      },
+      "Itinero.Transit/1.0.0": {
+        "type": "project",
+        "framework": ".NETFramework,Version=v4.5",
+        "dependencies": {
+          "GTFS": "1.7.1",
+          "Itinero": "0.30.0-rc1",
+          "Itinero.Geo": "0.30.0-rc1"
+        },
+        "frameworkAssemblies": [
+          "System.Xml"
+        ],
+        "compile": {
+          "net45/Itinero.Transit.dll": {}
+        },
+        "runtime": {
+          "net45/Itinero.Transit.dll": {}
+        }
+      },
+      "Itinero.Transit.Geo/1.0.0": {
+        "type": "project",
+        "framework": ".NETFramework,Version=v4.5",
+        "dependencies": {
+          "GTFS": "1.7.1",
+          "Itinero": "0.30.0-rc1",
+          "Itinero.Geo": "0.30.0-rc1",
+          "Itinero.Transit": "1.0.0",
+          "NetTopologySuite": "1.14.0",
+          "Newtonsoft.Json": "9.0.1"
+        },
+        "frameworkAssemblies": [
+          "System.Xml"
+        ],
+        "compile": {
+          "net45/Itinero.Transit.Geo.dll": {}
+        },
+        "runtime": {
+          "net45/Itinero.Transit.Geo.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "GeoAPI/1.7.4": {
+      "sha512": "joDULkwmUsXSZPsqQ6H62QmQOi54t3TWyhiKDb48PVUfIox1nSy1RRuEIDQ51h/jBmgb+ZeCsUmMoETVddKJ1A==",
+      "type": "package",
+      "path": "GeoAPI/1.7.4",
+      "files": [
+        "GeoAPI.1.7.4.nupkg.sha512",
+        "GeoAPI.nuspec",
+        "lib/net20/GeoAPI.dll",
+        "lib/net20/GeoAPI.xml",
+        "lib/net35-client/GeoAPI.dll",
+        "lib/net35-client/GeoAPI.xml",
+        "lib/net40-client/GeoAPI.dll",
+        "lib/net40-client/GeoAPI.xml",
+        "lib/net403-client/GeoAPI.dll",
+        "lib/net403-client/GeoAPI.xml",
+        "lib/net45/GeoAPI.dll",
+        "lib/net45/GeoAPI.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.xml"
+      ]
+    },
+    "GTFS/1.7.1": {
+      "sha512": "b1xkdyFG3pqE7ZuwW9xmBxAhtJ64iIHXNBIkhVdELwbCci2Un7zWnzxQ5CZSmygw3MuefjggQ6zQl4E/+g9bxg==",
+      "type": "package",
+      "path": "GTFS/1.7.1",
+      "files": [
+        "GTFS.1.7.1.nupkg.sha512",
+        "GTFS.nuspec",
+        "lib/net40/GTFS.IO.Desktop.dll",
+        "lib/net40/GTFS.IO.dll",
+        "lib/net40/GTFS.dll",
+        "lib/portable-net40+sl4+win8+wp7/GTFS.IO.dll",
+        "lib/portable-net40+sl4+win8+wp7/GTFS.dll"
+      ]
+    },
+    "Itinero/0.30.0-rc1": {
+      "sha512": "AsU4SJEbbqzYHMjjLlSdmK3+31GtlxzMg6C97WNpDM3mTv/yuwKXjfCkSwcfXDBbwesU0/YYbzY2z8LZLZ+RSQ==",
+      "type": "package",
+      "path": "Itinero/0.30.0-rc1",
+      "files": [
+        "Itinero.0.30.0-rc1.nupkg.sha512",
+        "Itinero.nuspec",
+        "lib/net40/Itinero.dll",
+        "lib/net45/Itinero.dll",
+        "lib/netstandard1.3/Itinero.dll",
+        "lib/portable-net40+sl4+win8+wp7/Itinero.dll"
+      ]
+    },
+    "Itinero.Geo/0.30.0-rc1": {
+      "sha512": "X2sFUNJOR6KMexXnWzTkt1R/Jqtj1Blflao+5mSSH+Q2I2llbwD2U7xwtWfMFwf6ImeHpQtEJwG94VSB9+yu9A==",
+      "type": "package",
+      "path": "Itinero.Geo/0.30.0-rc1",
+      "files": [
+        "Itinero.Geo.0.30.0-rc1.nupkg.sha512",
+        "Itinero.Geo.nuspec",
+        "lib/net40/Itinero.Geo.dll",
+        "lib/net45/Itinero.Geo.dll",
+        "lib/portable-net40+sl4+win8+wp7/Itinero.Geo.dll"
+      ]
+    },
+    "NetTopologySuite/1.14.0": {
+      "sha512": "WZxN1WPRELed8vrTFZXc1lxRuLB29hJMx7W6FiisgZc27XGV+1Q9tdwb9ESAimc1i1sFfG7jQqVW9v090wtchQ==",
+      "type": "package",
+      "path": "NetTopologySuite/1.14.0",
+      "files": [
+        "NetTopologySuite.1.14.0.nupkg.sha512",
+        "NetTopologySuite.nuspec",
+        "lib/net20/NetTopologySuite.dll",
+        "lib/net20/NetTopologySuite.xml",
+        "lib/net20/PowerCollections.dll",
+        "lib/net20/PowerCollections.xml",
+        "lib/net35-client/NetTopologySuite.dll",
+        "lib/net35-client/NetTopologySuite.xml",
+        "lib/net35-client/PowerCollections.dll",
+        "lib/net35-client/PowerCollections.xml",
+        "lib/net40-client/NetTopologySuite.dll",
+        "lib/net40-client/NetTopologySuite.xml",
+        "lib/net40-client/PowerCollections.dll",
+        "lib/net40-client/PowerCollections.xml",
+        "lib/net403-client/NetTopologySuite.dll",
+        "lib/net403-client/NetTopologySuite.xml",
+        "lib/net403-client/PowerCollections.dll",
+        "lib/net403-client/PowerCollections.xml",
+        "lib/net45/NetTopologySuite.dll",
+        "lib/net45/NetTopologySuite.xml",
+        "lib/net45/PowerCollections.dll",
+        "lib/net45/PowerCollections.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.Bootstrapper.NetTopologySuite.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.Bootstrapper.NetTopologySuite.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/NetTopologySuite.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/NetTopologySuite.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/PowerCollections.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/PowerCollections.xml"
+      ]
+    },
+    "NetTopologySuite.IO.GeoJSON/1.14.0": {
+      "sha512": "X5tFC9fC0VXzQWVxWw9OjlkJ8dc5BliLKyBHz9UxRaPbaxsNI3MvtuGo4IlDwWHdLZYC6lN2ym83PcE50T8agw==",
+      "type": "package",
+      "path": "NetTopologySuite.IO.GeoJSON/1.14.0",
+      "files": [
+        "NetTopologySuite.IO.GeoJSON.1.14.0.nupkg.sha512",
+        "NetTopologySuite.IO.GeoJSON.nuspec",
+        "lib/net20/NetTopologySuite.IO.GeoJSON.dll",
+        "lib/net20/NetTopologySuite.IO.GeoJSON.xml",
+        "lib/net35-client/NetTopologySuite.IO.GeoJSON.dll",
+        "lib/net35-client/NetTopologySuite.IO.GeoJSON.xml",
+        "lib/net40-client/NetTopologySuite.IO.GeoJSON.dll",
+        "lib/net40-client/NetTopologySuite.IO.GeoJSON.xml",
+        "lib/net45/NetTopologySuite.IO.GeoJSON.dll",
+        "lib/net45/NetTopologySuite.IO.GeoJSON.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8/NetTopologySuite.IO.GeoJSON.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8/NetTopologySuite.IO.GeoJSON.xml"
+      ]
+    },
+    "Newtonsoft.Json/9.0.1": {
+      "sha512": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw==",
+      "type": "package",
+      "path": "Newtonsoft.Json/9.0.1",
+      "files": [
+        "Newtonsoft.Json.9.0.1.nupkg.sha512",
+        "Newtonsoft.Json.nuspec",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.dll",
+        "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.xml",
+        "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll",
+        "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.xml",
+        "tools/install.ps1"
+      ]
+    },
+    "NUnit/3.5.0": {
+      "sha512": "z/03NfC+ci3/OzlIlClH+nd0LZ99OU3wS74nAtLVnPo1oq6nvd+CGxTHZAc8n8xxDLeLMofZ8AjahxlROEhf/Q==",
+      "type": "package",
+      "path": "NUnit/3.5.0",
+      "files": [
+        "CHANGES.txt",
+        "LICENSE.txt",
+        "NOTICES.txt",
+        "NUnit.3.5.0.nupkg.sha512",
+        "NUnit.nuspec",
+        "lib/dotnet/nunit.framework.dll",
+        "lib/dotnet/nunit.framework.xml",
+        "lib/net20/NUnit.System.Linq.dll",
+        "lib/net20/nunit.framework.dll",
+        "lib/net20/nunit.framework.xml",
+        "lib/net35/nunit.framework.dll",
+        "lib/net35/nunit.framework.xml",
+        "lib/net40/nunit.framework.dll",
+        "lib/net40/nunit.framework.xml",
+        "lib/net45/nunit.framework.dll",
+        "lib/net45/nunit.framework.xml",
+        "lib/portable-net45+win8+wp8+wpa81+Xamarin.Mac+MonoAndroid10+MonoTouch10+Xamarin.iOS10/nunit.framework.dll",
+        "lib/portable-net45+win8+wp8+wpa81+Xamarin.Mac+MonoAndroid10+MonoTouch10+Xamarin.iOS10/nunit.framework.xml"
+      ]
+    },
+    "Reminiscence/1.0.5": {
+      "sha512": "PrjrLzIAT1fWIQLv7Bz3KDrQ3fvsqqafOPtiSpQ5K3UVMjvmO8c2T/yFpqO85SV97RH8XTc9f8V/KtTj+Sgsvw==",
+      "type": "package",
+      "path": "Reminiscence/1.0.5",
+      "files": [
+        "Reminiscence.1.0.5.nupkg.sha512",
+        "Reminiscence.nuspec",
+        "lib/net40/Reminiscence.dll",
+        "lib/net45/Reminiscence.dll",
+        "lib/netstandard1.3/Reminiscence.dll",
+        "lib/portable-net403+sl50+win+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10/Reminiscence.dll",
+        "lib/portable-net45+win8+wpa81+wp8/Reminiscence.dll"
+      ]
+    },
+    "Itinero.Transit/1.0.0": {
+      "type": "project",
+      "path": "../../src/Itinero.Transit/project.json",
+      "msbuildProject": "../../src/Itinero.Transit/Itinero.Transit.xproj"
+    },
+    "Itinero.Transit.Geo/1.0.0": {
+      "type": "project",
+      "path": "../../src/Itinero.Transit.Geo/project.json",
+      "msbuildProject": "../../src/Itinero.Transit.Geo/Itinero.Transit.Geo.xproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "": [
+      "GTFS >= 1.7.1",
+      "Itinero >= 0.30.0-rc1",
+      "Itinero.Geo >= 0.30.0-rc1",
+      "Itinero.Transit >= 1.0.0-*",
+      "Itinero.Transit.Geo >= 1.0.0-*",
+      "NUnit >= 3.5.0",
+      "NetTopologySuite >= 1.14.0",
+      "NetTopologySuite.IO.GeoJSON >= 1.14.0",
+      "Newtonsoft.Json >= 9.0.1"
+    ],
+    ".NETFramework,Version=v4.5": [
+      "System.Xml"
+    ]
+  },
+  "tools": {},
+  "projectFileToolGroups": {}
+}

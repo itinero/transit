@@ -25,7 +25,7 @@
           "lib/net40/GTFS.dll": {}
         }
       },
-      "Itinero/0.30.0-rc1": {
+      "Itinero/0.31.13-rc1": {
         "type": "package",
         "dependencies": {
           "Reminiscence": "1.0.5"
@@ -40,11 +40,11 @@
           "lib/net45/Itinero.dll": {}
         }
       },
-      "Itinero.Geo/0.30.0-rc1": {
+      "Itinero.Geo/0.31.13-rc1": {
         "type": "package",
         "dependencies": {
           "GeoAPI": "[1.7.4, 2.0.0)",
-          "Itinero": "0.30.0-rc1",
+          "Itinero": "0.31.13-rc1",
           "NetTopologySuite": "[1.14.0, 2.0.0)"
         },
         "compile": {
@@ -120,8 +120,8 @@
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
           "GTFS": "1.7.1",
-          "Itinero": "0.30.0-rc1",
-          "Itinero.Geo": "0.30.0-rc1"
+          "Itinero": "0.31.13-rc1",
+          "Itinero.Geo": "0.31.13-rc1"
         },
         "frameworkAssemblies": [
           "System.Xml"
@@ -138,8 +138,8 @@
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
           "GTFS": "1.7.1",
-          "Itinero": "0.30.0-rc1",
-          "Itinero.Geo": "0.30.0-rc1",
+          "Itinero": "0.31.13-rc1",
+          "Itinero.Geo": "0.31.13-rc1",
           "Itinero.Transit": "1.0.0",
           "NetTopologySuite": "1.14.0",
           "Newtonsoft.Json": "9.0.1"
@@ -192,12 +192,12 @@
         "lib/portable-net40+sl4+win8+wp7/GTFS.dll"
       ]
     },
-    "Itinero/0.30.0-rc1": {
-      "sha512": "AsU4SJEbbqzYHMjjLlSdmK3+31GtlxzMg6C97WNpDM3mTv/yuwKXjfCkSwcfXDBbwesU0/YYbzY2z8LZLZ+RSQ==",
+    "Itinero/0.31.13-rc1": {
+      "sha512": "dvnBWqwHX2xGHilKcbrfDWR3Fh4/MpZXzAJvakuejbaH07PalPG0iudBe01EUmFMcueZy8Dd5NkfxWZ70MUAVg==",
       "type": "package",
-      "path": "Itinero/0.30.0-rc1",
+      "path": "Itinero/0.31.13-rc1",
       "files": [
-        "Itinero.0.30.0-rc1.nupkg.sha512",
+        "Itinero.0.31.13-rc1.nupkg.sha512",
         "Itinero.nuspec",
         "lib/net40/Itinero.dll",
         "lib/net45/Itinero.dll",
@@ -205,12 +205,12 @@
         "lib/portable-net40+sl4+win8+wp7/Itinero.dll"
       ]
     },
-    "Itinero.Geo/0.30.0-rc1": {
-      "sha512": "X2sFUNJOR6KMexXnWzTkt1R/Jqtj1Blflao+5mSSH+Q2I2llbwD2U7xwtWfMFwf6ImeHpQtEJwG94VSB9+yu9A==",
+    "Itinero.Geo/0.31.13-rc1": {
+      "sha512": "fIEQC7NsODJGlWIdlWUsCp9Eh99fIZ8SFdm8CIAeecTVjOKKMxiO+3rJBiK7BdijSQfJosgGrYXF0DWE/Y+PwA==",
       "type": "package",
-      "path": "Itinero.Geo/0.30.0-rc1",
+      "path": "Itinero.Geo/0.31.13-rc1",
       "files": [
-        "Itinero.Geo.0.30.0-rc1.nupkg.sha512",
+        "Itinero.Geo.0.31.13-rc1.nupkg.sha512",
         "Itinero.Geo.nuspec",
         "lib/net40/Itinero.Geo.dll",
         "lib/net45/Itinero.Geo.dll",
@@ -348,8 +348,8 @@
   "projectFileDependencyGroups": {
     "": [
       "GTFS >= 1.7.1",
-      "Itinero >= 0.30.0-rc1",
-      "Itinero.Geo >= 0.30.0-rc1",
+      "Itinero >= 0.31.13-rc1",
+      "Itinero.Geo >= 0.31.13-rc1",
       "Itinero.Transit >= 1.0.0-*",
       "Itinero.Transit.Geo >= 1.0.0-*",
       "NUnit >= 3.5.0",

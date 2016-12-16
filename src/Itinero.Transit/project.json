@@ -3,8 +3,8 @@
 
   "dependencies": {
     "GTFS": "1.7.1",
-    "Itinero": "0.30.0-rc1",
-    "Itinero.Geo": "0.30.0-rc1"
+    "Itinero": "0.31.13-rc1",
+    "Itinero.Geo": "0.31.13-rc1"
   },
 
   "frameworks": {

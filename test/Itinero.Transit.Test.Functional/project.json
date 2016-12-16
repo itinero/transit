@@ -1,13 +1,16 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "embed": [
+      "test-data/belgium/*.geojson"
+    ]
   },
 
   "dependencies": {
     "GTFS": "1.7.1",
-    "Itinero": "0.30.0-rc1",
-    "Itinero.Geo": "0.30.0-rc1",
+    "Itinero": "0.31.13-rc1",
+    "Itinero.Geo": "0.31.13-rc1",
     "Itinero.Transit": "1.0.0-*",
     "Itinero.Transit.Geo": "1.0.0-*",
     "NetTopologySuite": "1.14.0",
@@ -24,6 +27,11 @@
         "compile": {
           "includeFiles": [
             "../../SharedAssemblyVersion.cs"
+          ]
+        },
+        "buildOptions": {
+          "embed": [
+            "test-data/belgium/*.geojson"
           ]
         }
       },

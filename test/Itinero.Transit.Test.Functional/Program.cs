@@ -62,9 +62,9 @@ namespace Itinero.Transit.Test.Functional
             var transitRouter = new MultimodalRouter(db, Vehicle.Pedestrian.Fastest());
 
             // run tests.
-            Tests.Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.Tests.Belgium.test1.geojson");
-            Tests.Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.Tests.Belgium.test2.geojson");
-            Tests.Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.Tests.Belgium.test3.geojson");
+            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
+            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
+            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
             
             Console.WriteLine("Done!");
             Console.ReadLine();

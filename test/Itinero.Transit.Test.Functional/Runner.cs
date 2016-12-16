@@ -13,7 +13,7 @@ using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 
-namespace Itinero.Transit.Test.Functional.Tests
+namespace Itinero.Transit.Test.Functional
 {
     /// <summary>
     /// The test runner.

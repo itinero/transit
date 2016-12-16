@@ -177,7 +177,7 @@ namespace Itinero.Transit.Algorithms
 
             // execute dykstra search from all sources.
             _dykstra.WasFound = this.WasEdgeFoundInternal;
-            _dykstra.WasFound = this.WasFoundInternal;
+            //_dykstra.WasFound = this.WasFoundInternal;
             _dykstra.Run();
 
             this.HasSucceeded = true;
@@ -218,7 +218,7 @@ namespace Itinero.Transit.Algorithms
         /// </summary>
         private bool WasEdgeFoundInternal(uint vertex, float weight)
         {
-            if(this.WasEdgeFound != null &&
+            if (this.WasEdgeFound != null &&
                this.WasEdgeFound(vertex, weight))
             { // somewhere else the descision was made to stop the search here.
                 return true;
@@ -288,23 +288,6 @@ namespace Itinero.Transit.Algorithms
 
                     stopRouterPoint = stopRouterPoint.Next;
                 }
-            }
-            return false;
-        }
-
-        /// <summary>
-        ///  Gets or sets the wasfound function to be called when a new vertex is found.
-        /// </summary>
-        public Dykstra.WasFoundDelegate WasFound { get; set; }
-
-        /// <summary>
-        /// Called when a new vertex was found.
-        /// </summary>
-        private bool WasFoundInternal(uint vertex, float weight)
-        {
-            if (this.WasFound != null)
-            {
-                return this.WasFound(vertex, weight);
             }
             return false;
         }

@@ -111,12 +111,12 @@ namespace Itinero.Transit
             { // profiles are the same.
                 bidirectionalHelper = new BidirectionalSearchHelper(
                     sourceSearch.Search, targetSearch.Search);
-                targetSearch.WasFound = bidirectionalHelper.TargetWasFound;
+                targetSearch.WasEdgeFound = bidirectionalHelper.TargetWasFound;
             }
             else
             { // profiles are different but the source can still reach the destination.
                 helper = new SearchHelper(_router.Db, sourceSearch.Search, sourceProfile, targetPoint);
-                sourceSearch.WasFound = helper.SourceWasFound;
+                sourceSearch.WasEdgeFound = helper.SourceWasFound;
             }
 
             // run source search.

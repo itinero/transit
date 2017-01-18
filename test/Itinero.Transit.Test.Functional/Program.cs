@@ -56,7 +56,7 @@ namespace Itinero.Transit.Test.Functional
             var db = new MultimodalDb(routerDb, transitDb);
             db.TransitDb.LoadFrom(feed);
             db.TransitDb.SortConnections(DefaultSorting.DepartureTime, null);
-            db.TransitDb.AddTransfersDb(Itinero.Osm.Vehicles.Vehicle.Pedestrian.Fastest(), 100);
+            db.TransitDb.AddTransfersDb(Vehicle.Pedestrian.Fastest(), 100);
             db.AddStopLinksDb(Vehicle.Pedestrian.Fastest(), maxDistance: 100);
 
             var transitRouter = new MultimodalRouter(db, Vehicle.Pedestrian.Fastest());

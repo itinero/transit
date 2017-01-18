@@ -1137,7 +1137,8 @@
       "dotnet-test-nunit >= 3.4.0-beta-2"
     ],
     ".NETFramework,Version=v4.5.1": [
-      "System.Xml"
+      "System.Xml",
+      "dotnet-test-nunit >= 3.4.0-beta-2"
     ]
   },
   "tools": {},

@@ -157,7 +157,7 @@ namespace Itinero.Transit.Test.Algorithms
             closestStopSearch.StopFound = (uint stopId, float seconds) =>
             {
                 Assert.AreEqual(0, stopId);
-                Assert.AreEqual(distanceToStop * 0.1, seconds, 0.01);
+                Assert.AreEqual(distanceToStop * 10, seconds, 1);
                 stopFound = true;
                 return false;
             };
@@ -167,12 +167,12 @@ namespace Itinero.Transit.Test.Algorithms
 
             var path = closestStopSearch.GetPath(0);
             Assert.IsNotNull(path);
-            Assert.AreEqual(distanceToStop * 0.1, path.Weight, 0.01);
+            Assert.AreEqual(distanceToStop * 10, path.Weight, 1);
             Assert.AreEqual(Itinero.Constants.NO_VERTEX, path.Vertex);
             path = path.From;
             Assert.IsNotNull(path);
             Assert.AreEqual(Coordinate.DistanceEstimateInMeter(routerDb.Network.GetVertex(0),
-                routerDb.Network.GetVertex(1)) * 0.1, path.Weight, 0.01);
+                routerDb.Network.GetVertex(1)) * 10, path.Weight, 1);
             Assert.AreEqual(1, path.Vertex);
             path = path.From;
             Assert.IsNotNull(path);

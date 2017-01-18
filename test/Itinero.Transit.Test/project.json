@@ -3,21 +3,22 @@
 
   "dependencies": {
     "GTFS": "1.7.1",
-    "Itinero": "0.36.3-rc1",
-    "Itinero.Geo": "0.36.3-rc1",
     "Itinero.Transit": "1.0.0-*",
     "Itinero.Transit.Geo": "1.0.0-*",
     "NetTopologySuite": "1.14.0",
     "NetTopologySuite.IO.GeoJSON": "1.14.0",
     "Newtonsoft.Json": "9.0.1",
-    "NUnit": "3.5.0"
+    "NUnit": "3.5.0",
+    "dotnet-test-nunit": "3.4.0-beta-2",
+    "Itinero": "0.37.0-rc1",
+    "Itinero.Geo": "0.37.0-rc1"
   },
 
 
   "frameworks": {
-    "net4.5": {
+    "net4.5.1": {
       "buildOptions": {
-        "define": [ "NET45" ],
+        "define": [ "NET451" ],
         "compile": {
           "includeFiles": [
             "../../SharedAssemblyVersion.cs"

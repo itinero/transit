@@ -1,5 +1,5 @@
 ﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2016 Abelshausen Ben
+// Copyright (C) 2017 Abelshausen Ben
 // 
 // This file is part of Itinero.
 // 
@@ -18,5 +18,5 @@
 
 using System.Reflection;
 
-[assembly: AssemblyInformationalVersion("0.2.1-alpha")]
-[assembly: AssemblyVersion("0.2.1")]
+[assembly: AssemblyInformationalVersion("0.2.2-alpha")]
+[assembly: AssemblyVersion("0.2.2")]

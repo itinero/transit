@@ -25,7 +25,7 @@
           "lib/net40/GTFS.dll": {}
         }
       },
-      "Itinero/0.36.3-rc1": {
+      "Itinero/0.37.0-rc1": {
         "type": "package",
         "dependencies": {
           "Reminiscence": "1.0.5"
@@ -40,11 +40,11 @@
           "lib/net45/Itinero.dll": {}
         }
       },
-      "Itinero.Geo/0.36.3-rc1": {
+      "Itinero.Geo/0.37.0-rc1": {
         "type": "package",
         "dependencies": {
           "GeoAPI": "[1.7.4, 2.0.0)",
-          "Itinero": "0.36.3-rc1",
+          "Itinero": "0.37.0-rc1",
           "NetTopologySuite": "[1.14.0, 2.0.0)"
         },
         "compile": {
@@ -118,12 +118,12 @@
         "lib/portable-net40+sl4+win8+wp7/GTFS.dll"
       ]
     },
-    "Itinero/0.36.3-rc1": {
-      "sha512": "hEV8rND4olsbgWuXmcdevy3in/7NaPcH7EAaH0jstJtVTGrYLwsYjB8fSrEqaMnSb7YW6lnTv1w5mWjggAFnNA==",
+    "Itinero/0.37.0-rc1": {
+      "sha512": "hk9RERrEmosB2hDDVR0Dq6TwyPLOjcIkdUdiSO2VpzOxnU91uwCN0gP1rDN4A5mBcWCWE8LUjDgGCMBMsZUS4Q==",
       "type": "package",
-      "path": "Itinero/0.36.3-rc1",
+      "path": "Itinero/0.37.0-rc1",
       "files": [
-        "Itinero.0.36.3-rc1.nupkg.sha512",
+        "Itinero.0.37.0-rc1.nupkg.sha512",
         "Itinero.nuspec",
         "lib/net40/Itinero.dll",
         "lib/net45/Itinero.dll",
@@ -131,12 +131,12 @@
         "lib/portable-net40+sl4+win8+wp7/Itinero.dll"
       ]
     },
-    "Itinero.Geo/0.36.3-rc1": {
-      "sha512": "nBAphrIXTeSxwoCO9VSYE283ODhBwSjyWsxq9517FpZIrchXnfCFl2HwL63jnQMjcZgmbvbICwwULQ3Dy4UegA==",
+    "Itinero.Geo/0.37.0-rc1": {
+      "sha512": "vmUQaoGgJZltvchJuvAffePUCm675aiR6kSCdmUXFdN0HBEglys/BBZXWMrw0sSuwiJBxEwg2kRy1i2YZQAZWA==",
       "type": "package",
-      "path": "Itinero.Geo/0.36.3-rc1",
+      "path": "Itinero.Geo/0.37.0-rc1",
       "files": [
-        "Itinero.Geo.0.36.3-rc1.nupkg.sha512",
+        "Itinero.Geo.0.37.0-rc1.nupkg.sha512",
         "Itinero.Geo.nuspec",
         "lib/net40/Itinero.Geo.dll",
         "lib/net45/Itinero.Geo.dll",
@@ -196,8 +196,8 @@
   "projectFileDependencyGroups": {
     "": [
       "GTFS >= 1.7.1",
-      "Itinero >= 0.36.3-rc1",
-      "Itinero.Geo >= 0.36.3-rc1"
+      "Itinero >= 0.37.0-rc1",
+      "Itinero.Geo >= 0.37.0-rc1"
     ],
     ".NETFramework,Version=v4.5": [
       "System.Xml"

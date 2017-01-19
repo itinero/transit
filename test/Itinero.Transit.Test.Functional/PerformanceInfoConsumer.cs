@@ -1,6 +1,6 @@
 ﻿// The MIT License (MIT)
 
-// Copyright (c) 2015 Ben Abelshausen
+// Copyright (c) 2017 Ben Abelshausen
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,30 @@ namespace Itinero.Transit.Test.Functional
     /// </summary>
     public class PerformanceInfoConsumer
     {
-        private readonly string _name; // Holds the name of this consumer.
-        private System.Threading.Timer _memoryUsageTimer; // Holds the memory usage timer.
-        private List<double> _memoryUsageLog = new List<double>(); // Holds the memory usage log.
-        private long _memoryUsageLoggingDuration = 0; // Holds the time spent on logging memory usage.
+        /// <summary>
+        /// Holds the name of this consumer.
+        /// </summary>
+        private string _name;
+
+        /// <summary>
+        /// Holds the memory usage timer.
+        /// </summary>
+        private System.Threading.Timer _memoryUsageTimer;
+
+        /// <summary>
+        /// Holds the memory usage log.
+        /// </summary>
+        private List<double> _memoryUsageLog = new List<double>();
+
+        /// <summary>
+        /// Holds the time spent on logging memory usage.
+        /// </summary>
+        private long _memoryUsageLoggingDuration = 0;
 
         /// <summary>
         /// Creates the a new performance info consumer.
         /// </summary>
+        /// <param name="name"></param>
         public PerformanceInfoConsumer(string name)
         {
             _name = name;
@@ -48,6 +64,8 @@ namespace Itinero.Transit.Test.Functional
         /// <summary>
         /// Creates the a new performance info consumer.
         /// </summary>
+        /// <param name="name"></param>
+        /// <param name="memUseLoggingInterval"></param>
         public PerformanceInfoConsumer(string name, int memUseLoggingInterval)
         {
             _name = name;
@@ -57,12 +75,13 @@ namespace Itinero.Transit.Test.Functional
         /// <summary>
         /// Called when it's time to log memory usage.
         /// </summary>
+        /// <param name="state"></param>
         private void LogMemoryUsage(object state)
         {
-            var ticksBefore = DateTime.Now.Ticks;
+            long ticksBefore = DateTime.Now.Ticks;
             lock (_memoryUsageLog)
             {
-                GC.Collect();
+                //GC.Collect();
                 var p = Process.GetCurrentProcess();
                 _memoryUsageLog.Add(System.Math.Round((p.PrivateMemorySize64 - _memory.Value) / 1024.0 / 1024.0, 4));
 
@@ -94,50 +113,38 @@ namespace Itinero.Transit.Test.Functional
         /// </summary>
         public void Start()
         {
-            GC.Collect();
+            //GC.Collect();
 
-            Process p = Process.GetCurrentProcess();
+            var p = Process.GetCurrentProcess();
             _memory = p.PrivateMemorySize64;
             _ticks = DateTime.Now.Ticks;
-            Console.WriteLine(string.Format("Started {0}.",
-                    _name));
         }
 
         /// <summary>
         /// Reports a message in the middle of progress.
         /// </summary>
+        /// <param name="message"></param>
         public void Report(string message)
         {
-            Console.WriteLine(message);
+            Itinero.Logging.Logger.Log("PF:" + _name, Itinero.Logging.TraceEventType.Information,
+                message);
         }
 
         /// <summary>
         /// Reports a message in the middle of progress.
         /// </summary>
+        /// <param name="message"></param>
+        /// <param name="args"></param>
         public void Report(string message, params object[] args)
         {
-            Console.WriteLine(message, args);
-        }
-
-        private int previousPercentage = 0;
-
-        /// <summary>
-        /// Reports a message about progress.
-        /// </summary>
-        public void Report(string message, long i, long max)
-        {
-            var currentPercentage = (int)System.Math.Round((i / (double)max) * 10, 0);
-            if (previousPercentage != currentPercentage)
-            {
-                Console.WriteLine(message, currentPercentage * 10);
-                previousPercentage = currentPercentage;
-            }
+            Itinero.Logging.Logger.Log("PF:" + _name, Itinero.Logging.TraceEventType.Information,
+                message, args);
         }
 
         /// <summary>
         /// Reports the end of the process/time period to measure.
         /// </summary>
-        public void Stop()
+        public void Stop(bool report = true)
         {
             if (_memoryUsageTimer != null)
             { // only dispose and stop when there IS a timer.
@@ -150,25 +157,117 @@ namespace Itinero.Transit.Test.Functional
                 {
                     var seconds = new TimeSpan(DateTime.Now.Ticks - _ticks.Value - _memoryUsageLoggingDuration).TotalMilliseconds / 1000.0;
 
-                    GC.Collect();
+                    //GC.Collect();
                     var p = Process.GetCurrentProcess();
                     var memoryDiff = System.Math.Round((p.PrivateMemorySize64 - _memory.Value) / 1024.0 / 1024.0, 4);
 
                     if (_memoryUsageLog.Count > 0)
                     { // there was memory usage logging.
                         double max = _memoryUsageLog.Max();
-                        Console.WriteLine(string.Format("Ended at at {0}, spent {1}s and {2}MB of memory diff with {3}MB max used.",
-                                new DateTime(_ticks.Value).ToShortTimeString(),
-                                seconds, memoryDiff, max));
+                        if (report)
+                        {
+                            Itinero.Logging.Logger.Log("PF:" + _name, Itinero.Logging.TraceEventType.Information,
+                                string.Format("Ended at at {0}, spent {1}s and {2}MB of memory diff with {3}MB max used.",
+                                    new DateTime(_ticks.Value).ToShortTimeString(),
+                                    seconds, memoryDiff, max));
+                        }
                     }
                     else
                     { // no memory usage logged.
-                        Console.WriteLine(string.Format("Ended at at {0}, spent {1}s and {2}MB of memory diff.",
+                        if (report)
+                        {
+                            Itinero.Logging.Logger.Log("PF:" + _name, Itinero.Logging.TraceEventType.Information,
+                            string.Format("Ended at at {0}, spent {1}s and {2}MB of memory diff.",
                                 new DateTime(_ticks.Value).ToShortTimeString(),
                                 seconds, memoryDiff));
+                        }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Starts a new performance consumer and returns the instance that just started.
+        /// </summary>
+        /// <returns></returns>
+        public static PerformanceInfoConsumer StartNew(string name)
+        {
+            var performance = new PerformanceInfoConsumer(name);
+            performance.Start();
+            return performance;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for the performance info class.
+    /// </summary>
+    public static class PerformanceInfoConsumerExtensions
+    {
+        /// <summary>
+        /// Tests performance for the given action.
+        /// </summary>
+        public static void TestPerf(this Action action, string name)
+        {
+            var info = new PerformanceInfoConsumer(name);
+            info.Start();
+            action();
+            info.Stop();
+        }
+
+        /// <summary>
+        /// Tests performance for the given action.
+        /// </summary>
+        public static void TestPerf(this Action action, string name, int count)
+        {
+            var info = new PerformanceInfoConsumer(name + " x " + count.ToInvariantString(), 10000);
+            info.Start();
+            while (count > 0)
+            {
+                action();
+                count--;
+            }
+            info.Stop();
+        }
+
+        /// <summary>
+        /// Tests performance for the given function.
+        /// </summary>
+        public static T TestPerf<T>(this Func<T> func, string name)
+        {
+            var info = new PerformanceInfoConsumer(name);
+            info.Start();
+            var res = func();
+            info.Stop();
+            return res;
+        }
+
+        /// <summary>
+        /// Tests performance for the given function.
+        /// </summary>
+        public static T TestPerf<T>(this Func<T> func, string name, int count)
+        {
+            var res = default(T);
+            var info = new PerformanceInfoConsumer(name + " x " + count.ToInvariantString(), 10000);
+            info.Start();
+            while (count > 0)
+            {
+                res = func();
+                count--;
+            }
+            info.Stop();
+            return res;
+        }
+
+        /// <summary>
+        /// Tests performance for the given function.
+        /// </summary>
+        public static TResult TestPerf<T, TResult>(this Func<T, TResult> func, string name, T a)
+        {
+            var info = new PerformanceInfoConsumer(name);
+            info.Start();
+            var res = func(a);
+            info.Stop();
+            return res;
         }
     }
 }

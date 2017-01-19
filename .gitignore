@@ -36,6 +36,9 @@ TestResult.xml
 packages/*
 !packages/repositories.config
 
+MIVB*/
+TEC*/
+DeLijn*/
 NMBS*/
 *.osm.pbf
 *.routing

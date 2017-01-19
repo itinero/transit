@@ -25,6 +25,7 @@ using Itinero.Transit.Test.Functional.Staging;
 using System;
 using Itinero.Transit.Osm.Data;
 using System.IO;
+using Itinero.Transit.Test.Functional.Tests;
 
 namespace Itinero.Transit.Test.Functional
 {
@@ -40,25 +41,32 @@ namespace Itinero.Transit.Test.Functional
             // download and extract test-data.
             Console.WriteLine("Downloading Belgium...");
             Download.DownloadBelgiumAll();
+            Console.WriteLine("Downloading NMBS GTFS...");
+            var nmbsGtfs = Download.DownloadNMBS();
+            Console.WriteLine("Downloading Delijn GTFS...");
+            var delijnGfts = Download.DownloadDeLijn();
+            Console.WriteLine("Downloading TEC GTFS...");
+            var tecGtfs = Download.DownloadTEC();
+            Console.WriteLine("Downloading MIVB GTFS...");
+            var mivbGtfs = Download.DownloadMIVB();
 
             // build routerdb and save the result.
             var routerDb = Staging.RouterDbBuilder.BuildBelgium();
-            var router = new Router(routerDb);
 
-            Console.WriteLine("Downloading NMBS GTFS...");
-            Download.DownloadNMBS();
+            // build transitdb's.
+            var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
+            var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
+            var tec = TransitDbBuilder.RunOrLoad(tecGtfs);
+            var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
 
-            Console.WriteLine("Loading NMBS data...");
-            var reader = new GTFSReader<GTFSFeed>(false);
-            var feed = reader.Read(new GTFSDirectorySource(@"NMBS"));
-            var transitDb = new TransitDb();
-            var db = new MultimodalDb(routerDb, transitDb);
-            db.TransitDb.LoadFrom(feed);
-            db.TransitDb.SortConnections(DefaultSorting.DepartureTime, null);
-            db.TransitDb.AddTransfersDb(Vehicle.Pedestrian.Fastest(), 100);
-            db.AddStopLinksDb(Vehicle.Pedestrian.Fastest(), maxDistance: 100);
+            // merge transit db's.
+            var transitDb = TransitDbBuilder.Merge(nmbs); // TODO: figure out why system is broken when loading multiple operators.
 
-            var transitRouter = new MultimodalRouter(db, Vehicle.Pedestrian.Fastest());
+            // build multimodal db.
+            var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
+
+            // create transit router.
+            var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
 
             // run tests.
             Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");

@@ -6,7 +6,8 @@ namespace Itinero.Transit.Test.Functional.Staging
 {
     public static class Download
     {
-        public static string BelgiumAllSource = "http://files.itinero.tech/data/itinero/routerdbs/planet/europe/belgium.a.routerdb";
+        public static string BelgiumRemote = "http://files.itinero.tech/data/OSM/planet/europe/belgium-latest.osm.pbf";
+        public static string BelgiumLocal = "belgium-latest.osm.pbf";
 
         public static string NMBSSource = "http://files.itinero.tech/data/GTFS/nmbs/nmbs-latest.zip";
 
@@ -15,11 +16,11 @@ namespace Itinero.Transit.Test.Functional.Staging
         /// </summary>
         public static void DownloadBelgiumAll()
         {
-            if (!File.Exists("belgium.a.routerdb"))
+            if (!File.Exists("belgium-latest.osm.pbf"))
             {
                 var client = new WebClient();
-                client.DownloadFile(Download.BelgiumAllSource,
-                    "belgium.a.routerdb");
+                client.DownloadFile(Download.BelgiumRemote,
+                    Download.BelgiumLocal);
             }
         }
 
@@ -28,12 +29,12 @@ namespace Itinero.Transit.Test.Functional.Staging
         /// </summary>
         public static void DownloadNMBS()
         {
-            if(!Directory.Exists("NMBS"))
+            if (!Directory.Exists("NMBS"))
             {
                 var client = new WebClient();
-                client.DownloadFile(Download.NMBSSource, "nmbs-latest.zip");
-                ZipFile.ExtractToDirectory("nmbs-latest.zip", "NMBS");
-                File.Delete("nmbs-latest.zip");
+                client.DownloadFile(Download.NMBSSource, "NMBS.zip");
+                ZipFile.ExtractToDirectory("NMBS.zip", "NMBS");
+                File.Delete("NMBS.zip");
             }
         }
     }

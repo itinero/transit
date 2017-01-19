@@ -37,6 +37,8 @@ packages/*
 !packages/repositories.config
 
 NMBS*/
+*.osm.pbf
+*.routing
 *.routerdb
 *.routing
 *.transitdb

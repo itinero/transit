@@ -58,14 +58,14 @@ namespace Itinero.Transit.Test.Functional
 
                 Assert.IsFalse(route.IsError, "Route was not found.");
 
-                object value;
-                if (result.Attributes.TryGetValue("time", out value))
-                {
-                    var timeResult = (long)value;
-                    Assert.AreEqual(timeResult, route.Value.TotalTime, Settings.MinimumTotalTimeDifference);
-                }
-                performanceInfoConsumer.Stop();
-                File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
+                //object value;
+                //if (result.Attributes.TryGetValue("time", out value))
+                //{
+                //    var timeResult = (long)value;
+                //    Assert.AreEqual(timeResult, route.Value.TotalTime, Settings.MinimumTotalTimeDifference);
+                //}
+                //performanceInfoConsumer.Stop();
+                //File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
             }
             else
             {

@@ -36,18 +36,17 @@ namespace Itinero.Transit.Test.Functional
             {
                 Console.WriteLine(string.Format("[{0}] {1} - {2}", origin, level, message));
             };
-
-            Vehicle.RegisterVehicles();
-
+            
             // download and extract test-data.
             Console.WriteLine("Downloading Belgium...");
             Download.DownloadBelgiumAll();
+
+            // build routerdb and save the result.
+            var routerDb = Staging.RouterDbBuilder.BuildBelgium();
+            var router = new Router(routerDb);
+
             Console.WriteLine("Downloading NMBS GTFS...");
             Download.DownloadNMBS();
-
-            // create test router.
-            Console.WriteLine("Loading routing data for Belgium...");
-            var routerDb = RouterDb.Deserialize(File.OpenRead("belgium.a.routerdb"));
 
             Console.WriteLine("Loading NMBS data...");
             var reader = new GTFSReader<GTFSFeed>(false);
@@ -65,7 +64,7 @@ namespace Itinero.Transit.Test.Functional
             Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
             Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
             Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
-            
+
             Console.WriteLine("Done!");
             Console.ReadLine();
         }

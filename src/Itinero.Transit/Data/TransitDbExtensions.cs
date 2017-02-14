@@ -163,11 +163,13 @@ namespace Itinero.Transit.Data
             if (db == null) { throw new ArgumentNullException("db"); }
             if (other == null) { throw new ArgumentNullException("other"); }
             if (other.ConnectionSorting == null) { throw new ArgumentException("A database can only be copied if connections are sorted."); }
-
-            var agencyIds = new Dictionary<uint, uint>();
-            var stopIds = new Dictionary<uint, uint>();
-            var tripIds = new Dictionary<uint, uint>();
+            
+            var stopIdsBlockSize = 1024 * 32;
+            var stopIds = new MemoryArray<uint>(stopIdsBlockSize);
+            var tripIdsBlockSize = 1024 * 32;
+            var tripIds = new MemoryArray<uint>(tripIdsBlockSize);
             var scheduleIds = new Dictionary<uint, uint>();
+            var agencyIds = new Dictionary<uint, uint>();
 
             // copy stops and keep id transformations.
             var stopsEnumerator = other.GetStopsEnumerator();
@@ -176,6 +178,10 @@ namespace Itinero.Transit.Data
                 var stopsMeta = other.StopAttributes.Get(stopsEnumerator.MetaId);
                 var newMetaId = db.StopAttributes.Add(stopsMeta);
                 var newStopId = db.AddStop(stopsEnumerator.Latitude, stopsEnumerator.Longitude, newMetaId);
+                if (stopsEnumerator.Id >= stopIds.Length)
+                {
+                    stopIds.Resize(stopIds.Length + stopIdsBlockSize);
+                }
                 stopIds[stopsEnumerator.Id] = newStopId;
             }
 
@@ -206,6 +212,10 @@ namespace Itinero.Transit.Data
                 }
 
                 var newTripId = db.AddTrip(newScheduleId, newAgencyMetaId, newMetaId);
+                if (tripsEnumerator.Id >= tripIds.Length)
+                {
+                    tripIds.Resize(tripIds.Length + tripIdsBlockSize);
+                }
                 tripIds[tripsEnumerator.Id] = newTripId;
             }
 

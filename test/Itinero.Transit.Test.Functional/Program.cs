@@ -60,7 +60,7 @@ namespace Itinero.Transit.Test.Functional
             var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
 
             // merge transit db's.
-            var transitDb = TransitDbBuilder.Merge(nmbs); // TODO: figure out why system is broken when loading multiple operators.
+            var transitDb = TransitDbBuilder.Merge(mivb, nmbs, delijn, tec); // TODO: figure out why system is broken when loading multiple operators.
 
             // build multimodal db.
             var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
@@ -69,9 +69,9 @@ namespace Itinero.Transit.Test.Functional
             var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
 
             // run tests.
-            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
-            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
-            Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
+            var route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
+            //route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
+            route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
 
             Console.WriteLine("Done!");
             Console.ReadLine();

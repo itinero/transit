@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>Itinero.Transit</id>
+    <id>Itinero.Transit.Geo</id>
     <version>$version$</version>
-    <authors>Itinero.Transit</authors>
+    <authors>Itinero.Transit.Geo</authors>
     <owners>Ben Abelshausen</owners>
     <licenseUrl>https://github.com/itinero/transit/blob/develop/license.txt</licenseUrl>
     <projectUrl>http://www.itinero.tech/</projectUrl>
@@ -16,14 +16,10 @@
       <group targetFramework=".NETFramework4.5">
         <dependency id="GTFS" version="[2.0.1-alpha, )" />
         <dependency id="Itinero" version="[0.38.22-rc1, )" />
-      </group>
-      <group targetFramework=".NETStandard1.3">
-        <dependency id="NETStandard.Library" version="[1.6.0, )" />
-        <dependency id="System.Reflection" version="[4.1.0, )" />
-        <dependency id="System.Reflection.TypeExtensions" version="[4.1.0, )" />
-        <dependency id="System.Xml.XmlSerializer" version="[4.0.11, )" />
-        <dependency id="GTFS" version="[2.0.1-alpha, )" />
-        <dependency id="Itinero" version="[0.38.22-rc1, )" />
+        <dependency id="Itinero.Geo" version="[0.38.22-rc1, )" />
+        <dependency id="Itinero.Transit" version="[$version$, )" />
+        <dependency id="NetTopologySuite" version="[1.14.0, )" />
+        <dependency id="Newtonsoft.Json" version="[9.0.1, )" />
       </group>
     </dependencies>
     <frameworkAssemblies>
@@ -31,6 +27,6 @@
     </frameworkAssemblies>
   </metadata>
   <files>
-    <file src="src\Itinero.Transit\bin\Release\net45\Itinero.Transit.dll" target="lib\net45\Itinero.Transit.dll" />
+    <file src="src\Itinero.Transit.Geo\bin\Release\net45\Itinero.Transit.Geo.dll" target="lib\net45\Itinero.Transit.Geo.dll" />
   </files>
 </package>

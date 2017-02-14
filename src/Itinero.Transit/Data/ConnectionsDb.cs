@@ -38,7 +38,7 @@ namespace Itinero.Transit.Data
         private const int CONNECTION_SIZE = 4;
         private const int CONNECTION_MAX_DEPARTURETIME = 131072 - 1;
         private const int CONNECTION_MAX_DURATION = 32768 - 1;
-        private const int CONNECTIONS_BLOCK_SIZE = 1000; // the connections block size.
+        private const int CONNECTIONS_BLOCK_SIZE = 1024 * 32; // the connections block size.
         private readonly ArrayBase<uint> _connections; // holds all connection data.
         private readonly ArrayBase<uint> _connectionsOrder; // hold the connections-order for the other sorting.
         

@@ -8,10 +8,10 @@
   },
 
   "dependencies": {
-    "GTFS": "1.7.1",
-    "Itinero": "0.38.3-rc1",
-    "Itinero.Geo": "0.38.3-rc1",
-    "Itinero.IO.Osm": "0.38.3-rc1",
+    "GTFS": "2.0.1-alpha",
+    "Itinero": "0.38.22-rc1",
+    "Itinero.Geo": "0.38.22-rc1",
+    "Itinero.IO.Osm": "0.38.22-rc1",
     "Itinero.Transit": "1.0.0-*",
     "Itinero.Transit.Geo": "1.0.0-*",
     "NetTopologySuite": "1.14.0",

@@ -113,6 +113,7 @@ namespace Itinero.Transit.Test.Functional.Tests
                     transitDb.CopyFrom(transitDbs[i]);
                 }
                 transitDb.SortConnections(DefaultSorting.DepartureTime, null);
+                transitDb.SortStops();
                 return transitDb;
             };
         }

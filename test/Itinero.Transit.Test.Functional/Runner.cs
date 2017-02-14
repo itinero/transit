@@ -41,7 +41,7 @@ namespace Itinero.Transit.Test.Functional
         /// <summary>
         /// Executes the given test on the given router.
         /// </summary>
-        public static void Test(MultimodalRouter router, FeatureCollection test)
+        public static Route Test(MultimodalRouter router, FeatureCollection test)
         {
             var source = test.Features.FirstOrException(x => 
                 x.Attributes.Contains("type", "source"), "Invalid test data: no source found.");
@@ -84,6 +84,8 @@ namespace Itinero.Transit.Test.Functional
                 //}
                 //performanceInfoConsumer.Stop();
                 //File.WriteAllText("temp.geojson", route.Value.ToGeoJson());
+
+                return route.Value;
             }
             else
             {
@@ -94,7 +96,7 @@ namespace Itinero.Transit.Test.Functional
         /// <summary>
         /// Executes the given test on the given router.
         /// </summary>
-        public static void Test(MultimodalRouter router, string embeddedResourceId)
+        public static Route Test(MultimodalRouter router, string embeddedResourceId)
         {
             FeatureCollection featureCollection;
             using (var stream = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(embeddedResourceId)))
@@ -104,7 +106,7 @@ namespace Itinero.Transit.Test.Functional
                 featureCollection = geoJsonSerializer.Deserialize<FeatureCollection>(jsonReader) as FeatureCollection;
             }
 
-            Test(router, featureCollection);
+            return Test(router, featureCollection);
         }
     }
 }

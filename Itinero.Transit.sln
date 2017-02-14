@@ -20,6 +20,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit.Test.Functional", "test\Itinero.Transit.Test.Functional\Itinero.Transit.Test.Functional.xproj", "{0795C0CB-C503-49A7-BFCB-BBEB9A6F07BD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{F3789611-638E-414E-AC43-F0EEE4284C27}"
+	ProjectSection(SolutionItems) = preProject
+		nuspec\Itinero.Transit.Geo.nuspec = nuspec\Itinero.Transit.Geo.nuspec
+		nuspec\Itinero.Transit.nuspec = nuspec\Itinero.Transit.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

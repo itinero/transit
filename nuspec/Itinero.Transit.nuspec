@@ -32,5 +32,6 @@
   </metadata>
   <files>
     <file src="src\Itinero.Transit\bin\Release\net45\Itinero.Transit.dll" target="lib\net45\Itinero.Transit.dll" />
+    <file src="src\Itinero.Transit\bin\Release\netstandard1.3\Itinero.Transit.dll" target="lib\netstandard1.3\Itinero.Transit.dll" />
   </files>
 </package>

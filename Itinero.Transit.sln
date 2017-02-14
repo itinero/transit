@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9BE0006-39B4-43E2-AD47-BB9202AAF29D}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		SharedAssemblyVersion.cs = SharedAssemblyVersion.cs
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit.Test.Functional", "test\Itinero.Transit.Test.Functional\Itinero.Transit.Test.Functional.xproj", "{0795C0CB-C503-49A7-BFCB-BBEB9A6F07BD}"

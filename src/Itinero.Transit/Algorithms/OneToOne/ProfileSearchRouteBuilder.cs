@@ -224,7 +224,17 @@ namespace Itinero.Transit.Algorithms.OneToOne
                     throw new Exception(string.Format("Stop {0} not found.", stops[0].Item1));
                 }
 
-                // add shapepoint.
+                // add shapepoints between stops if present.
+                var shapePoints = _search.Db.ShapesDb.Get(stops[idx - 1].Item1, stops[idx].Item1);
+                if (shapePoints != null)
+                {
+                    foreach(var shapePoint in shapePoints)
+                    {
+                        routeShape.Add(new Coordinate(shapePoint.Latitude, shapePoint.Longitude));
+                    }
+                }
+
+                // add stop shapepoint.
                 routeShape.Add(new Coordinate(stopEnumerator.Latitude, stopEnumerator.Longitude));
 
                 // add stop.

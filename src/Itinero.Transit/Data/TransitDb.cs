@@ -37,6 +37,7 @@ namespace Itinero.Transit.Data
         private readonly AttributesIndex _tripAttributes;
         private readonly SchedulesDb _schedulesDb;
         private readonly Dictionary<string, TransfersDb> _transfersDbs;
+        private readonly ShapesDb _shapesDb;
 
         /// <summary>
         /// Creates a new transit db.
@@ -51,12 +52,14 @@ namespace Itinero.Transit.Data
             _tripAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
             _transfersDbs = new Dictionary<string, TransfersDb>();
             _schedulesDb = new SchedulesDb();
+            _shapesDb = new ShapesDb();
         }
 
         /// <summary>
         /// Creates a new transit db.
         /// </summary>
-        private TransitDb(AttributesIndex agencyAttributes, ConnectionsDb connectionsDb, SchedulesDb schedulesDb, AttributesIndex stopAttributes, StopsDb stopsDb, Dictionary<string, TransfersDb> transferDbs, AttributesIndex tripAttributes, TripsDb tripsDb)
+        private TransitDb(AttributesIndex agencyAttributes, ConnectionsDb connectionsDb, SchedulesDb schedulesDb, AttributesIndex stopAttributes, 
+            StopsDb stopsDb, Dictionary<string, TransfersDb> transferDbs, AttributesIndex tripAttributes, TripsDb tripsDb, ShapesDb shapesDb)
         {
             _agencyAttributes = agencyAttributes;
             _connectionsDb = connectionsDb;
@@ -66,6 +69,7 @@ namespace Itinero.Transit.Data
             _transfersDbs = transferDbs;
             _tripAttributes = tripAttributes;
             _tripsDb = tripsDb;
+            _shapesDb = shapesDb;
         }
 
         /// <summary>
@@ -319,12 +323,23 @@ namespace Itinero.Transit.Data
         }
 
         /// <summary>
+        /// Gets the shapes db.
+        /// </summary>
+        public ShapesDb ShapesDb
+        {
+            get
+            {
+                return _shapesDb;
+            }
+        }
+
+        /// <summary>
         /// Serializes to the given stream.
         /// </summary>
         public long Serialize(Stream stream)
         {
             var position = stream.Position;
-            stream.WriteByte(1); // write the version #.
+            stream.WriteByte(2); // write the version #.
 
             // write agencies attributes.
             _agencyAttributes.Serialize(new LimitedStream(stream));
@@ -354,6 +369,10 @@ namespace Itinero.Transit.Data
 
             // write trips db.
             _tripsDb.Serialize(stream);
+
+            // write shapes db.
+            _shapesDb.Serialize(stream);
+
             return stream.Position - position;
         }
 
@@ -362,10 +381,11 @@ namespace Itinero.Transit.Data
         /// </summary>
         public static TransitDb Deserialize(Stream stream)
         {
-            if (stream.ReadByte() != 1)
+            var version = stream.ReadByte();
+            if (version > 2)
             {
                 throw new Exception("Cannot deserialize db, version # doesn't match.");
-            }
+            }     
 
             // read agencies attributes.
             var agencyAttributes = AttributesIndex.Deserialize(new LimitedStream(stream), true);
@@ -399,8 +419,14 @@ namespace Itinero.Transit.Data
             // write trips db.
             var tripsDb = TripsDb.Deserialize(stream);
 
+            ShapesDb shapesDb = null;
+            if (version != 1)
+            { // write shapes db.
+                shapesDb = ShapesDb.Deserialize(stream);
+            }
+
             return new TransitDb(agencyAttributes, connectionsDb, schedulesDb, stopAttributes, stopsDb, transferDbs,
-                tripAttributes, tripsDb);
+                tripAttributes, tripsDb, shapesDb);
         }
     }
 }

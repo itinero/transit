@@ -214,5 +214,96 @@ namespace Itinero.Transit.Data
 
             return new ShapesDb(size, index, shapes);
         }
+        
+        /// <summary>
+        /// Returns the number of shapes.
+        /// </summary>
+        public long Count
+        {
+            get
+            {
+                return _nextIdx / 3;
+            }
+        }
+
+        /// <summary>
+        /// Gets a the enumerator.
+        /// </summary>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
+        /// <summary>
+        /// The enumerator.
+        /// </summary>
+        public class Enumerator
+        {
+            private readonly ShapesDb _shapes;
+
+            internal Enumerator(ShapesDb shapes)
+            {
+                _shapes = shapes;
+            }
+
+            private long _pointer = uint.MaxValue;
+
+            /// <summary>
+            /// Resets the enumerator.
+            /// </summary>
+            public void Reset()
+            {
+                _pointer = uint.MaxValue;
+            }
+            
+            /// <summary>
+            /// Gets the stop1.
+            /// </summary>
+            public uint Stop1
+            {
+                get
+                {
+                    return _shapes._index[_pointer * 3 + 0];
+                }
+            }
+
+            /// <summary>
+            /// Gets the stop2.
+            /// </summary>
+            public uint Stop2
+            {
+                get
+                {
+                    return _shapes._index[_pointer * 3 + 1];
+                }
+            }
+
+            /// <summary>
+            /// Gets the shape.
+            /// </summary>
+            public ShapeBase Shape
+            {
+                get
+                {
+                    return _shapes._shapes[_shapes._index[_pointer * 3 + 2]];
+                }
+            }
+
+            /// <summary>
+            /// Moves to the next stop.
+            /// </summary>
+            /// <returns></returns>
+            public bool MoveNext()
+            {
+                if (_pointer == uint.MaxValue)
+                {
+                    _pointer = 0;
+                    return _shapes.Count > 0;
+                }
+                _pointer++;
+
+                return _pointer < _shapes.Count;
+            }
+        }
     }
 }

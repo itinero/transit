@@ -37,7 +37,7 @@ namespace Itinero.Transit.Test.Functional
             {
                 Console.WriteLine(string.Format("[{0}] {1} - {2}", origin, level, message));
             };
-            
+
             // download and extract test-data.
             Console.WriteLine("Downloading Belgium...");
             Download.DownloadBelgiumAll();

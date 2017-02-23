@@ -63,9 +63,18 @@ namespace Itinero.Transit.Data
         public void Add(uint stop1, uint stop2, ShapeBase shape)
         {
             // add shape.
+            if (_nextShapeId >= _shapes.Length)
+            {
+                _shapes.Resize(_shapes.Length + 1024);
+            }
             _shapes[_nextShapeId] = shape;
             var shapeId = _nextShapeId;
             _nextShapeId++;
+
+            if (_nextIdx + 3 >= _index.Length)
+            {
+                _index.Resize(_index.Length + 1024);
+            }
 
             // add index.
             _index[_nextIdx + 0] = stop1;
@@ -121,6 +130,11 @@ namespace Itinero.Transit.Data
         /// </summary>
         public long TryGetIndex(uint stop1, uint stop2)
         {
+            if (_nextIdx == 0)
+            {
+                return long.MaxValue;
+            }
+
             var idx = _nextIdx / 3;
             
             // do a binary search.

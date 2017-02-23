@@ -528,6 +528,15 @@ namespace Itinero.Transit.GTFS
                         if (shapePoints[i].DistanceTravelled >= distance2)
                         {
                             coordinates.Add(Between(shapePoints[i - 1], shapePoints[i], distance2));
+                            break;
+                        }
+                        else
+                        {
+                            coordinates.Add(new Coordinate()
+                            {
+                                Latitude = shapePoints[i].Latitude,
+                                Longitude = shapePoints[i].Longitude
+                            });
                         }
                     }
                 }

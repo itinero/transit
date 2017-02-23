@@ -1,14 +1,14 @@
-﻿// OsmSharp - OpenStreetMap (OSM) SDK
-// Copyright (C) 2016 Abelshausen Ben
+﻿// Itinero - Routing for .NET
+// Copyright (C) 2017 Abelshausen Ben
 // 
 // This file is part of Itinero.
 // 
-// OsmSharp is free software: you can redistribute it and/or modify
+// Itinero is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
 // 
-// OsmSharp is distributed in the hope that it will be useful,
+// Itinero is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
@@ -19,6 +19,7 @@
 using GTFS;
 using GTFS.Entities;
 using Itinero.Attributes;
+using Itinero.LocalGeo;
 using Itinero.Transit.Data;
 using System;
 using System.Collections.Generic;
@@ -238,7 +239,66 @@ namespace Itinero.Transit.GTFS
                 }
             }
 
+            // index the shapes.
+            var shapeIndex = new Dictionary<string, ShapePoint[]>();
+            if (feed.Shapes != null)
+            {
+                var originalShapeIndex = new Dictionary<string, List<Shape>>();
+                List<Shape> shape = null;
+                foreach(var shapePoint in feed.Shapes)
+                {
+                    if (!originalShapeIndex.TryGetValue(shapePoint.Id, out shape))
+                    {
+                        shape = new List<Shape>();
+                        originalShapeIndex.Add(shapePoint.Id, shape);
+                    }
+
+                    shape.Add(shapePoint);
+                }
+                                
+                foreach(var pair in originalShapeIndex)
+                {
+                    pair.Value.Sort((x, y) =>
+                    {
+                        if (x.Id == y.Id)
+                        {
+                            return x.Sequence.CompareTo(y.Sequence);
+                        }
+                        return x.Id.CompareTo(y.Id);
+                    });
+
+                    var shapePoints = new ShapePoint[pair.Value.Count];
+                    for (var i = 0; i < shapePoints.Length; i++)
+                    {
+                        float distanceTravelled = 0;
+                        if (pair.Value[i].DistanceTravelled.HasValue)
+                        {
+                            distanceTravelled = (float)pair.Value[i].DistanceTravelled.Value;
+                        }
+                        else
+                        {
+                            if (i > 0)
+                            {
+                                distanceTravelled = Coordinate.DistanceEstimateInMeter(
+                                    (float)pair.Value[i].Latitude, (float)pair.Value[i].Longitude,
+                                    shapePoints[i - 1].Latitude, shapePoints[i - 1].Longitude) +
+                                    shapePoints[i - 1].DistanceTravelled;
+                            }
+                        }
+
+                        shapePoints[i] = new ShapePoint()
+                        {
+                            Latitude = (float)pair.Value[i].Latitude,
+                            Longitude = (float)pair.Value[i].Longitude,
+                            DistanceTravelled = distanceTravelled
+                        };
+                    }
+                    shapeIndex[pair.Key] = shapePoints;
+                }
+            }
+
             // load connections.
+            var shapesDb = new ShapesDb();
             var stopTimes = new List<StopTime>(feed.StopTimes);
             stopTimes.Sort((x, y) =>
             {
@@ -250,6 +310,7 @@ namespace Itinero.Transit.GTFS
                 return c;
             });
             var currentTripId = string.Empty;
+            var currentShapeId = string.Empty;
             uint collisionOffset = 1;
             for (var i = 0; i < stopTimes.Count; i++)
             {
@@ -262,6 +323,8 @@ namespace Itinero.Transit.GTFS
                     if (currentTripId != stopTime.TripId)
                     { // start a new sequence.
                         currentTripId = stopTime.TripId;
+                        var trip = feed.Trips.Get(currentTripId);
+                        currentShapeId = trip.ShapeId;
                         collisionOffset = 1;
                     }
                     else
@@ -288,6 +351,22 @@ namespace Itinero.Transit.GTFS
                                 db.AddConnection(stop1, stop2, tripId,
                                     (uint)previousStopTime.DepartureTime.TotalSeconds, (uint)stopTime.ArrivalTime.TotalSeconds);
                                 collisionOffset = 1;
+                            }
+
+                            if (previousStopTime.ShapeDistTravelled.HasValue &&
+                                stopTime.ShapeDistTravelled.HasValue)
+                            {
+                                var shape = shapesDb.Get(stop1, stop2);
+                                if (shape == null)
+                                {
+                                    ShapePoint[] shapePoints = null;
+                                    if (shapeIndex.TryGetValue(currentShapeId, out shapePoints))
+                                    {
+                                        var shapeBetweenStops = ShapePoint.ExtractShape(
+                                            shapePoints, (float)previousStopTime.ShapeDistTravelled.Value, (float)stopTime.ShapeDistTravelled.Value);
+                                        shapesDb.Add(stop1, stop2, new Graphs.Geometric.Shapes.ShapeEnumerable(shapeBetweenStops));
+                                    }
+                                }
                             }
                         }
                     }
@@ -413,6 +492,75 @@ namespace Itinero.Transit.GTFS
         {
             calendar.StartDate = calendar.StartDate.FirstDayOfWeek();
             calendar.EndDate = calendar.EndDate.LastDayOfWeek();
+        }
+
+        private class ShapePoint
+        {
+            public float Latitude { get; set; }
+            public float Longitude { get; set; }
+            public float DistanceTravelled { get; set; }
+
+            public static List<Coordinate> ExtractShape(ShapePoint[] shapePoints, float distance1, float distance2)
+            {
+                var coordinates = new List<Coordinate>();
+                for (var i = 0; i < shapePoints.Length; i++)
+                {
+                    if (coordinates.Count == 0)
+                    {
+                        if (shapePoints[i].DistanceTravelled >= distance1)
+                        { // include first point.
+                            if (i == 0)
+                            {
+                                coordinates.Add(new Coordinate()
+                                {
+                                    Latitude = shapePoints[i].Latitude,
+                                    Longitude = shapePoints[i].Longitude
+                                });
+                            }
+                            else
+                            {
+                                coordinates.Add(Between(shapePoints[i - 1], shapePoints[i], distance1));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (shapePoints[i].DistanceTravelled >= distance2)
+                        {
+                            coordinates.Add(Between(shapePoints[i - 1], shapePoints[i], distance2));
+                        }
+                    }
+                }
+                return coordinates;
+            }
+
+            private static Coordinate Between(ShapePoint shapePoint1, ShapePoint shapePoint2, float distance)
+            {
+                if (shapePoint1.DistanceTravelled == distance)
+                {
+                    return new Coordinate()
+                    {
+                        Latitude = shapePoint1.Latitude,
+                        Longitude = shapePoint1.Longitude
+                    };
+                }
+                if (shapePoint2.DistanceTravelled == distance)
+                {
+                    return new Coordinate()
+                    {
+                        Latitude = shapePoint2.Latitude,
+                        Longitude = shapePoint2.Longitude
+                    };
+                }
+
+                var ratio = (distance - shapePoint1.DistanceTravelled) / (shapePoint2.DistanceTravelled - shapePoint1.DistanceTravelled);
+
+                return new Coordinate()
+                {
+                    Latitude = shapePoint1.Latitude + (shapePoint2.Latitude - shapePoint1.Latitude) * ratio,
+                    Longitude = shapePoint1.Longitude + (shapePoint2.Longitude - shapePoint1.Longitude) * ratio,
+                };
+            }
         }
     }
 }

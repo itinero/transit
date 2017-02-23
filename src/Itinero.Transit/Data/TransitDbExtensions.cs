@@ -230,6 +230,16 @@ namespace Itinero.Transit.Data
                 db.AddConnection(newDepartureStop, newArrivalStop, newTripId, connectionEnumerator.DepartureTime, 
                     connectionEnumerator.ArrivalTime);
             }
+
+            // copy shapes.
+            var shapesEnumerator = other.ShapesDb.GetEnumerator();
+            while(shapesEnumerator.MoveNext())
+            {
+                var stop1 = stopIds[shapesEnumerator.Stop1];
+                var stop2 = stopIds[shapesEnumerator.Stop2];
+
+                db.ShapesDb.Add(stop1, stop2, shapesEnumerator.Shape);
+            }
         }
 
         /// <summary>

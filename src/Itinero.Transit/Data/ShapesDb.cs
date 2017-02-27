@@ -241,6 +241,16 @@ namespace Itinero.Transit.Data
         }
 
         /// <summary>
+        /// Updates the stops at the position of the enumerator.
+        /// </summary>
+        public void UpdateStops(Enumerator position, uint stop1, uint stop2)
+        {
+            var pointer = position.Pointer;
+            this._index[pointer * 3 + 0] = stop1;
+            this._index[pointer * 3 + 1] = stop2;
+        }
+
+        /// <summary>
         /// Gets a the enumerator.
         /// </summary>
         public Enumerator GetEnumerator()
@@ -270,6 +280,17 @@ namespace Itinero.Transit.Data
                 _pointer = uint.MaxValue;
             }
             
+            /// <summary>
+            /// Gets the pointer.
+            /// </summary>
+            internal long Pointer
+            {
+                get
+                {
+                    return _pointer;
+                }
+            }
+                        
             /// <summary>
             /// Gets the stop1.
             /// </summary>

@@ -279,6 +279,16 @@ namespace Itinero.Transit.Data
                     reverseStopIds[connectionEnumerator.DepartureStop],
                     reverseStopIds[connectionEnumerator.ArrivalStop]);
             }
+
+            // update stops on shapes.
+            var shapesEnumerator = db.ShapesDb.GetEnumerator();
+            while (shapesEnumerator.MoveNext())
+            {
+                db.ShapesDb.UpdateStops(shapesEnumerator,
+                    reverseStopIds[shapesEnumerator.Stop1],
+                    reverseStopIds[shapesEnumerator.Stop2]);
+            }
+            db.ShapesDb.Sort(); // sort again, stops have changed!
         }
     }
 }

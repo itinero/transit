@@ -298,7 +298,6 @@ namespace Itinero.Transit.GTFS
             }
 
             // load connections.
-            var shapesDb = new ShapesDb();
             var stopTimes = new List<StopTime>(feed.StopTimes);
             stopTimes.Sort((x, y) =>
             {
@@ -356,7 +355,7 @@ namespace Itinero.Transit.GTFS
                             if (previousStopTime.ShapeDistTravelled.HasValue &&
                                 stopTime.ShapeDistTravelled.HasValue)
                             {
-                                var shape = shapesDb.Get(stop1, stop2);
+                                var shape = db.ShapesDb.Get(stop1, stop2);
                                 if (shape == null)
                                 {
                                     ShapePoint[] shapePoints = null;
@@ -364,7 +363,7 @@ namespace Itinero.Transit.GTFS
                                     {
                                         var shapeBetweenStops = ShapePoint.ExtractShape(
                                             shapePoints, (float)previousStopTime.ShapeDistTravelled.Value, (float)stopTime.ShapeDistTravelled.Value);
-                                        shapesDb.Add(stop1, stop2, new Graphs.Geometric.Shapes.ShapeEnumerable(shapeBetweenStops));
+                                        db.ShapesDb.Add(stop1, stop2, new Graphs.Geometric.Shapes.ShapeEnumerable(shapeBetweenStops));
                                     }
                                 }
                             }

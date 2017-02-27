@@ -43,24 +43,24 @@ namespace Itinero.Transit.Test.Functional
             Download.DownloadBelgiumAll();
             Console.WriteLine("Downloading NMBS GTFS...");
             var nmbsGtfs = Download.DownloadNMBS();
-            Console.WriteLine("Downloading Delijn GTFS...");
-            var delijnGfts = Download.DownloadDeLijn();
-            Console.WriteLine("Downloading TEC GTFS...");
-            var tecGtfs = Download.DownloadTEC();
-            Console.WriteLine("Downloading MIVB GTFS...");
-            var mivbGtfs = Download.DownloadMIVB();
+            //Console.WriteLine("Downloading Delijn GTFS...");
+            //var delijnGfts = Download.DownloadDeLijn();
+            //Console.WriteLine("Downloading TEC GTFS...");
+            //var tecGtfs = Download.DownloadTEC();
+            //Console.WriteLine("Downloading MIVB GTFS...");
+            //var mivbGtfs = Download.DownloadMIVB();
 
             // build routerdb and save the result.
             var routerDb = Staging.RouterDbBuilder.BuildBelgium();
 
             // build transitdb's.
             var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
-            var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
-            var tec = TransitDbBuilder.RunOrLoad(tecGtfs);
-            var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
+            //var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
+            //var tec = TransitDbBuilder.RunOrLoad(tecGtfs);
+            //var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
 
             // merge transit db's.
-            var transitDb = TransitDbBuilder.Merge(mivb, nmbs, delijn, tec); // TODO: figure out why system is broken when loading multiple operators.
+            var transitDb = TransitDbBuilder.Merge(nmbs); // TODO: figure out why system is broken when loading multiple operators.
 
             // build multimodal db.
             var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);

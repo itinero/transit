@@ -28,7 +28,7 @@ namespace Itinero.Transit.Test.Functional.Staging
         public static string BelgiumLocal = "belgium-latest.osm.pbf";
 
         public static string NMBSSource = "http://files.itinero.tech/data/GTFS/nmbs/nmbs-latest-shapes.zip";
-        public static string DeLijnSource = "http://files.itinero.tech/data/GTFS/delijn/delijn-20170106.zip";
+        public static string DeLijnSource = "http://files.itinero.tech/data/GTFS/delijn/delijn-latest-shapes.zip";
         public static string MIVBSource = "http://files.itinero.tech/data/GTFS/mivb/mivb-20170114.zip";
         public static string TECSource = "http://files.itinero.tech/data/GTFS/tec/tec-20161111.zip";
 

@@ -232,13 +232,16 @@ namespace Itinero.Transit.Data
             }
 
             // copy shapes.
-            var shapesEnumerator = other.ShapesDb.GetEnumerator();
-            while(shapesEnumerator.MoveNext())
+            if (other.ShapesDb != null)
             {
-                var stop1 = stopIds[shapesEnumerator.Stop1];
-                var stop2 = stopIds[shapesEnumerator.Stop2];
+                var shapesEnumerator = other.ShapesDb.GetEnumerator();
+                while (shapesEnumerator.MoveNext())
+                {
+                    var stop1 = stopIds[shapesEnumerator.Stop1];
+                    var stop2 = stopIds[shapesEnumerator.Stop2];
 
-                db.ShapesDb.Add(stop1, stop2, shapesEnumerator.Shape);
+                    db.ShapesDb.Add(stop1, stop2, shapesEnumerator.Shape);
+                }
             }
         }
 

@@ -30,6 +30,13 @@ using System;
 using Itinero.Transit.Osm.Data;
 using System.IO;
 using Itinero.Transit.Test.Functional.Tests;
+using System.Collections.Generic;
+using Itinero.LocalGeo;
+using NetTopologySuite.Geometries;
+using Itinero.Geo;
+using NetTopologySuite.Features;
+using System.Linq;
+using Itinero.Transit.Geo;
 
 namespace Itinero.Transit.Test.Functional
 {
@@ -57,28 +64,85 @@ namespace Itinero.Transit.Test.Functional
             // build routerdb and save the result.
             var routerDb = Staging.RouterDbBuilder.BuildBelgium();
 
-            // build transitdb's.
-            var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
-            var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
+            //// build transitdb's.
+            //var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
+            //nmbs.SearchAllTrips((meta) =>
+            //{
+            //    foreach (var att in meta)
+            //    {
+            //        Console.Write("{0}-{1},", att.Key, att.Value);
+            //    }
+            //    Console.WriteLine();
+            //    return false;
+            //});
+
+            //var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
             //var tec = TransitDbBuilder.RunOrLoad(tecGtfs);
             //var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
 
+            var kempen = TransitDbBuilder.RunOrLoad(@"C:\work\data\gtfs\delijn-latest-kempen-shapes");
+
             // merge transit db's.
-            var transitDb = TransitDbBuilder.Merge(nmbs, delijn); // TODO: figure out why system is broken when loading multiple operators.
+            //var transitDb = TransitDbBuilder.Merge(delijn); // TODO: figure out why system is broken when loading multiple operators.
 
-            // build multimodal db.
-            var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
+            //var tripId = kempen.SearchAllTrips((meta) =>
+            //{
+            //    string name;
+            //    if (meta.TryGetValue("headsign", out name))
+            //    {
+            //        if (name.ToLowerInvariant().Contains("wechelderzande"))
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //    return false;
+            //}).First();
+            //var features = kempen.GetTripFeatures(tripId);
+            //var json = ToJson(features);
 
-            // create transit router.
-            var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
+            //// build multimodal db.
+            //var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
 
-            // run tests.
-            var route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
-            //route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
-            route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
+            //// create transit router.
+            //var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
+
+            //var route = transitRouter.TryEarliestArrival(new DateTime(2017, 03, 08, 18, 00, 00),
+            //    transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), 51.25949114703428f, 4.797946214675903f),
+            //    Vehicle.Pedestrian.Fastest(),
+            //    transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), 51.21775450175959f, 4.428702592849731f),
+            //    Vehicle.Pedestrian.Fastest(),
+            //    new EarliestArrivalSettings()
+            //    {
+            //        MaxSecondsSource = 1500,
+            //        MaxSecondsTarget = 1500
+            //    });
+
+            //// run tests.
+            //var route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");
+            ////route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test2.geojson");
+            //route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test3.geojson");
 
             Console.WriteLine("Done!");
             Console.ReadLine();
+        }
+
+        public static string ToGeoJson(IEnumerable<Coordinate> shape)
+        {
+            var lineString = new LineString(shape.ToArray().ToCoordinates().ToArray());
+            var feature = new Feature(lineString, new AttributesTable());
+            var features = new FeatureCollection();
+            features.Add(feature);
+
+            return ToJson(features);
+        }
+
+        private static string ToJson(FeatureCollection featureCollection)
+        {
+            var jsonSerializer = new NetTopologySuite.IO.GeoJsonSerializer();
+            var jsonStream = new StringWriter();
+            jsonSerializer.Serialize(jsonStream, featureCollection);
+            var json = jsonStream.ToInvariantString();
+            return json;
         }
     }
 }

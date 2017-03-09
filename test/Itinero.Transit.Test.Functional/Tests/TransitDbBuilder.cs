@@ -100,6 +100,7 @@ namespace Itinero.Transit.Test.Functional.Tests
                 var transitDb = new TransitDb();
                 transitDb.LoadFrom(feed);
                 transitDb.SortConnections(DefaultSorting.DepartureTime, null);
+                transitDb.SortStops();
                 return transitDb;
             };
         }

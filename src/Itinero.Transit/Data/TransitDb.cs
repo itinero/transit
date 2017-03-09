@@ -49,12 +49,12 @@ namespace Itinero.Transit.Data
         /// </summary>
         public TransitDb()
         {
-            _agencyAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
+            _agencyAttributes = new AttributesIndex(AttributesIndexMode.ReverseStringIndex);
             _connectionsDb = new ConnectionsDb();
             _stopsDb = new StopsDb();
-            _stopAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
+            _stopAttributes = new AttributesIndex(AttributesIndexMode.ReverseStringIndex);
             _tripsDb = new TripsDb();
-            _tripAttributes = new AttributesIndex(AttributesIndexMode.IncreaseOne);
+            _tripAttributes = new AttributesIndex(AttributesIndexMode.ReverseStringIndex);
             _transfersDbs = new Dictionary<string, TransfersDb>();
             _schedulesDb = new SchedulesDb();
             _shapesDb = new ShapesDb();

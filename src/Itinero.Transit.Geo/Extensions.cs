@@ -21,10 +21,15 @@
 // THE SOFTWARE.
 
 using Itinero.Geo;
+using Itinero.Geo.Attributes;
+using Itinero.Graphs.Geometric.Shapes;
+using Itinero.LocalGeo;
 using Itinero.Profiles;
 using Itinero.Transit.Data;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Itinero.Transit.Geo
 {
@@ -61,6 +66,71 @@ namespace Itinero.Transit.Geo
                     features.Add(new Feature(new LineString(new GeoAPI.Geometries.Coordinate[] { stopLocation, linkLocation }), new AttributesTable()));
                 }
             }
+            return features;
+        }
+
+        /// <summary>
+        /// Gets a trip, all it's connections, stops and shape points.
+        /// </summary>
+        public static FeatureCollection GetTripFeatures(this TransitDb transitDb, uint tripId)
+        {
+            var tripEnumerator = transitDb.GetTripsEnumerator();
+            if (!tripEnumerator.MoveTo(tripId))
+            {
+                return new FeatureCollection();
+            }
+
+            var features = new FeatureCollection();
+
+            var stopsEnumerator = transitDb.GetStopsEnumerator();
+            var stops = new HashSet<uint>();
+            var connectionEnumerator = transitDb.GetConnectionsEnumerator(DefaultSorting.DepartureTime);
+            while(connectionEnumerator.MoveNext())
+            {
+                if (connectionEnumerator.TripId == tripId)
+                {
+                    var shape = transitDb.ShapesDb.Get(connectionEnumerator.DepartureStop, connectionEnumerator.ArrivalStop);
+                    if (shape == null || shape.Count == 0)
+                    {
+                        stopsEnumerator.MoveTo(connectionEnumerator.DepartureStop);
+                        var stop1 = new Coordinate(stopsEnumerator.Latitude, stopsEnumerator.Longitude);
+                        stopsEnumerator.MoveTo(connectionEnumerator.ArrivalStop);
+                        var stop2 = new Coordinate(stopsEnumerator.Latitude, stopsEnumerator.Longitude);
+                        shape = new ShapeEnumerable(new Coordinate[]
+                        {
+                            stop1,
+                            stop2
+                        });
+                    }
+
+                    if (!stops.Contains(connectionEnumerator.DepartureStop))
+                    {
+                        stopsEnumerator.MoveTo(connectionEnumerator.DepartureStop);
+                        var meta = transitDb.GetStopMeta(connectionEnumerator.DepartureStop).ToAttributesTable();
+                        meta.AddAttribute("internal_id", connectionEnumerator.DepartureStop);
+                        features.Add(new Feature(new Point(new GeoAPI.Geometries.Coordinate(stopsEnumerator.Longitude, stopsEnumerator.Latitude)),
+                            meta));
+                        stops.Add(connectionEnumerator.DepartureStop);
+                    }
+                    if (!stops.Contains(connectionEnumerator.ArrivalStop))
+                    {
+                        stopsEnumerator.MoveTo(connectionEnumerator.ArrivalStop);
+                        var meta = transitDb.GetStopMeta(connectionEnumerator.ArrivalStop).ToAttributesTable();
+                        meta.AddAttribute("internal_id", connectionEnumerator.ArrivalStop);
+                        features.Add(new Feature(new Point(new GeoAPI.Geometries.Coordinate(stopsEnumerator.Longitude, stopsEnumerator.Latitude)),
+                            meta));
+                        stops.Add(connectionEnumerator.ArrivalStop);
+                    }
+
+                    var tripMeta = transitDb.TripAttributes.Get(tripEnumerator.MetaId).ToAttributesTable();
+
+                    tripMeta.AddAttribute("internal_stop1", connectionEnumerator.DepartureStop);
+                    tripMeta.AddAttribute("internal_stop2", connectionEnumerator.ArrivalStop);
+
+                    features.Add(new Feature(new LineString(shape.ToArray().ToCoordinatesArray()), tripMeta));
+                }
+            }
+
             return features;
         }
     }

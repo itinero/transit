@@ -1,30 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AE5BBE82-FE56-4DEE-9285-129618A0C249}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AB36A329-8AE5-41FA-8E60-13B5CAF703BD}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit", "src\Itinero.Transit\Itinero.Transit.xproj", "{6D62E660-EE88-4497-B5C5-39E1CAF66551}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit.Geo", "src\Itinero.Transit.Geo\Itinero.Transit.Geo.xproj", "{00A59176-C218-4A6C-9199-1723DC460FEC}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit.Test", "test\Itinero.Transit.Test\Itinero.Transit.Test.xproj", "{D611F819-52BE-462A-8413-7A6B7D1E17DE}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9BE0006-39B4-43E2-AD47-BB9202AAF29D}"
 	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
 		SharedAssemblyVersion.cs = SharedAssemblyVersion.cs
 	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Itinero.Transit.Test.Functional", "test\Itinero.Transit.Test.Functional\Itinero.Transit.Test.Functional.xproj", "{0795C0CB-C503-49A7-BFCB-BBEB9A6F07BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{F3789611-638E-414E-AC43-F0EEE4284C27}"
 	ProjectSection(SolutionItems) = preProject
 		nuspec\Itinero.Transit.Geo.nuspec = nuspec\Itinero.Transit.Geo.nuspec
 		nuspec\Itinero.Transit.nuspec = nuspec\Itinero.Transit.nuspec
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Itinero.Transit", "src\Itinero.Transit\Itinero.Transit.csproj", "{6D62E660-EE88-4497-B5C5-39E1CAF66551}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Itinero.Transit.Geo", "src\Itinero.Transit.Geo\Itinero.Transit.Geo.csproj", "{00A59176-C218-4A6C-9199-1723DC460FEC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Itinero.Transit.Test", "test\Itinero.Transit.Test\Itinero.Transit.Test.csproj", "{D611F819-52BE-462A-8413-7A6B7D1E17DE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Itinero.Transit.Test.Functional", "test\Itinero.Transit.Test.Functional\Itinero.Transit.Test.Functional.csproj", "{0795C0CB-C503-49A7-BFCB-BBEB9A6F07BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,8 +76,5 @@ Global
 		{00A59176-C218-4A6C-9199-1723DC460FEC} = {AE5BBE82-FE56-4DEE-9285-129618A0C249}
 		{D611F819-52BE-462A-8413-7A6B7D1E17DE} = {AB36A329-8AE5-41FA-8E60-13B5CAF703BD}
 		{0795C0CB-C503-49A7-BFCB-BBEB9A6F07BD} = {AB36A329-8AE5-41FA-8E60-13B5CAF703BD}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {76C1B0D2-CD2F-41EA-A512-F273E5BA5940}
 	EndGlobalSection
 EndGlobal

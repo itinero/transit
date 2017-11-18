@@ -1,0 +1,80 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "id": "antwerp-central"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.421106576919556,
+          51.215983711272926
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "id": "turnhout"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.937887787818909,
+          51.32265036053522
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8018622398376465,
+          51.267970202716526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "id": "wechelderzande"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.787582159042358,
+          51.26467409692463
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "id": "brugge"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.221193552017212,
+          51.19793590990354
+        ]
+      }
+    }
+  ]
+}

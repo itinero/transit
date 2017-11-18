@@ -100,15 +100,7 @@ namespace Itinero.Transit.Test.Functional
         /// </summary>
         public static Route Test(MultimodalRouter router, string embeddedResourceId)
         {
-            FeatureCollection featureCollection;
-            using (var stream = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(embeddedResourceId)))
-            {
-                var jsonReader = new JsonTextReader(stream);
-                var geoJsonSerializer = new NetTopologySuite.IO.GeoJsonSerializer();
-                featureCollection = geoJsonSerializer.Deserialize<FeatureCollection>(jsonReader) as FeatureCollection;
-            }
-
-            return Test(router, featureCollection);
+            return Test(router, Staging.Data.GetFeatureCollection(embeddedResourceId));
         }
     }
 }

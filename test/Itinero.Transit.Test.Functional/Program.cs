@@ -64,26 +64,14 @@ namespace Itinero.Transit.Test.Functional
             // build routerdb and save the result.
             var routerDb = Staging.RouterDbBuilder.BuildBelgium();
 
-            //// build transitdb's.
-            //var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
-            //nmbs.SearchAllTrips((meta) =>
-            //{
-            //    foreach (var att in meta)
-            //    {
-            //        Console.Write("{0}-{1},", att.Key, att.Value);
-            //    }
-            //    Console.WriteLine();
-            //    return false;
-            //});
-
-            //var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
+            // build transitdb's.
+            var nmbs = TransitDbBuilder.RunOrLoad(nmbsGtfs);
+            var delijn = TransitDbBuilder.RunOrLoad(delijnGfts);
             //var tec = TransitDbBuilder.RunOrLoad(tecGtfs);
             //var mivb = TransitDbBuilder.RunOrLoad(mivbGtfs);
 
-            var kempen = TransitDbBuilder.RunOrLoad(@"C:\work\data\gtfs\delijn-latest-kempen-shapes");
-
             // merge transit db's.
-            //var transitDb = TransitDbBuilder.Merge(delijn); // TODO: figure out why system is broken when loading multiple operators.
+            var transitDb = TransitDbBuilder.Merge(nmbs, delijn); // TODO: figure out why system is broken when loading multiple operators.
 
             //var tripId = kempen.SearchAllTrips((meta) =>
             //{
@@ -100,22 +88,42 @@ namespace Itinero.Transit.Test.Functional
             //var features = kempen.GetTripFeatures(tripId);
             //var json = ToJson(features);
 
-            //// build multimodal db.
-            //var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
+            // build multimodal db.
+            var multimodalDb = MultimodalDbBuilder.Run(routerDb, transitDb);
 
-            //// create transit router.
-            //var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
+            // create transit router.
+            var transitRouter = new MultimodalRouter(multimodalDb, Vehicle.Pedestrian.Fastest());
 
-            //var route = transitRouter.TryEarliestArrival(new DateTime(2017, 03, 08, 18, 00, 00),
-            //    transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), 51.25949114703428f, 4.797946214675903f),
-            //    Vehicle.Pedestrian.Fastest(),
-            //    transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), 51.21775450175959f, 4.428702592849731f),
-            //    Vehicle.Pedestrian.Fastest(),
-            //    new EarliestArrivalSettings()
-            //    {
-            //        MaxSecondsSource = 1500,
-            //        MaxSecondsTarget = 1500
-            //    });
+            var route = transitRouter.TryEarliestArrival(new DateTime(2017, 11, 08, 18, 00, 00),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("antwerp-central")),
+                Vehicle.Pedestrian.Fastest(),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("turnhout")),
+                Vehicle.Pedestrian.Fastest(),
+                new EarliestArrivalSettings()
+                {
+                    MaxSecondsSource = 1500,
+                    MaxSecondsTarget = 1500
+                });
+            route = transitRouter.TryEarliestArrival(new DateTime(2017, 11, 08, 18, 00, 00),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("antwerp-central")),
+                Vehicle.Pedestrian.Fastest(),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("wechelderzande")),
+                Vehicle.Pedestrian.Fastest(),
+                new EarliestArrivalSettings()
+                {
+                    MaxSecondsSource = 1500,
+                    MaxSecondsTarget = 1500
+                });
+            route = transitRouter.TryEarliestArrival(new DateTime(2017, 11, 18, 18, 00, 00),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("antwerp-central")),
+                Vehicle.Pedestrian.Fastest(),
+                transitRouter.Router.Resolve(Vehicle.Pedestrian.Fastest(), Locations.GetLocation("brugge")),
+                Vehicle.Pedestrian.Fastest(),
+                new EarliestArrivalSettings()
+                {
+                    MaxSecondsSource = 1500,
+                    MaxSecondsTarget = 1500
+                });
 
             //// run tests.
             //var route = Runner.Test(transitRouter, "Itinero.Transit.Test.Functional.test_data.belgium.test1.geojson");

@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <AssemblyName>Itinero.Transit.Test.Functional</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>Itinero.Transit.Test.Functional</PackageId>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="test-data\belgium\*.geojson" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="test-data\locations.geojson" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="test-data\locations.geojson" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Itinero.Transit\Itinero.Transit.csproj" />
+    <ProjectReference Include="..\..\src\Itinero.Transit.Geo\Itinero.Transit.Geo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GTFS" Version="2.0.1-alpha" />
+    <PackageReference Include="Itinero" Version="1.4.0-pre18" />
+    <PackageReference Include="Itinero.Geo" Version="1.4.0-pre18" />
+    <PackageReference Include="Itinero.IO.Osm" Version="1.4.0-pre18" />
+    <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.0-pre027" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="NUnit" Version="3.5.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Compile Include="..\..\SharedAssemblyVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.Xml" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

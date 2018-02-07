@@ -34,6 +34,7 @@
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.0-pre027" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="NUnit" Version="3.5.0" />
+    <PackageReference Include="Itinero.IO.Osm" Version="1.4.0-pre27" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">

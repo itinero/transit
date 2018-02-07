@@ -23,7 +23,7 @@
         <dependency id="System.Reflection.TypeExtensions" version="[4.1.0, )" />
         <dependency id="System.Xml.XmlSerializer" version="[4.0.11, )" />
         <dependency id="GTFS" version="[2.0.1-alpha, )" />
-        <dependency id="Itinero" version="[0.38.22-rc1, )" />
+        <dependency id="Itinero" version="[1.4.0-pre27, )" />
       </group>
     </dependencies>
     <frameworkAssemblies>

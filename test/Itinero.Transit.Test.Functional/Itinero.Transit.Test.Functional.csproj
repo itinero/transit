@@ -31,9 +31,6 @@
 
   <ItemGroup>
     <PackageReference Include="GTFS" Version="2.0.1-alpha" />
-    <PackageReference Include="Itinero" Version="1.4.0-pre18" />
-    <PackageReference Include="Itinero.Geo" Version="1.4.0-pre18" />
-    <PackageReference Include="Itinero.IO.Osm" Version="1.4.0-pre18" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.0-pre027" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="NUnit" Version="3.5.0" />

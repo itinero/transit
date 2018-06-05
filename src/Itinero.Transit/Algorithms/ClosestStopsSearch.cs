@@ -30,6 +30,7 @@ using Itinero.Profiles;
 using Itinero.Transit.Algorithms.Search;
 using Itinero.Transit.Data;
 using System;
+using System.Threading;
 using Itinero.Algorithms.Weights;
 using Itinero.Data.Network;
 
@@ -89,7 +90,7 @@ namespace Itinero.Transit.Algorithms
         /// <summary>
         /// Executes the actual run.
         /// </summary>
-        protected override void DoRun()
+        protected override void DoRun(CancellationToken cancellationToken)
         {
             // get the stop links db for the profile given.
             var stopLinksDb = _multimodalDb.GetStopLinksDb(_profile);

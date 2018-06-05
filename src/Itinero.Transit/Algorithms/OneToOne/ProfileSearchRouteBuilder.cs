@@ -24,6 +24,7 @@ using Itinero.Transit.Data;
 using Itinero.Algorithms;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Itinero.LocalGeo;
 using Itinero.Attributes;
 
@@ -56,7 +57,7 @@ namespace Itinero.Transit.Algorithms.OneToOne
         /// Executes the route build step.
         /// </summary>
         /// <returns></returns>
-        protected override void DoRun()
+        protected override void DoRun(CancellationToken cancellationToken)
         {
             if (!_search.HasRun) { throw new InvalidOperationException("Cannot build a route before the search was executed."); }
             if (!_search.HasSucceeded) { throw new InvalidOperationException("Cannot build a route when the search did not succeed."); }

@@ -15,7 +15,7 @@
     <dependencies>
       <group targetFramework=".NETFramework4.5">
         <dependency id="GTFS" version="[2.0.1-alpha, )" />
-        <dependency id="Itinero" version="[1.4.0-pre27, )" />
+        <dependency id="Itinero" version="[1.4.0-pre59, )" />
         <dependency id="Itinero.Geo" version="[1.4.0-pre18, )" />
         <dependency id="Itinero.Transit" version="[$version$, )" />
         <dependency id="NetTopologySuite" version="[1.14.0, )" />

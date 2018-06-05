@@ -24,6 +24,7 @@ using Itinero.Algorithms;
 using Itinero.Transit.Data;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Itinero.Transit.Algorithms.OneToOne
 {
@@ -176,7 +177,7 @@ namespace Itinero.Transit.Algorithms.OneToOne
         /// <summary>
         /// Executes the algorithm.
         /// </summary>
-        protected override void DoRun()
+        protected override void DoRun(CancellationToken cancellationToken)
         {
             // Remarks:
             // - Use the number of seconds from the previous midnight, this is also what is used to sort the connections.

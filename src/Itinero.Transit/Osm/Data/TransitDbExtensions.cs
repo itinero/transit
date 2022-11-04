@@ -22,6 +22,7 @@
 
 using Itinero.Attributes;
 using Itinero.Transit.Data;
+using Attribute = Itinero.Attributes.Attribute;
 
 namespace Itinero.Transit.Osm.Data
 {

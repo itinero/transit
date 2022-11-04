@@ -25,6 +25,7 @@ using Itinero.Transit.Algorithms.OneToOne;
 using Itinero.Transit.Data;
 using Itinero.Attributes;
 using Itinero;
+using Attribute = Itinero.Attributes.Attribute;
 
 namespace OsmSharp.Transit.Test.Algorithms.OneToOne
 {

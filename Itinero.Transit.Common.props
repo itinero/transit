@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  
+  <!--- Package information, Version -->
+  <PropertyGroup>
+    <PackageVersion>0.5.0-alpha</PackageVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Description>Itinero - Routeplanning for .NET.</Description>
+    <Copyright>Itinero BV</Copyright>
+    <licenseUrl>https://github.com/itinero/transit/blob/develop/license.txt</licenseUrl>
+    <projectUrl>https://www.itinero.tech/</projectUrl>
+    <iconUrl>http://www.itinero.tech/logos/itinero_logo_notext.svg.128.png</iconUrl>
+    <RepositoryUrl>https://github.com/itinero/routing2/</RepositoryUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Itinero.Transit is a module for Itinero to add transit routing capabilities.</description>
+    <summary>Itinero.Transit is a module for Itinero to add transit routing capabilities.</summary>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Authors>Itinero Contributors</Authors>
+    <Company>Itinero BV</Company>
+  </PropertyGroup>
+</Project>
